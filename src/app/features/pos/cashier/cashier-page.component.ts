@@ -1,12 +1,6 @@
-import { Component, ChangeDetectionStrategy, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { ReceiptSidebarComponent } from './components/receipt-sidebar/receipt-sidebar.component';
-import { ActionBarComponent } from './components/action-bar/action-bar.component';
-import { ReceiptTableComponent } from './components/receipt-table/receipt-table.component';
-import { ReceiptInputRowComponent } from './components/receipt-input-row/receipt-input-row.component';
-import { TotalsBarComponent } from './components/totals-bar/totals-bar.component';
-import { ReceiptInfoComponent } from './components/receipt-info/receipt-info.component';
+import { CashierPageComponentsComponent } from './cashier-page-components/cashier-page-components.component';
 import { ReceiptService } from '../core/services/receipt.service';
 
 @Component({
@@ -14,13 +8,7 @@ import { ReceiptService } from '../core/services/receipt.service';
   standalone: true,
   imports: [
     CommonModule,
-    SidebarComponent,
-    ReceiptSidebarComponent,
-    ActionBarComponent,
-    ReceiptTableComponent,
-    ReceiptInputRowComponent,
-    TotalsBarComponent,
-    ReceiptInfoComponent
+    CashierPageComponentsComponent
   ],
   templateUrl: './cashier-page.component.html',
   styleUrls: ['./cashier-page.component.css'],
@@ -97,6 +85,17 @@ export class CashierPageComponent implements OnInit {
   onViewItem(item: any) {
     console.log('View item', item);
   }
+
+  onUpdateQuantity(event: any) {
+    console.log('Update quantity', event);
+    // Implement quantity update logic
+  }
+
+  onAddItem(event: any) {
+    console.log('Add item', event);
+    // Implement add item logic
+  }
+}
 
   onUpdateQuantity(event: {item: any, delta: number}) {
      // TODO: Implement actual update via service, currently the service adds quantity via addItemToDraftByBarcode

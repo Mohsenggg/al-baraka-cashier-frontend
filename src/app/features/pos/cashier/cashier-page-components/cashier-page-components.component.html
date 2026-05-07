@@ -1,0 +1,379 @@
+<div class="cashier-layout" [class.sidebar-hidden]="!sidebarVisible()" [class.right-sidebar-hidden]="!rightSidebarVisible()">
+  
+  <!-- ============================= -->
+  <!-- RIGHT SIDEBAR: RECEIPT HISTORY -->
+  <!-- ============================= -->
+  <aside class="receipt-sidebar">
+    <div class="sidebar-header">
+      <div class="header-top">
+        <h3>سجل الفواتير</h3>
+        <button class="close-btn" (click)="onCloseReceiptSidebar()">×</button>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" [formControl]="searchControl" placeholder="بحث برقم الفاتورة...">
+      </div>
+    </div>
+
+    <div class="list-container">
+      <div class="table-header">
+        <div class="col-no">الرقم</div>
+        <div class="col-date">التاريخ</div>
+        <div class="col-total">الإجمالي</div>
+        <div class="col-mode">الدفع</div>
+      </div>
+
+      <div class="receipt-list" *ngIf="!(loading$ | async); else loader">
+        <div 
+          class="receipt-item" 
+          *ngFor="let r of receipts$ | async" 
+          (click)="onSelectReceipt(r.id)"
+          [title]="'فاتورة #' + r.receiptNumber"
+        >
+          <div class="col-no">#{{ r.receiptNumber }}</div>
+          <div class="col-date">{{ formatDate(r.createdAt) }}</div>
+          <div class="col-total">{{ r.finalTotal | number:'1.2-2' }}</div>
+          <div class="col-mode">
+            <span class="badge" [class.badge-cash]="r.paymentMethod === 'CASH'" [class.badge-transfer]="r.paymentMethod === 'TRANSFER'">
+              {{ getPaymentLabel(r.paymentMethod) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="(receipts$ | async)?.length === 0">
+          <p>لا توجد فواتير</p>
+        </div>
+      </div>
+
+      <ng-template #loader>
+        <div class="loader-container">
+          <div class="spinner"></div>
+          <p>جاري التحميل...</p>
+        </div>
+      </ng-template>
+    </div>
+  </aside>
+
+  <!-- ============================= -->
+  <!-- MAIN CONTENT AREA -->
+  <!-- ============================= -->
+  <main class="main-content">
+    
+    <!-- ============================= -->
+    <!-- ACTION BAR -->
+    <!-- ============================= -->
+    <div class="action-bar-container">
+      
+      <!-- Right side: History Toggle -->
+      <div class="side-toggle">
+        <button class="toggle-btn" (click)="onToggleRightSidebar()">
+          <span class="icon">📜</span>
+          <span class="text">الفواتير</span>
+        </button>
+      </div>
+
+      <!-- Main Action Bar (Matching Design Image) -->
+      <div class="main-actions-bar">
+        
+        <!-- Save & Print (Far Right in Group) -->
+        <button class="btn-main-action" (click)="onSaveAndPrint()">
+          <div class="btn-content">
+            <span class="icon">🖨️</span>
+            <span class="text">حفظ وطباعة (F12)</span>
+          </div>
+        </button>
+
+        <!-- Middle Group -->
+        <div class="middle-group">
+          <button class="btn-outline" (click)="onSave()">
+            <span class="text">حفظ</span>
+            <span class="icon">📂</span>
+            <span class="shortcut">(F11)</span>
+          </button>
+
+          <button class="btn-outline" (click)="onEdit()">
+            <span class="text">تعديل</span>
+            <span class="icon">✏️</span>
+            <span class="shortcut">(F2)</span>
+          </button>
+
+          <button class="btn-outline" (click)="onNew()">
+            <span class="text">جديد</span>
+            <span class="icon">➕</span>
+            <span class="shortcut">(F1)</span>
+          </button>
+
+          <button class="btn-outline" (click)="onReturn()">
+            <span class="text">مرتد كاشير</span>
+            <span class="icon">↩️</span>
+            <span class="shortcut">(F8)</span>
+          </button>
+        </div>
+
+        <!-- Drafts Section -->
+        <div class="drafts-section" (click)="onDrafts()">
+          <div class="drafts-card">
+            <div class="badge" *ngIf="draftsCount > 0">{{ draftsCount }}</div>
+            <div class="drafts-info">
+              <span class="title">مسودة</span>
+              <span class="subtitle">يوجد عدد {{ draftsCount }} فواتير لم تحفظ</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Button -->
+        <button class="btn-delete" (click)="onDelete()">
+          <span class="icon">🗑️</span>
+          <span class="text">حذف</span>
+        </button>
+
+      </div>
+
+      <!-- Left side: Navigation Toggle -->
+      <div class="side-toggle">
+        <button class="toggle-btn menu-btn" (click)="onToggleSidebar()">
+          <span class="icon">☰</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ============================= -->
+    <!-- RECEIPT WORKSPACE -->
+    <!-- ============================= -->
+    <div class="receipt-workspace">
+      
+      <!-- ============================= -->
+      <!-- RECEIPT TABLE -->
+      <!-- ============================= -->
+      <div class="table-section">
+        <div class="table-container pos-card">
+          <div class="table-header">
+            <div class="th-cell num-col">#</div>
+            <div class="th-cell code-col">كود الصنف</div>
+            <div class="th-cell name-col">اسم الصنف</div>
+            <div class="th-cell price-col">السعر</div>
+            <div class="th-cell qty-col">الكمية</div>
+            <div class="th-cell total-col">الإجمالي</div>
+            <div class="th-cell balance-col">الرصيد المتبقي</div>
+            <div class="th-cell actions-col">الإجراءات</div>
+          </div>
+
+          <div class="table-body">
+            <div class="table-row" *ngFor="let item of items; let i = index">
+              <div class="td-cell num-col">{{ i + 1 }}</div>
+              <div class="td-cell code-col">{{ item.product?.barcode || '-' }}</div>
+              <div class="td-cell name-col">{{ item.productName }}</div>
+              <div class="td-cell price-col">{{ item.price | number:'1.2-2' }}</div>
+              
+              <div class="td-cell qty-col">
+                <div class="qty-stepper">
+                  <button class="stepper-btn" (click)="onUpdateQuantity({item: item, delta: -1})">-</button>
+                  <div class="qty-value">{{ item.quantity }}</div>
+                  <button class="stepper-btn" (click)="onUpdateQuantity({item: item, delta: 1})">+</button>
+                </div>
+              </div>
+
+              <div class="td-cell total-col fw-bold">{{ item.total | number:'1.2-2' }}</div>
+              <div class="td-cell balance-col">{{ item.remainingStock || 0 }}</div>
+              
+              <div class="td-cell actions-col">
+                <button class="pos-btn-icon-only danger" (click)="onRemoveItem(item.productId)">🗑️</button>
+                <button class="pos-btn-icon-only" (click)="onViewItem(item)">👁️</button>
+              </div>
+            </div>
+            
+            <div class="empty-state" *ngIf="items.length === 0">
+              <p>لا توجد أصناف في الفاتورة الحالية</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================= -->
+        <!-- RECEIPT INPUT ROW -->
+        <!-- ============================= -->
+        <form [formGroup]="inputForm" (ngSubmit)="submitInputRow()" class="input-row pos-card">
+
+          <!-- Empty cell for # column -->
+          <div class="input-cell num-placeholder"></div>
+
+          <!-- Code Search Column -->
+          <div class="input-cell code-cell">
+            <div class="search-wrapper">
+              <input #searchInput type="text" formControlName="barcode" class="pos-input text-center"
+                    placeholder="كود الصنف..." autofocus>
+              <span class="search-icon">🔍</span>
+            </div>
+          </div>
+
+          <!-- Name Display Column -->
+          <div class="input-cell name-cell">
+            <input type="text" class="pos-input text-center" placeholder="اسم الصنف" readonly>
+          </div>
+
+          <!-- Price Column -->
+          <div class="input-cell price-cell">
+            <input type="number" formControlName="price" class="pos-input text-center no-spinner" readonly>
+          </div>
+
+          <!-- Quantity Column -->
+          <div class="input-cell qty-cell">
+            <div class="qty-stepper">
+              <button type="button" class="stepper-btn" (click)="decrementQty()">-</button>
+              <input type="number" formControlName="quantity" class="pos-input text-center no-spinner">
+              <button type="button" class="stepper-btn" (click)="incrementQty()">+</button>
+            </div>
+          </div>
+
+          <!-- Total Column -->
+          <div class="input-cell total-cell">
+            <div class="readonly-value">0.00</div>
+          </div>
+
+          <!-- Empty cell for Balance column -->
+          <div class="input-cell balance-placeholder"></div>
+
+          <!-- Actions Column (Add button) -->
+          <div class="input-actions">
+            <button type="submit" class="pos-btn pos-btn-primary" [disabled]="!inputForm.valid">
+              <span class="submit-text">إضافة</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ============================= -->
+      <!-- TOTALS BAR -->
+      <!-- ============================= -->
+      <div class="totals-bar-container">
+        <div class="totals-row">
+          <div class="total-item label-only">
+            <span class="label">إجمالي الفاتورة</span>
+          </div>
+          
+          <div class="total-item">
+            <span class="label">عدد الأصناف:</span>
+            <span class="value">{{ distinctItemsCount }}</span>
+          </div>
+
+          <div class="total-item">
+            <span class="label">الكمية:</span>
+            <span class="value">{{ totalQuantity }}</span>
+          </div>
+
+          <div class="total-item amount-due">
+            <span class="label">المبلغ المطلوب:</span>
+            <span class="value">
+              <span class="amount">{{ finalTotal | number:'1.2-2' }}</span>
+              <span class="currency">ر.س</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================= -->
+      <!-- RECEIPT INFO CARDS -->
+      <!-- ============================= -->
+      <div class="info-grid">
+        
+        <!-- Invoice Card -->
+        <div class="info-card pos-card">
+          <div class="card-header">
+            <span class="icon">🧾</span>
+            <span class="title">معلومات الفاتورة</span>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">رقم الفاتورة</span>
+              <span class="value">{{ receipt?.receiptNumber || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">تاريخ الفاتورة</span>
+              <span class="value">{{ (receipt?.createdAt || today) | date:'yyyy/MM/dd' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">طريقة الدفع</span>
+              <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Card -->
+        <div class="info-card pos-card">
+          <div class="card-header">
+            <span class="icon">👤</span>
+            <span class="title">معلومات العميل</span>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">اسم العميل</span>
+              <span class="value">{{ receipt?.customer?.name || 'عميل نقدي' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">رقم الهاتف</span>
+              <span class="value">{{ receipt?.customer?.phone || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">العنوان</span>
+              <span class="value">{{ '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cashier Card -->
+        <div class="info-card pos-card">
+          <div class="card-header">
+            <span class="icon">🧑‍💼</span>
+            <span class="title">معلومات الكاشير</span>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">اسم الكاشير</span>
+              <span class="value">{{ receipt?.cashier?.name || 'أحمد محمود' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">رقم الكاشير</span>
+              <span class="value">{{ receipt?.cashier?.id || '1' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">تاريخ وقت الدخول</span>
+              <span class="value">{{ today | date:'yyyy/MM/dd ص - HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================= -->
+  <!-- LEFT SIDEBAR: NAVIGATION -->
+  <!-- ============================= -->
+  <aside class="sidebar">
+    <div class="menu-btn-container">
+      <button class="menu-btn" (click)="onCloseSidebar()">≡</button>
+    </div>
+    
+    <nav class="nav-menu">
+      <ul>
+        <li *ngFor="let item of navItems" [class.active]="item.active">
+          <a href="javascript:void(0)" class="nav-link">
+            <span class="icon">{{ item.icon }}</span>
+            <span class="label">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="user-container">
+      <button class="user-btn">
+        <span class="icon">👤</span>
+        <span class="label">تغيير المستخدم</span>
+      </button>
+    </div>
+  </aside>
+
+</div>
