@@ -58,6 +58,8 @@ export class CashierPageComponentsComponent implements OnInit {
   @Output() viewItem = new EventEmitter<any>();
   @Output() updateQuantity = new EventEmitter<any>();
   @Output() addItem = new EventEmitter<{ barcode: string, quantity: number, price?: number }>();
+  @Output() previousReceipt = new EventEmitter<void>();
+  @Output() nextReceipt = new EventEmitter<void>();
 
   // Form and state
   inputForm!: FormGroup;
@@ -138,6 +140,14 @@ export class CashierPageComponentsComponent implements OnInit {
 
   onDrafts() {
     this.drafts.emit();
+  }
+
+  onPreviousReceipt() {
+    this.previousReceipt.emit();
+  }
+
+  onNextReceipt() {
+    this.nextReceipt.emit();
   }
 
   // Receipt Table Methods

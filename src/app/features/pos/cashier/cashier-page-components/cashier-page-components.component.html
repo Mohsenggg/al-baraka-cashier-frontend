@@ -155,6 +155,68 @@
     <div class="receipt-workspace">
       
       <!-- ============================= -->
+      <!-- RECEIPT NAVIGATION ROW -->
+      <!-- ============================= -->
+      <div class="receipt-navigation-row">
+        <!-- Previous Receipt Button (Right arrow in RTL) -->
+        <button class="nav-btn prev-btn" (click)="onPreviousReceipt()" title="الفاتورة السابقة">
+          <span class="material-icons-outlined">keyboard_arrow_right</span>
+        </button>
+
+        <!-- Receipt Cards Area -->
+        <div class="receipt-cards-area">
+          <!-- Primary Card: Invoice Info -->
+          <div class="info-card pos-card primary-card">
+            <div class="card-header">
+              <span class="material-icons-outlined icon">receipt</span>
+              <span class="title">معلومات الفاتورة</span>
+            </div>
+            <div class="card-body">
+              <div class="info-row">
+                <span class="label">رقم الفاتورة</span>
+                <span class="value fw-bold">{{ receipt?.receiptNumber || '-' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">تاريخ الفاتورة</span>
+                <span class="value">{{ (receipt?.createdAt || today) | date:'yyyy/MM/dd' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">طريقة الدفع</span>
+                <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Card: Customer Info -->
+          <div class="info-card pos-card secondary-card">
+            <div class="card-header">
+              <span class="material-icons-outlined icon">group</span>
+              <span class="title">معلومات العميل</span>
+            </div>
+            <div class="card-body">
+              <div class="info-row">
+                <span class="label">اسم العميل</span>
+                <span class="value">{{ receipt?.customer?.name || 'عميل نقدي' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">رقم الهاتف</span>
+                <span class="value">{{ receipt?.customer?.phone || '-' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">العنوان</span>
+                <span class="value">{{ '-' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Receipt Button (Left arrow in RTL) -->
+        <button class="nav-btn next-btn" (click)="onNextReceipt()" title="الفاتورة التالية">
+          <span class="material-icons-outlined">keyboard_arrow_left</span>
+        </button>
+      </div>
+
+      <!-- ============================= -->
       <!-- RECEIPT TABLE -->
       <!-- ============================= -->
       <div class="table-section">
@@ -287,58 +349,7 @@
         </div>
       </div>
 
-      <!-- ============================= -->
-      <!-- RECEIPT INFO CARDS -->
-      <!-- ============================= -->
-      <div class="info-grid">
-        
-        <!-- Invoice Card -->
-        <div class="info-card pos-card">
-          <div class="card-header">
-            <span class="material-icons-outlined icon">receipt</span>
-            <span class="title">معلومات الفاتورة</span>
-          </div>
-          <div class="card-body">
-            <div class="info-row">
-              <span class="label">رقم الفاتورة</span>
-              <span class="value">{{ receipt?.receiptNumber || '-' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">تاريخ الفاتورة</span>
-              <span class="value">{{ (receipt?.createdAt || today) | date:'yyyy/MM/dd' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">طريقة الدفع</span>
-              <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Customer Card -->
-        <div class="info-card pos-card">
-          <div class="card-header">
-            <span class="material-icons-outlined icon">group</span>
-            <span class="title">معلومات العميل</span>
-          </div>
-          <div class="card-body">
-            <div class="info-row">
-              <span class="label">اسم العميل</span>
-              <span class="value">{{ receipt?.customer?.name || 'عميل نقدي' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">رقم الهاتف</span>
-              <span class="value">{{ receipt?.customer?.phone || '-' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">العنوان</span>
-              <span class="value">{{ '-' }}</span>
-            </div>
-          </div>
-        </div>
-
-
-
-      </div>
 
     </div>
 

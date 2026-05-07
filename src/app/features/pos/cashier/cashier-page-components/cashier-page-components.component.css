@@ -833,12 +833,67 @@
 /* RECEIPT INFO CARDS */
 /* ============================= */
 
-.info-grid {
+/* ============================= */
+/* RECEIPT NAVIGATION & CARDS */
+/* ============================= */
+
+.receipt-navigation-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--pos-spacing-md);
+  margin-bottom: var(--pos-spacing-md);
+  direction: rtl;
+}
+
+.nav-btn {
+  background: white;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius-lg);
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--pos-text-secondary);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.nav-btn:hover {
+  background-color: #f8fafc;
+  color: var(--pos-primary);
+  border-color: #cbd5e1;
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+.nav-btn .material-icons-outlined {
+  font-size: 1.5rem;
+}
+
+.receipt-cards-area {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--pos-spacing-lg);
-  margin-top: var(--pos-spacing-lg);
-  direction: rtl;
+  gap: var(--pos-spacing-md);
+  flex: 1;
+}
+
+.primary-card {
+  border-top: 3px solid var(--pos-primary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.secondary-card {
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  box-shadow: none;
+}
+
+.secondary-card .card-header {
+  color: var(--pos-text-secondary);
 }
 
 .info-card {
@@ -1101,7 +1156,22 @@
     order: 1;
   }
 
-  .info-grid {
+  .receipt-navigation-row {
+    flex-wrap: wrap;
+  }
+  .receipt-cards-area {
+    order: 1;
+    width: 100%;
     grid-template-columns: 1fr;
+  }
+  .prev-btn {
+    order: 2;
+    flex: 1;
+    height: 48px;
+  }
+  .next-btn {
+    order: 3;
+    flex: 1;
+    height: 48px;
   }
 }
