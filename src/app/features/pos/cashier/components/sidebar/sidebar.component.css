@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-left: 1px solid var(--pos-border); /* RTL layout */
+  border-right: 1px solid var(--pos-border); /* Now on the left side in RTL layout */
 }
 
 .menu-btn-container {

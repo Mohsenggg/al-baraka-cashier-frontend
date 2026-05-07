@@ -1,7 +1,7 @@
 <div class="cashier-layout" [class.sidebar-hidden]="!sidebarVisible()">
   
-  <!-- Sidebar -->
-  <app-cashier-sidebar></app-cashier-sidebar>
+  <!-- Right Sidebar: Receipt History -->
+  <app-cashier-receipt-sidebar></app-cashier-receipt-sidebar>
 
   <!-- Main Content Area -->
   <main class="main-content">
@@ -51,4 +51,7 @@
     </div>
 
   </main>
+
+  <!-- Left Sidebar: Main Navigation -->
+  <app-cashier-sidebar></app-cashier-sidebar>
 </div>

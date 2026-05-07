@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, HostListener, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { ReceiptSidebarComponent } from './components/receipt-sidebar/receipt-sidebar.component';
 import { ActionBarComponent } from './components/action-bar/action-bar.component';
 import { ReceiptTableComponent } from './components/receipt-table/receipt-table.component';
 import { ReceiptInputRowComponent } from './components/receipt-input-row/receipt-input-row.component';
@@ -14,6 +15,7 @@ import { ReceiptService } from '../core/services/receipt.service';
   imports: [
     CommonModule,
     SidebarComponent,
+    ReceiptSidebarComponent,
     ActionBarComponent,
     ReceiptTableComponent,
     ReceiptInputRowComponent,

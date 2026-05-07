@@ -1,0 +1,47 @@
+<aside class="receipt-sidebar">
+  <div class="sidebar-header">
+    <h3>سجل الفواتير</h3>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" [formControl]="searchControl" placeholder="بحث برقم الفاتورة...">
+    </div>
+  </div>
+
+  <div class="list-container">
+    <div class="table-header">
+      <div class="col-no">الرقم</div>
+      <div class="col-date">التاريخ</div>
+      <div class="col-total">الإجمالي</div>
+      <div class="col-mode">الدفع</div>
+    </div>
+
+    <div class="receipt-list" *ngIf="!(loading$ | async); else loader">
+      <div 
+        class="receipt-item" 
+        *ngFor="let r of receipts$ | async" 
+        (click)="onSelectReceipt(r.id)"
+        [title]="'فاتورة #' + r.receiptNumber"
+      >
+        <div class="col-no">#{{ r.receiptNumber }}</div>
+        <div class="col-date">{{ formatDate(r.createdAt) }}</div>
+        <div class="col-total">{{ r.finalTotal | number:'1.2-2' }}</div>
+        <div class="col-mode">
+          <span class="badge" [class.badge-cash]="r.paymentMethod === 'CASH'" [class.badge-transfer]="r.paymentMethod === 'TRANSFER'">
+            {{ getPaymentLabel(r.paymentMethod) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="(receipts$ | async)?.length === 0">
+        <p>لا توجد فواتير</p>
+      </div>
+    </div>
+
+    <ng-template #loader>
+      <div class="loader-container">
+        <div class="spinner"></div>
+        <p>جاري التحميل...</p>
+      </div>
+    </ng-template>
+  </div>
+</aside>
