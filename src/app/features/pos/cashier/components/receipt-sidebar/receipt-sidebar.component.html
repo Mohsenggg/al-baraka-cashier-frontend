@@ -1,6 +1,9 @@
 <aside class="receipt-sidebar">
   <div class="sidebar-header">
-    <h3>سجل الفواتير</h3>
+    <div class="header-top">
+      <h3>سجل الفواتير</h3>
+      <button class="close-btn" (click)="close.emit()">×</button>
+    </div>
     <div class="search-box">
       <span class="search-icon">🔍</span>
       <input type="text" [formControl]="searchControl" placeholder="بحث برقم الفاتورة...">

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ReceiptService } from '../../../core/services/receipt.service';
@@ -14,6 +14,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class ReceiptSidebarComponent implements OnInit {
   private receiptService = inject(ReceiptService);
+
+  @Output() close = new EventEmitter<void>();
 
   receipts$ = this.receiptService.receipts$;
   loading$ = this.receiptService.loading$;

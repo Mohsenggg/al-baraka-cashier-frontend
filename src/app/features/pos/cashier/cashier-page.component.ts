@@ -30,6 +30,7 @@ export class CashierPageComponent implements OnInit {
   private receiptService = inject(ReceiptService);
 
   sidebarVisible = signal(false);
+  rightSidebarVisible = signal(true);
 
   // Observable and Signal bindings
   currentReceipt = this.receiptService.currentReceipt;
@@ -67,6 +68,10 @@ export class CashierPageComponent implements OnInit {
 
   onToggleSidebar() {
     this.sidebarVisible.update(v => !v);
+  }
+
+  onToggleRightSidebar() {
+    this.rightSidebarVisible.update(v => !v);
   }
 
   // Receipt Table Events

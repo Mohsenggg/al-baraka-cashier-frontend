@@ -9,6 +9,7 @@ import { Component, ChangeDetectionStrategy, Output, EventEmitter } from '@angul
 })
 export class ActionBarComponent {
   @Output() toggleSidebar = new EventEmitter<void>();
+  @Output() toggleRightSidebar = new EventEmitter<void>();
   @Output() save = new EventEmitter<void>();
   @Output() print = new EventEmitter<void>();
   @Output() new = new EventEmitter<void>();

@@ -1,13 +1,15 @@
 <div class="action-bar-container pos-card">
-  <div class="menu-toggle">
-    <button class="pos-btn-icon-only menu-btn" (click)="toggleSidebar.emit()">
-      <span class="icon">☰</span>
+  
+  <!-- Right side (First in RTL): History Toggle -->
+  <div class="history-toggle">
+    <button class="history-btn" (click)="toggleRightSidebar.emit()">
+      <span class="icon">📜</span>
+      <span class="text">الفواتير</span>
     </button>
   </div>
 
+  <!-- Middle: Actions -->
   <div class="actions-group">
-    <div class="quick-actions-title">إجراءات سريعة</div>
-    
     <div class="buttons-container">
       <button class="action-btn primary-solid" (click)="print.emit()">
         <span class="icon">🖨️</span>
@@ -38,18 +40,14 @@
         <span class="text">حذف</span>
         <span class="shortcut">F5</span>
       </button>
-
-      <button class="action-btn outline more-btn">
-        <span class="icon">...</span>
-        <span class="text">المزيد</span>
-      </button>
     </div>
   </div>
 
-  <div class="cashier-indicator">
-    <button class="cashier-btn">
-      <span class="icon">🛒</span>
-      <span class="text">الكاشير</span>
+  <!-- Left side (Last in RTL): Navigation Toggle -->
+  <div class="menu-toggle">
+    <button class="pos-btn-icon-only menu-btn" (click)="toggleSidebar.emit()">
+      <span class="icon">☰</span>
     </button>
   </div>
+
 </div>

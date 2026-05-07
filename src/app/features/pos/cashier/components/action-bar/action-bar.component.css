@@ -4,23 +4,55 @@
   align-items: center;
   padding: var(--pos-spacing-sm) var(--pos-spacing-md);
   margin-bottom: var(--pos-spacing-md);
+  background: white;
+  border-radius: var(--pos-radius-lg);
+  box-shadow: var(--pos-shadow-sm);
+}
+
+.history-toggle, .menu-toggle {
+  flex: 0 0 120px;
+}
+
+.menu-toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.history-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--pos-spacing-sm);
+  padding: var(--pos-spacing-sm) var(--pos-spacing-lg);
+  background: #f8fafc;
+  border: 1px solid var(--pos-border);
+  color: var(--pos-text-primary);
+  border-radius: var(--pos-radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history-btn:hover {
+  background-color: #f1f5f9;
+  border-color: var(--pos-primary);
+  color: var(--pos-primary);
+}
+
+.history-btn .icon {
+  font-size: 1.1rem;
 }
 
 .actions-group {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: var(--pos-spacing-lg);
-}
-
-.quick-actions-title {
-  font-weight: 600;
-  color: var(--pos-text-secondary);
-  font-size: 0.875rem;
+  justify-content: center;
 }
 
 .buttons-container {
   display: flex;
-  gap: var(--pos-spacing-sm);
+  gap: var(--pos-spacing-md);
 }
 
 .action-btn {
@@ -28,14 +60,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--pos-spacing-xs) var(--pos-spacing-md);
+  padding: 6px 16px;
   border-radius: var(--pos-radius-md);
   border: 1px solid transparent;
-  background: white;
-  min-width: 80px;
+  background: #fff;
+  min-width: 85px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .action-btn .icon {
@@ -44,14 +81,15 @@
 }
 
 .action-btn .text {
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .action-btn .shortcut {
   font-size: 0.7rem;
-  opacity: 0.8;
+  opacity: 0.6;
   margin-top: 2px;
+  font-weight: 500;
 }
 
 .primary-solid {
@@ -71,37 +109,34 @@
 }
 
 .danger-light {
-  background-color: var(--pos-danger);
-  color: var(--pos-danger-text);
-  border-color: var(--pos-danger);
+  background-color: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
 }
 .danger-light:hover {
-  background-color: var(--pos-danger-hover);
+  background-color: #ffe4e6;
+  border-color: #fb7185;
 }
 
-.more-btn .icon {
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-.more-btn .shortcut {
-  display: none;
-}
-
-.cashier-indicator {
-  display: flex;
-}
-
-.cashier-btn {
+.menu-btn {
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
-  gap: var(--pos-spacing-sm);
-  padding: var(--pos-spacing-sm) var(--pos-spacing-xl);
-  background: transparent;
-  border: 1px solid var(--pos-primary);
-  color: var(--pos-primary);
+  justify-content: center;
   border-radius: var(--pos-radius-md);
-  font-weight: 600;
-  font-size: 1rem;
-  font-family: inherit;
-  background-color: #eff6ff; /* light blue */
+  background: #f8fafc;
+  border: 1px solid var(--pos-border);
+  color: var(--pos-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.menu-btn:hover {
+  background-color: #f1f5f9;
+  color: var(--pos-primary);
+}
+
+.menu-btn .icon {
+  font-size: 1.4rem;
 }

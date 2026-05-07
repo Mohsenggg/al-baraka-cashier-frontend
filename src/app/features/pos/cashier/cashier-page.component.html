@@ -1,7 +1,9 @@
-<div class="cashier-layout" [class.sidebar-hidden]="!sidebarVisible()">
+<div class="cashier-layout" [class.sidebar-hidden]="!sidebarVisible()" [class.right-sidebar-hidden]="!rightSidebarVisible()">
   
   <!-- Right Sidebar: Receipt History -->
-  <app-cashier-receipt-sidebar></app-cashier-receipt-sidebar>
+  <app-cashier-receipt-sidebar
+    (close)="onToggleRightSidebar()">
+  </app-cashier-receipt-sidebar>
 
   <!-- Main Content Area -->
   <main class="main-content">
@@ -9,6 +11,7 @@
     <!-- Top Action Bar -->
     <app-cashier-action-bar
       (toggleSidebar)="onToggleSidebar()"
+      (toggleRightSidebar)="onToggleRightSidebar()"
       (save)="onSave()"
       (print)="onPrint()"
       (new)="onNew()"
@@ -53,5 +56,7 @@
   </main>
 
   <!-- Left Sidebar: Main Navigation -->
-  <app-cashier-sidebar></app-cashier-sidebar>
+  <app-cashier-sidebar
+    (close)="onToggleSidebar()">
+  </app-cashier-sidebar>
 </div>
