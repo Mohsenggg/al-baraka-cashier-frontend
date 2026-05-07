@@ -434,46 +434,60 @@
 /* Drafts Section */
 .drafts-section {
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .drafts-card {
   background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 12px;
-  padding: 6px 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 0 16px;
+  height: 48px;
   display: flex;
   align-items: center;
   position: relative;
+  transition: all 0.2s ease;
+}
+
+.drafts-card:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
 
 .drafts-card .badge {
   position: absolute;
-  top: -8px;
-  right: 8px;
-  background: var(--pos-danger);
+  top: -6px;
+  left: -6px; /* Position on the top-left edge */
+  background-color: var(--pos-danger-text); /* Use bright red instead of light red */
   color: white;
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+  z-index: 2;
 }
 
 .drafts-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 8px;
+  justify-content: center;
 }
 
 .drafts-info .title {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  color: var(--pos-text-primary);
+  line-height: 1.2;
 }
 
 .drafts-info .subtitle {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--pos-text-secondary);
 }
 
