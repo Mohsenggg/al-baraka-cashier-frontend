@@ -67,12 +67,12 @@ export class CashierPageComponentsComponent implements OnInit {
 
   // Sidebar navigation items
   navItems = [
-    { label: 'الكاشير', icon: '🛒', active: true },
-    { label: 'إدارة المخزون', icon: '📦', active: false },
-    { label: 'إدارة المشتريات', icon: '🛒', active: false },
-    { label: 'تقارير المبيعات', icon: '📊', active: false },
-    { label: 'أدوات الطباعة', icon: '🖨️', active: false },
-    { label: 'الإعدادات', icon: '⚙️', active: false }
+    { label: 'الكاشير', icon: 'point_of_sale', active: true },
+    { label: 'إدارة المخزون', icon: 'inventory_2', active: false },
+    { label: 'إدارة المشتريات', icon: 'shopping_cart', active: false },
+    { label: 'تقارير المبيعات', icon: 'bar_chart', active: false },
+    { label: 'أدوات الطباعة', icon: 'print', active: false },
+    { label: 'الإعدادات', icon: 'settings', active: false }
   ];
 
   get today() {
