@@ -265,7 +265,7 @@
         <!-- ============================= -->
         <!-- RECEIPT INPUT ROW -->
         <!-- ============================= -->
-        <form [formGroup]="inputForm" (ngSubmit)="submitInputRow()" class="input-row pos-card">
+        <form [formGroup]="inputForm" (ngSubmit)="submitInputRow()" class="input-row">
 
           <!-- Empty cell for # column -->
           <div class="input-cell num-placeholder"></div>
@@ -273,34 +273,38 @@
           <!-- Code Search Column -->
           <div class="input-cell code-cell">
             <div class="search-wrapper">
-              <input #searchInput type="text" formControlName="barcode" class="pos-input text-center"
-                    placeholder="كود الصنف..." autofocus>
-              <span class="material-icons-outlined search-icon">search</span>
+              <input #searchInput type="text" formControlName="barcode" class="pos-input text-center barcode-input"
+                    placeholder="كود الصنف (باركود)..." autofocus>
+              <span class="material-icons-outlined search-icon">qr_code_scanner</span>
             </div>
           </div>
 
           <!-- Name Display Column -->
           <div class="input-cell name-cell">
-            <input type="text" class="pos-input text-center" placeholder="اسم الصنف" readonly>
+            <input type="text" class="pos-input text-center readonly-input" placeholder="اسم الصنف" readonly>
           </div>
 
           <!-- Price Column -->
           <div class="input-cell price-cell">
-            <input type="number" formControlName="price" class="pos-input text-center no-spinner" readonly>
+            <input type="number" formControlName="price" class="pos-input text-center no-spinner readonly-input" readonly placeholder="0.00">
           </div>
 
           <!-- Quantity Column -->
           <div class="input-cell qty-cell">
-            <div class="qty-stepper">
-              <button type="button" class="stepper-btn" (click)="decrementQty()">-</button>
-              <input type="number" formControlName="quantity" class="pos-input text-center no-spinner">
-              <button type="button" class="stepper-btn" (click)="incrementQty()">+</button>
+            <div class="qty-stepper active-stepper">
+              <button type="button" class="stepper-btn" (click)="decrementQty()">
+                <span class="material-icons-outlined">remove</span>
+              </button>
+              <input type="number" formControlName="quantity" class="pos-input text-center no-spinner qty-input">
+              <button type="button" class="stepper-btn" (click)="incrementQty()">
+                <span class="material-icons-outlined">add</span>
+              </button>
             </div>
           </div>
 
           <!-- Total Column -->
           <div class="input-cell total-cell">
-            <div class="readonly-value">0.00</div>
+            <div class="readonly-value total-value">0.00</div>
           </div>
 
           <!-- Empty cell for Balance column -->
@@ -308,7 +312,8 @@
 
           <!-- Actions Column (Add button) -->
           <div class="input-actions">
-            <button type="submit" class="pos-btn pos-btn-primary" [disabled]="!inputForm.valid">
+            <button type="submit" class="pos-btn pos-btn-primary add-btn" [disabled]="!inputForm.valid">
+              <span class="material-icons-outlined">keyboard_return</span>
               <span class="submit-text">إضافة</span>
             </button>
           </div>
