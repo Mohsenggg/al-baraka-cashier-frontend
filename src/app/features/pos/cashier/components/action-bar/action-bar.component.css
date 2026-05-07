@@ -1,0 +1,107 @@
+.action-bar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--pos-spacing-sm) var(--pos-spacing-md);
+  margin-bottom: var(--pos-spacing-md);
+}
+
+.actions-group {
+  display: flex;
+  align-items: center;
+  gap: var(--pos-spacing-lg);
+}
+
+.quick-actions-title {
+  font-weight: 600;
+  color: var(--pos-text-secondary);
+  font-size: 0.875rem;
+}
+
+.buttons-container {
+  display: flex;
+  gap: var(--pos-spacing-sm);
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pos-spacing-xs) var(--pos-spacing-md);
+  border-radius: var(--pos-radius-md);
+  border: 1px solid transparent;
+  background: white;
+  min-width: 80px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.action-btn .icon {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.action-btn .text {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.action-btn .shortcut {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.primary-solid {
+  background-color: var(--pos-primary);
+  color: white;
+}
+.primary-solid:hover {
+  background-color: var(--pos-primary-hover);
+}
+
+.outline {
+  border-color: var(--pos-border);
+  color: var(--pos-text-primary);
+}
+.outline:hover {
+  background-color: #f9fafb;
+}
+
+.danger-light {
+  background-color: var(--pos-danger);
+  color: var(--pos-danger-text);
+  border-color: var(--pos-danger);
+}
+.danger-light:hover {
+  background-color: var(--pos-danger-hover);
+}
+
+.more-btn .icon {
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.more-btn .shortcut {
+  display: none;
+}
+
+.cashier-indicator {
+  display: flex;
+}
+
+.cashier-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--pos-spacing-sm);
+  padding: var(--pos-spacing-sm) var(--pos-spacing-xl);
+  background: transparent;
+  border: 1px solid var(--pos-primary);
+  color: var(--pos-primary);
+  border-radius: var(--pos-radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: #eff6ff; /* light blue */
+}

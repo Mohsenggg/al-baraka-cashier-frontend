@@ -1,0 +1,68 @@
+.cashier-layout {
+  display: flex;
+  height: 100vh;
+  background-color: var(--pos-bg);
+  overflow: hidden;
+  direction: rtl;
+}
+
+app-cashier-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.sidebar-hidden app-cashier-sidebar {
+  margin-right: -240px;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--pos-spacing-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.receipt-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pos-spacing-md);
+  overflow-y: auto;
+  padding-bottom: var(--pos-spacing-xl);
+}
+
+.table-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 400px;
+}
+
+app-cashier-receipt-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Tablet responsiveness */
+@media (max-width: 1024px) {
+  .cashier-layout {
+    flex-direction: column;
+  }
+  
+  app-cashier-sidebar {
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-bottom: 1px solid var(--pos-border);
+  }
+  
+  .main-content {
+    padding: var(--pos-spacing-sm);
+  }
+}

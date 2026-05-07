@@ -1,0 +1,69 @@
+<div class="info-grid">
+  
+  <!-- Invoice Card -->
+  <div class="info-card pos-card">
+    <div class="card-header">
+      <span class="icon">🧾</span>
+      <span class="title">معلومات الفاتورة</span>
+    </div>
+    <div class="card-body">
+      <div class="info-row">
+        <span class="label">رقم الفاتورة</span>
+        <span class="value">{{ receipt?.receiptNumber || '-' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">تاريخ الفاتورة</span>
+        <span class="value">{{ (receipt?.createdAt || today) | date:'yyyy/MM/dd' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">طريقة الدفع</span>
+        <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Card -->
+  <div class="info-card pos-card">
+    <div class="card-header">
+      <span class="icon">👤</span>
+      <span class="title">معلومات العميل</span>
+    </div>
+    <div class="card-body">
+      <div class="info-row">
+        <span class="label">اسم العميل</span>
+        <span class="value">{{ receipt?.customer?.name || 'عميل نقدي' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">رقم الهاتف</span>
+        <span class="value">{{ receipt?.customer?.phone || '-' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">العنوان</span>
+        <span class="value">{{ '-' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cashier Card -->
+  <div class="info-card pos-card">
+    <div class="card-header">
+      <span class="icon">🧑‍💼</span>
+      <span class="title">معلومات الكاشير</span>
+    </div>
+    <div class="card-body">
+      <div class="info-row">
+        <span class="label">اسم الكاشير</span>
+        <span class="value">{{ receipt?.cashier?.name || 'أحمد محمود' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">رقم الكاشير</span>
+        <span class="value">{{ receipt?.cashier?.id || '1' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">تاريخ وقت الدخول</span>
+        <span class="value">{{ today | date:'yyyy/MM/dd ص - HH:mm' }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>

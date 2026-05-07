@@ -1,0 +1,123 @@
+.input-row {
+  display: flex;
+  align-items: center; /* center vertically */
+  gap: 0;
+  padding: var(--pos-spacing-sm) var(--pos-spacing-md);
+  background-color: #eff6ff;
+  border: 1px solid var(--pos-border);
+  direction: rtl;
+  margin-top: -1px;
+}
+
+.input-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pos-spacing-xs);
+  flex: 1;
+}
+
+.num-placeholder     { flex: 0.4; }
+.code-cell           { flex: 1.2; }
+.name-cell           { flex: 2; }
+.price-cell          { flex: 1; }
+.qty-cell            { flex: 1.2; }
+.total-cell          { flex: 1; }
+.balance-placeholder { flex: 1; }
+.input-actions       { flex: 0.8; display: flex; align-items: center; }
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--pos-text-secondary);
+  font-size: 0.9rem;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius-md);
+  background: white;
+  overflow: hidden;
+}
+
+.qty-stepper .pos-input {
+  border: none;
+  border-radius: 0;
+  padding: var(--pos-spacing-sm) 0;
+  width: 50px;
+  border-left: 1px solid var(--pos-border);
+  border-right: 1px solid var(--pos-border);
+}
+
+.stepper-btn {
+  background: transparent;
+  border: none;
+  width: 30px;
+  height: 38px;
+  color: var(--pos-primary);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepper-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Hide number input spinner */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-spinner[type=number] {
+  -moz-appearance: textfield;
+}
+
+.readonly-value {
+  padding: var(--pos-spacing-sm) var(--pos-spacing-md);
+  background: white;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--pos-radius-md);
+  text-align: center;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--pos-text-primary);
+  box-sizing: border-box;
+}
+
+.input-actions {
+  display: flex;
+  align-items: center;
+}
+
+.input-actions .pos-btn {
+  padding: var(--pos-spacing-sm) var(--pos-spacing-xl);
+}
+
+.submit-text {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.submit-hint {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}

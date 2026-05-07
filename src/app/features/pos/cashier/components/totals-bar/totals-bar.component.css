@@ -1,0 +1,53 @@
+.totals-bar-container {
+  background-color: var(--pos-success-bg);
+  border-radius: var(--pos-radius-md);
+  padding: var(--pos-spacing-sm) var(--pos-spacing-lg);
+  margin-top: var(--pos-spacing-sm);
+  border: 1px solid rgba(4, 120, 87, 0.1);
+  direction: rtl;
+}
+
+.totals-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pos-spacing-xl);
+}
+
+.total-item {
+  display: flex;
+  align-items: center;
+  gap: var(--pos-spacing-sm);
+}
+
+.total-item .label {
+  color: var(--pos-success-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.total-item .value {
+  color: var(--pos-text-primary);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.label-only .label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.amount-due .value {
+  font-size: 1.5rem;
+  color: var(--pos-success-text);
+  background: white;
+  padding: 4px 16px;
+  border-radius: var(--pos-radius-md);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.currency {
+  font-size: 0.75rem;
+  margin-right: 4px;
+}

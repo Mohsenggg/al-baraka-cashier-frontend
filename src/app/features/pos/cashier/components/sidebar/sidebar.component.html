@@ -1,0 +1,23 @@
+<aside class="sidebar">
+  <div class="menu-btn-container">
+    <button class="menu-btn">≡</button>
+  </div>
+  
+  <nav class="nav-menu">
+    <ul>
+      <li *ngFor="let item of navItems" [class.active]="item.active">
+        <a href="javascript:void(0)" class="nav-link">
+          <span class="icon">{{ item.icon }}</span>
+          <span class="label">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="user-container">
+    <button class="user-btn">
+      <span class="icon">👤</span>
+      <span class="label">تغيير المستخدم</span>
+    </button>
+  </div>
+</aside>

@@ -1,0 +1,54 @@
+<div class="cashier-layout" [class.sidebar-hidden]="!sidebarVisible()">
+  
+  <!-- Sidebar -->
+  <app-cashier-sidebar></app-cashier-sidebar>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    
+    <!-- Top Action Bar -->
+    <app-cashier-action-bar
+      (toggleSidebar)="onToggleSidebar()"
+      (save)="onSave()"
+      (print)="onPrint()"
+      (new)="onNew()"
+      (edit)="onEdit()"
+      (delete)="onDelete()">
+    </app-cashier-action-bar>
+
+    <!-- Receipt Area container -->
+    <div class="receipt-workspace">
+      
+      <!-- Middle: Table and Input Row -->
+      <div class="table-section">
+        <app-cashier-receipt-table
+          [items]="[]" 
+          (removeItem)="onRemoveItem($event)"
+          (viewItem)="onViewItem($event)"
+          (updateQuantity)="onUpdateQuantity($event)">
+        </app-cashier-receipt-table>
+        
+        <app-cashier-receipt-input-row
+          (add)="onAddItem($event)">
+        </app-cashier-receipt-input-row>
+      </div>
+
+      <!-- Bottom: Totals -->
+      <app-cashier-totals-bar
+        [finalTotal]="0"
+        [totalQuantity]="0"
+        [distinctItemsCount]="0"
+        [totalDiscount]="0"
+        [tax]="0"
+        [subtotal]="0">
+      </app-cashier-totals-bar>
+
+      <!-- Bottom: Info Cards -->
+      <app-cashier-receipt-info
+        [receipt]="currentReceipt()">
+      </app-cashier-receipt-info>
+
+    </div>
+
+  </main>
+</div>
