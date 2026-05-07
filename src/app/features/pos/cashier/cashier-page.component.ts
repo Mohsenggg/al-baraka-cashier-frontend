@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CashierPageComponentsComponent } from './cashier-page-components/cashier-page-components.component';
 import { ReceiptService } from '../core/services/receipt.service';
@@ -95,18 +95,7 @@ export class CashierPageComponent implements OnInit {
     console.log('Add item', event);
     // Implement add item logic
   }
-}
 
-  onUpdateQuantity(event: {item: any, delta: number}) {
-     // TODO: Implement actual update via service, currently the service adds quantity via addItemToDraftByBarcode
-  }
-
-  // Input Row Events
-  onAddItem(item: {barcode: string, quantity: number, price?: number, discount?: number}) {
-    this.receiptService.addItemToDraftByBarcode(item.barcode, item.quantity);
-  }
-
-  // Keyboard Shortcuts
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     switch (event.key) {
@@ -130,7 +119,7 @@ export class CashierPageComponent implements OnInit {
         event.preventDefault();
         this.onSaveAndPrint();
         break;
-      case 'F5': // keeping delete as F5 as it was before, or user can specify
+      case 'F5':
         event.preventDefault();
         this.onDelete();
         break;

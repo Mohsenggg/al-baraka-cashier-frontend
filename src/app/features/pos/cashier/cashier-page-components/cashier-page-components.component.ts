@@ -13,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ReceiptService } from '../../core/services/receipt.service';
-import { ReceiptResponse, ReceiptItemResponse } from '../../core/models/pos.models';
+import { ReceiptResponse } from '../../core/models/pos.models';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
@@ -31,7 +31,7 @@ export class CashierPageComponentsComponent implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   // Input properties
-  @Input() items: ReceiptItemResponse[] = [];
+  @Input() items: any[] = [];
   @Input() receipt: ReceiptResponse | null = null;
   @Input() finalTotal: number = 0;
   @Input() totalQuantity: number = 0;
@@ -55,8 +55,8 @@ export class CashierPageComponentsComponent implements OnInit {
   @Output() return = new EventEmitter<void>();
   @Output() drafts = new EventEmitter<void>();
   @Output() removeItem = new EventEmitter<number>();
-  @Output() viewItem = new EventEmitter<ReceiptItemResponse>();
-  @Output() updateQuantity = new EventEmitter<{item: ReceiptItemResponse, delta: number}>();
+  @Output() viewItem = new EventEmitter<any>();
+  @Output() updateQuantity = new EventEmitter<any>();
   @Output() addItem = new EventEmitter<{ barcode: string, quantity: number, price?: number }>();
 
   // Form and state
@@ -145,11 +145,11 @@ export class CashierPageComponentsComponent implements OnInit {
     this.removeItem.emit(productId);
   }
 
-  onViewItem(item: ReceiptItemResponse) {
+  onViewItem(item: any) {
     this.viewItem.emit(item);
   }
 
-  onUpdateQuantity(event: {item: ReceiptItemResponse, delta: number}) {
+  onUpdateQuantity(event: any) {
     this.updateQuantity.emit(event);
   }
 
