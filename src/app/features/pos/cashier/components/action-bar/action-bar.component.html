@@ -1,51 +1,73 @@
-<div class="action-bar-container pos-card">
+<div class="action-bar-container">
   
-  <!-- Right side (First in RTL): History Toggle -->
-  <div class="history-toggle">
-    <button class="history-btn" (click)="toggleRightSidebar.emit()">
+  <!-- Right side: History Toggle -->
+  <div class="side-toggle">
+    <button class="toggle-btn" (click)="toggleRightSidebar.emit()">
       <span class="icon">📜</span>
       <span class="text">الفواتير</span>
     </button>
   </div>
 
-  <!-- Middle: Actions -->
-  <div class="actions-group">
-    <div class="buttons-container">
-      <button class="action-btn primary-solid" (click)="print.emit()">
+  <!-- Main Action Bar (Matching Design Image) -->
+  <div class="main-actions-bar">
+    
+    <!-- Save & Print (Far Right in Group) -->
+    <button class="btn-main-action" (click)="saveAndPrint.emit()">
+      <div class="btn-content">
         <span class="icon">🖨️</span>
-        <span class="text">طباعة</span>
-        <span class="shortcut">F9</span>
-      </button>
+        <span class="text">حفظ وطباعة (F12)</span>
+      </div>
+    </button>
 
-      <button class="action-btn outline" (click)="save.emit()">
-        <span class="icon">💾</span>
+    <!-- Middle Group -->
+    <div class="middle-group">
+      <button class="btn-outline" (click)="save.emit()">
         <span class="text">حفظ</span>
-        <span class="shortcut">F2</span>
+        <span class="icon">📂</span>
+        <span class="shortcut">(F11)</span>
       </button>
 
-      <button class="action-btn outline" (click)="new.emit()">
-        <span class="icon">➕</span>
-        <span class="text">جديد</span>
-        <span class="shortcut">F3</span>
-      </button>
-
-      <button class="action-btn outline" (click)="edit.emit()">
-        <span class="icon">✏️</span>
+      <button class="btn-outline" (click)="edit.emit()">
         <span class="text">تعديل</span>
-        <span class="shortcut">F4</span>
+        <span class="icon">✏️</span>
+        <span class="shortcut">(F2)</span>
       </button>
 
-      <button class="action-btn danger-light" (click)="delete.emit()">
-        <span class="icon">🗑️</span>
-        <span class="text">حذف</span>
-        <span class="shortcut">F5</span>
+      <button class="btn-outline" (click)="new.emit()">
+        <span class="text">جديد</span>
+        <span class="icon">➕</span>
+        <span class="shortcut">(F1)</span>
+      </button>
+
+      <button class="btn-outline" (click)="return.emit()">
+        <span class="text">مرتد كاشير</span>
+        <span class="icon">↩️</span>
+        <span class="shortcut">(F8)</span>
       </button>
     </div>
+
+    <!-- Drafts Section -->
+    <div class="drafts-section" (click)="drafts.emit()">
+      <div class="drafts-card">
+        <div class="badge" *ngIf="draftsCount > 0">{{ draftsCount }}</div>
+        <div class="drafts-info">
+          <span class="title">مسودة</span>
+          <span class="subtitle">يوجد عدد {{ draftsCount }} فواتير لم تحفظ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Button -->
+    <button class="btn-delete" (click)="delete.emit()">
+      <span class="icon">🗑️</span>
+      <span class="text">حذف</span>
+    </button>
+
   </div>
 
-  <!-- Left side (Last in RTL): Navigation Toggle -->
-  <div class="menu-toggle">
-    <button class="pos-btn-icon-only menu-btn" (click)="toggleSidebar.emit()">
+  <!-- Left side: Navigation Toggle -->
+  <div class="side-toggle">
+    <button class="toggle-btn menu-btn" (click)="toggleSidebar.emit()">
       <span class="icon">☰</span>
     </button>
   </div>

@@ -30,7 +30,7 @@ export class CashierPageComponent implements OnInit {
   private receiptService = inject(ReceiptService);
 
   sidebarVisible = signal(false);
-  rightSidebarVisible = signal(true);
+  rightSidebarVisible = signal(false);
 
   // Observable and Signal bindings
   currentReceipt = this.receiptService.currentReceipt;
@@ -44,6 +44,11 @@ export class CashierPageComponent implements OnInit {
   onSave() {
     console.log('Save triggered');
     // Implement save logic via receiptService
+  }
+
+  onSaveAndPrint() {
+    console.log('Save and Print triggered');
+    // Implement save and print logic
   }
 
   onPrint() {
@@ -64,6 +69,16 @@ export class CashierPageComponent implements OnInit {
   onDelete() {
     console.log('Delete triggered');
     // Implement delete logic
+  }
+
+  onReturn() {
+    console.log('Return triggered');
+    // Implement return logic
+  }
+
+  onDrafts() {
+    console.log('Drafts triggered');
+    // Implement drafts view
   }
 
   onToggleSidebar() {
@@ -96,25 +111,29 @@ export class CashierPageComponent implements OnInit {
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     switch (event.key) {
-      case 'F2':
-        event.preventDefault();
-        this.onSave();
-        break;
-      case 'F3':
+      case 'F1':
         event.preventDefault();
         this.onNew();
         break;
-      case 'F4':
+      case 'F2':
         event.preventDefault();
         this.onEdit();
         break;
-      case 'F5':
+      case 'F8':
+        event.preventDefault();
+        this.onReturn();
+        break;
+      case 'F11':
+        event.preventDefault();
+        this.onSave();
+        break;
+      case 'F12':
+        event.preventDefault();
+        this.onSaveAndPrint();
+        break;
+      case 'F5': // keeping delete as F5 as it was before, or user can specify
         event.preventDefault();
         this.onDelete();
-        break;
-      case 'F9':
-        event.preventDefault();
-        this.onPrint();
         break;
     }
   }

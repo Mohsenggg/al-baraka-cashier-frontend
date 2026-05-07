@@ -13,10 +13,14 @@
       (toggleSidebar)="onToggleSidebar()"
       (toggleRightSidebar)="onToggleRightSidebar()"
       (save)="onSave()"
+      (saveAndPrint)="onSaveAndPrint()"
       (print)="onPrint()"
       (new)="onNew()"
       (edit)="onEdit()"
-      (delete)="onDelete()">
+      (delete)="onDelete()"
+      (return)="onReturn()"
+      (drafts)="onDrafts()"
+      [draftsCount]="5">
     </app-cashier-action-bar>
 
     <!-- Receipt Area container -->
