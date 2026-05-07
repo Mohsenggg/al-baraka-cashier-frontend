@@ -1,0 +1,52 @@
+<div class="login-container" dir="rtl">
+      <div class="login-card">
+            <div class="login-header">
+                  <h2>مرحباً بعودتك</h2>
+                  <p>الرجاء تسجيل الدخول إلى حسابك</p>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+                  <div class="form-group">
+                        <label for="username">اسم المستخدم</label>
+                        <input type="text" id="username" formControlName="username" placeholder="أدخل اسم المستخدم"
+                              [class.error]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" />
+                        <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+                              class="error-message">
+                              <span *ngIf="loginForm.get('username')?.errors?.['required']">اسم المستخدم مطلوب</span>
+                        </div>
+                  </div>
+
+                  <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <input type="password" id="password" formControlName="password" placeholder="أدخل كلمة المرور"
+                              [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+                        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                              class="error-message">
+                              <span *ngIf="loginForm.get('password')?.errors?.['required']">كلمة المرور مطلوبة</span>
+                        </div>
+                  </div>
+
+                  <div class="remember-me">
+                        <input type="checkbox" id="rememberMe" formControlName="rememberMe" />
+                        <label for="rememberMe">تذكرني</label>
+                  </div>
+
+                  <button type="submit" class="login-btn" [disabled]="loginForm.invalid || isLoading">
+                        <span *ngIf="!isLoading">تسجيل الدخول</span>
+                        <span *ngIf="isLoading">جاري تسجيل الدخول...</span>
+                  </button>
+
+                  <div *ngIf="errorMessage" class="error-message server-error">
+                        {{ errorMessage }}
+                  </div>
+            </form>
+
+            <div class="login-footer">
+                  <p>
+                        ليس لديك حساب؟
+                        <a routerLink="/register" class="register-link">إنشاء حساب</a>
+                  </p>
+                  <a routerLink="/forgot-password" class="forgot-password">نسيت كلمة المرور؟</a>
+            </div>
+      </div>
+</div>

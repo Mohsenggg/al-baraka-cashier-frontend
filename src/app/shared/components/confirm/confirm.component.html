@@ -1,0 +1,15 @@
+<div class="confirm-overlay" *ngIf="show" (click)="onCancel()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">
+      ⚠️
+    </div>
+    <div class="confirm-content">
+      <h3>تأكيد (Confirm)</h3>
+      <p>{{ message }}</p>
+    </div>
+    <div class="confirm-actions">
+      <button class="confirm-btn cancel" (click)="onCancel()">إلغاء (Cancel)</button>
+      <button class="confirm-btn proceed" (click)="onConfirm()">تأكيد (Proceed)</button>
+    </div>
+  </div>
+</div>

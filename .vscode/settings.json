@@ -1,0 +1,33 @@
+{
+  // Global editor settings
+  "editor.tabSize": 4,
+  "editor.detectIndentation": false, // Disable auto-detection
+  "editor.insertSpaces": true, // Ensure spaces instead of tabs (if needed)
+  "editor.defaultFormatter": null, // Disable forced formatting
+
+  // Language-specific overrides (add your languages)
+  "[javascript]": {
+    "editor.tabSize": 6
+  },
+  "[typescript]": {
+    "editor.tabSize": 6
+  },
+  "[python]": {
+    "editor.tabSize": 6
+  },
+  "[json]": {
+    "editor.tabSize": 6
+  },
+  "[html]": {
+    "editor.tabSize": 6
+  },
+  "[css]": {
+    "editor.tabSize": 6
+  },
+
+  // Extension-specific fixes (if using Prettier/ESLint)
+  "prettier.tabWidth": 6,
+  "eslint.options": {
+    "tabWidth": 6
+  }
+}

@@ -1,0 +1,182 @@
+/* Shared Design System for Tree Panels (Edit & Invitation) */
+
+:root {
+    --panel-bg: #ffffff;
+    --panel-border: #e0e0e0;
+    --panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --primary-green: #005F02;
+    --gold-accent: #e5cb85;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --input-bg: #fdfdfd;
+    --input-border: #dddddd;
+    --radius-lg: 16px;
+    --radius-md: 8px;
+    --font-family: 'Tajawal', 'Almarai', 'Cairo', sans-serif;
+}
+
+.modern-panel {
+    background: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--panel-shadow);
+    border: 1px solid var(--panel-border);
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow: hidden;
+    direction: rtl;
+    position: absolute;
+    font-family: var(--font-family);
+    animation: panelSlideIn 0.3s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+@keyframes panelSlideIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modern-panel.mobile-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1001;
+    width: 90%;
+    max-width: 360px;
+}
+
+.panel-header {
+    padding: 20px;
+    background: #fcfcfc;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+}
+
+.panel-header h3 {
+    margin: 0;
+    color: var(--primary-green);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.panel-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Form Styling */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    padding-right: 4px;
+}
+
+.modern-input {
+    height: 42px;
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    background: var(--input-bg);
+    transition: all 0.2s ease;
+    color: var(--text-main);
+}
+
+.modern-input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 95, 2, 0.1);
+}
+
+.modern-input:disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Button Grouping */
+.panel-actions {
+    padding: 16px 20px 24px;
+    display: flex;
+    gap: 12px;
+}
+
+.btn-modern {
+    flex: 1;
+    height: 44px;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary-green);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #007a03;
+    transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: #f0f0f0;
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background: #e5e5e5;
+}
+
+/* Arrows */
+.panel-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    z-index: -1;
+}
+
+.panel-pos-right .panel-arrow {
+    left: -10px;
+    top: 30px;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent var(--panel-bg) transparent transparent;
+}
+
+.panel-pos-left .panel-arrow {
+    right: -10px;
+    top: 30px;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent var(--panel-bg);
+}
+
+.panel-pos-center .panel-arrow {
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent var(--panel-bg) transparent;
+}

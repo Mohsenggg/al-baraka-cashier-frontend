@@ -1,0 +1,22 @@
+<div class="toast-container">
+  <div *ngFor="let toast of toasts; let i = index" 
+       class="toast" 
+       [ngClass]="'toast-' + toast.type" 
+       (click)="dismiss(toast.id)">
+    
+    <div class="toast-icon">
+      <ng-container [ngSwitch]="toast.type">
+        <span *ngSwitchCase="'success'">✅</span>
+        <span *ngSwitchCase="'error'">❌</span>
+        <span *ngSwitchCase="'warning'">⚠️</span>
+        <span *ngSwitchCase="'info'">ℹ️</span>
+      </ng-container>
+    </div>
+    
+    <div class="toast-message">
+      {{ toast.message }}
+    </div>
+
+    <button class="toast-close" (click)="dismiss(toast.id); $event.stopPropagation()">✕</button>
+  </div>
+</div>

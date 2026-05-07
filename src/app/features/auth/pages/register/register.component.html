@@ -1,0 +1,308 @@
+<div class="register-container" dir="rtl">
+      <div class="left-panel">
+            <div class="logo">
+                  <div class="logo-text">رحم</div>
+            </div>
+
+            <div class="welcome-text">
+                  <h2>انضم إلى مجتمعنا</h2>
+                  <p>قم بإنشاء حسابك وابدأ بالتواصل مع الأصدقاء، وشارك اللحظات، وتحدث في الوقت الفعلي.
+                  </p>
+            </div>
+
+            <ul class="benefits">
+                  <li><i class="fas fa-check-circle"></i> شارك التحديثات مع شبكتك</li>
+                  <li><i class="fas fa-check-circle"></i> تحدث مع الأصدقاء في الوقت الفعلي</li>
+                  <li><i class="fas fa-check-circle"></i> اكتشف اتصالات جديدة</li>
+                  <li><i class="fas fa-check-circle"></i> قم بتخصيص ملفك الشخصي</li>
+            </ul>
+      </div>
+
+      <div class="right-panel">
+            <!-- Invitation Code Section -->
+            <ng-container *ngIf="!isCodeVerified && invitationStatus !== 'PENDING' && invitationStatus !== 'ACTIVE'">
+                  <div class="form-header">
+                        <h2>رمز الدعوة</h2>
+                        <p>أدخل رمز الدعوة الخاص بك للبدء</p>
+                  </div>
+
+                  <form [formGroup]="invitationForm" (ngSubmit)="checkInvitation()" novalidate class="fade-in">
+                        <div class="form-group">
+                              <input type="text" formControlName="invitationCode" placeholder="رمز الدعوة"
+                                    class="form-control"
+                                    [class.error]="invitationForm.get('invitationCode')?.touched && invitationForm.get('invitationCode')?.invalid" />
+                              <small class="error-message"
+                                    *ngIf="invitationForm.get('invitationCode')?.touched && invitationForm.get('invitationCode')?.hasError('required')">
+                                    رمز الدعوة مطلوب.
+                              </small>
+                        </div>
+
+                        <!-- Messages -->
+                        <div *ngIf="invitationMessage" class="alert fade-in"
+                              [ngClass]="'alert-' + invitationMessage.type">
+                              <i class="fas"
+                                    [ngClass]="{'fa-exclamation-circle': invitationMessage.type === 'error', 'fa-info-circle': invitationMessage.type === 'info', 'fa-check-circle': invitationMessage.type === 'success'}"></i>
+                              {{ invitationMessage.text }}
+                        </div>
+
+                        <button type="submit" class="btn primary" [disabled]="isLoadingInvitation">
+                              <span *ngIf="!isLoadingInvitation">تحقق من الرمز</span>
+                              <span *ngIf="isLoadingInvitation"><i class="fas fa-spinner fa-spin"></i> جاري
+                                    التحقق...</span>
+                        </button>
+                  </form>
+            </ng-container>
+
+            <!-- Status Sections for PENDING or ACTIVE -->
+            <ng-container *ngIf="invitationStatus === 'PENDING' || invitationStatus === 'ACTIVE'">
+                  <div class="form-header fade-in">
+                        <h2>حالة التسجيل</h2>
+                  </div>
+
+                  <div class="status-message-container fade-in">
+                        <div class="alert" [ngClass]="'alert-' + invitationMessage?.type">
+                              <i class="fas"
+                                    [ngClass]="invitationStatus === 'ACTIVE' ? 'fa-info-circle' : 'fa-clock'"></i>
+                              {{ invitationMessage?.text }}
+                        </div>
+                        <button type="button" class="btn secondary outline" (click)="resetInvitation()"
+                              style="margin-top: 1rem; width: 100%;">
+                              إدخال رمز آخر
+                        </button>
+                  </div>
+            </ng-container>
+
+            <!-- Registration Form Section -->
+            <ng-container *ngIf="invitationStatus === 'INACTIVE'">
+                  <div class="form-header fade-in">
+                        <h2>إنشاء حسابك</h2>
+                        <p>مرحبا {{registrationForm.get('firstName')?.value}} .من فضلك املأ البيانات التالية للبدء</p>
+                  </div>
+
+                  <!-- Show success message for Inactive code -->
+                  <!-- <div *ngIf="invitationMessage" class="alert fade-in" [ngClass]="'alert-' + invitationMessage.type"
+                        style="margin-bottom: 20px;">
+                        <i class="fas fa-check-circle"></i> {{ invitationMessage.text }}
+                  </div> -->
+
+                  <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" novalidate class="fade-in">
+
+                        <!-- Username -->
+                        <div class="form-group">
+                              <label>اسم المستخدم <span class="required">*</span></label>
+                              <input type="text" formControlName="username" placeholder="مثال: ahmed_ali"
+                                    class="form-control"
+                                    [class.error]="registrationForm.get('username')?.touched && registrationForm.get('username')?.invalid" />
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('username')?.touched && registrationForm.get('username')?.hasError('required')">
+                                    اسم المستخدم مطلوب.
+                              </small>
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('username')?.touched && registrationForm.get('username')?.hasError('minlength')">
+                                    يجب أن يتكون اسم المستخدم من 3 أحرف على الأقل.
+                              </small>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                              <label>البريد الإلكتروني <span class="required">*</span></label>
+                              <input type="email" formControlName="email" placeholder="أدخل البريد الإلكتروني"
+                                    class="form-control"
+                                    [class.error]="registrationForm.get('email')?.touched && registrationForm.get('email')?.invalid" />
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('email')?.touched && registrationForm.get('email')?.hasError('required')">
+                                    البريد الإلكتروني مطلوب.
+                              </small>
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('email')?.touched && registrationForm.get('email')?.hasError('email')">
+                                    الرجاء إدخال بريد إلكتروني صحيح.
+                              </small>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="form-group">
+                              <label>رقم الهاتف <span class="required">*</span></label>
+                              <input type="tel" formControlName="phone" placeholder="أدخل رقم الهاتف"
+                                    class="form-control" dir="ltr" style="text-align: right;"
+                                    [class.error]="registrationForm.get('phone')?.touched && registrationForm.get('phone')?.invalid" />
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('phone')?.touched && registrationForm.get('phone')?.hasError('required')">
+                                    رقم الهاتف مطلوب.
+                              </small>
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('phone')?.touched && registrationForm.get('phone')?.hasError('pattern')">
+                                    الرجاء إدخال رقم هاتف صحيح.
+                              </small>
+                        </div>
+
+                        <!-- Birth Date -->
+                        <div class="form-group">
+                              <label>تاريخ الميلاد <span class="required">*</span></label>
+                              <input type="date" formControlName="birthDate" placeholder="اختر تاريخ الميلاد"
+                                    class="form-control"
+                                    [class.error]="registrationForm.get('birthDate')?.touched && registrationForm.get('birthDate')?.invalid" />
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('birthDate')?.touched && registrationForm.get('birthDate')?.hasError('required')">
+                                    تاريخ الميلاد مطلوب.
+                              </small>
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('birthDate')?.touched && registrationForm.get('birthDate')?.hasError('futureDate')">
+                                    يجب أن يكون تاريخ الميلاد في الماضي.
+                              </small>
+                        </div>
+
+                        <!-- Gender -->
+                        <div class="form-group">
+                              <label>الجنس <span class="required">*</span></label>
+                              <select formControlName="gender" class="form-control"
+                                    [class.error]="registrationForm.get('gender')?.touched && registrationForm.get('gender')?.invalid">
+                                    <option value="" disabled selected>اختر الجنس</option>
+                                    <option value="MALE">ذكر</option>
+                                    <option value="FEMALE">أنثى</option>
+                              </select>
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('gender')?.touched && registrationForm.get('gender')?.hasError('required')">
+                                    الجنس مطلوب.
+                              </small>
+                        </div>
+
+                        <!-- Structured Address -->
+                        <div formGroupName="addressGroup" class="address-section">
+                              <div class="address-row">
+                                    <!-- Governorate -->
+                                    <div class="form-group custom-select-container" (click)="$event.stopPropagation()">
+                                          <label>المحافظة <span class="required">*</span></label>
+                                          <div class="form-control dropdown-toggle" (click)="toggleGovDropdown()"
+                                                [class.error]="registrationForm.get('addressGroup.governorateId')?.touched && registrationForm.get('addressGroup.governorateId')?.invalid">
+                                                <span>{{ selectedGovName || 'اختر المحافظة' }}</span>
+                                                <i class="fas fa-chevron-down"></i>
+                                          </div>
+                                          <div class="dropdown-menu" *ngIf="isGovDropdownOpen">
+                                                <input type="text" placeholder="بحث..." class="search-input"
+                                                      (input)="filterGovernorates($event)"
+                                                      (click)="$event.stopPropagation()">
+                                                <ul class="dropdown-list">
+                                                      <li class="dropdown-item"
+                                                            *ngFor="let gov of filteredGovernorates; trackBy: trackById"
+                                                            (click)="selectGovernorate(gov)">
+                                                            {{ gov.nameAr }} <span class="en-name">({{ gov.nameEn
+                                                                  }})</span>
+                                                      </li>
+                                                      <li class="dropdown-item empty"
+                                                            *ngIf="filteredGovernorates.length === 0">لا توجد محافظات
+                                                            تطابق
+                                                            بحثك</li>
+                                                </ul>
+                                          </div>
+                                          <small class="error-message"
+                                                *ngIf="registrationForm.get('addressGroup.governorateId')?.touched && registrationForm.get('addressGroup.governorateId')?.hasError('required')">
+                                                المحافظة مطلوبة.
+                                          </small>
+                                    </div>
+
+                                    <!-- City -->
+                                    <div class="form-group custom-select-container" (click)="$event.stopPropagation()">
+                                          <label>المدينة <span class="required">*</span></label>
+                                          <div class="form-control dropdown-toggle" (click)="toggleCityDropdown()"
+                                                [class.disabled]="registrationForm.get('addressGroup.cityId')?.disabled"
+                                                [class.error]="registrationForm.get('addressGroup.cityId')?.touched && registrationForm.get('addressGroup.cityId')?.invalid">
+                                                <span>{{ isLoadingCities ? 'جاري التحميل...' : (selectedCityName ||
+                                                      'اختر المدينة') }}</span>
+                                                <i class="fas fa-spinner fa-spin" *ngIf="isLoadingCities"></i>
+                                                <i class="fas fa-chevron-down" *ngIf="!isLoadingCities"></i>
+                                          </div>
+                                          <div class="dropdown-menu"
+                                                *ngIf="isCityDropdownOpen && !registrationForm.get('addressGroup.cityId')?.disabled">
+                                                <input type="text" placeholder="بحث..." class="search-input"
+                                                      (input)="filterCities($event)" (click)="$event.stopPropagation()">
+                                                <ul class="dropdown-list">
+                                                      <li class="dropdown-item"
+                                                            *ngFor="let city of filteredCities; trackBy: trackById"
+                                                            (click)="selectCity(city)">
+                                                            {{ city.nameAr }} <span class="en-name">({{ city.nameEn
+                                                                  }})</span>
+                                                      </li>
+                                                      <li class="dropdown-item empty"
+                                                            *ngIf="filteredCities.length === 0">لا
+                                                            توجد مدن تطابق بحثك</li>
+                                                </ul>
+                                          </div>
+                                          <small class="error-message"
+                                                *ngIf="registrationForm.get('addressGroup.cityId')?.touched && registrationForm.get('addressGroup.cityId')?.hasError('required')">
+                                                المدينة مطلوبة.
+                                          </small>
+                                    </div>
+                              </div>
+
+                              <!-- Address Details -->
+                              <div class="form-group">
+                                    <label>العنوان بالتفصيل</label>
+                                    <input type="text" formControlName="details"
+                                          placeholder="أدخل العنوان بالتفصيل (مبنى/شارع - اختياري)"
+                                          class="form-control" />
+                              </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group password-group">
+                              <label>كلمة المرور <span class="required">*</span></label>
+                              <div style="position: relative;">
+                                    <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                                          placeholder="أدخل كلمة المرور" class="form-control"
+                                          [class.error]="registrationForm.get('password')?.touched && registrationForm.get('password')?.invalid" />
+                                    <button type="button" class="toggle-btn" (click)="togglePassword()">
+                                          <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
+                              </div>
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('password')?.touched && registrationForm.get('password')?.hasError('minlength')">
+                                    يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.
+                              </small>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="form-group">
+                              <label>تأكيد كلمة المرور <span class="required">*</span></label>
+                              <input type="password" formControlName="confirmPassword" placeholder="تأكيد كلمة المرور"
+                                    class="form-control"
+                                    [class.error]="registrationForm.get('confirmPassword')?.touched && registrationForm.get('confirmPassword')?.invalid" />
+                              <small class="error-message"
+                                    *ngIf="registrationForm.get('confirmPassword')?.touched && registrationForm.get('confirmPassword')?.hasError('mismatch')">
+                                    كلمات المرور غير متطابقة.
+                              </small>
+                        </div>
+
+                        <!-- Terms -->
+                        <div class="form-group terms">
+                              <input type="checkbox" id="agreeTerms" formControlName="agreeTerms" />
+                              <label for="agreeTerms">أوافق على شروط الخدمة وسياسة الخصوصية <span
+                                          class="required">*</span></label>
+                              <small class="error-message" style="display: block; margin-right: 1.5rem; width: 100%;"
+                                    *ngIf="registrationForm.get('agreeTerms')?.touched && registrationForm.get('agreeTerms')?.hasError('required')">
+                                    يجب الموافقة قبل التسجيل.
+                              </small>
+                        </div>
+
+                        <button type="submit" class="btn primary" [disabled]="registrationForm.invalid"
+                              [class.disabled]="registrationForm.invalid">تسجيل</button>
+                  </form>
+
+                  <ng-container *ngIf="invitationStatus === 'INACTIVE'">
+                        <div class="divider"><span>أو سجل باستخدام</span></div>
+
+                        <div class="social-login">
+                              <button class="social-btn google">
+                                    <i class="fab fa-google"></i> Google
+                              </button>
+                              <button class="social-btn facebook">
+                                    <i class="fab fa-facebook-f"></i> Facebook
+                              </button>
+                        </div>
+                  </ng-container>
+            </ng-container>
+
+            <div class="login-link">
+                  لديك حساب بالفعل؟ <a routerLink="/login">سجل الدخول هنا</a>
+            </div>
+      </div>
+</div>
