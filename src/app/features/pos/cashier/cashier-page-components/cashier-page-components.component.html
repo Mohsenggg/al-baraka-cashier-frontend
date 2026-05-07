@@ -166,45 +166,41 @@
         <!-- Receipt Cards Area -->
         <div class="receipt-cards-area">
           <!-- Primary Card: Invoice Info -->
-          <div class="info-card pos-card primary-card">
-            <div class="card-header">
-              <span class="material-icons-outlined icon">receipt</span>
-              <span class="title">معلومات الفاتورة</span>
+          <div class="compact-card primary-card">
+            <div class="compact-header">
+              <span class="material-icons-outlined icon">receipt_long</span>
+              <span class="title">الفاتورة</span>
             </div>
-            <div class="card-body">
-              <div class="info-row">
-                <span class="label">رقم الفاتورة</span>
+            <div class="inline-fields">
+              <div class="inline-field">
+                <span class="label">رقم:</span>
                 <span class="value fw-bold">{{ receipt?.receiptNumber || '-' }}</span>
               </div>
-              <div class="info-row">
-                <span class="label">تاريخ الفاتورة</span>
+              <div class="inline-field">
+                <span class="label">تاريخ:</span>
                 <span class="value">{{ (receipt?.createdAt || today) | date:'yyyy/MM/dd' }}</span>
               </div>
-              <div class="info-row">
-                <span class="label">طريقة الدفع</span>
+              <div class="inline-field">
+                <span class="label">دفع:</span>
                 <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
               </div>
             </div>
           </div>
 
           <!-- Secondary Card: Customer Info -->
-          <div class="info-card pos-card secondary-card">
-            <div class="card-header">
-              <span class="material-icons-outlined icon">group</span>
-              <span class="title">معلومات العميل</span>
+          <div class="compact-card secondary-card">
+            <div class="compact-header">
+              <span class="material-icons-outlined icon">person</span>
+              <span class="title">العميل</span>
             </div>
-            <div class="card-body">
-              <div class="info-row">
-                <span class="label">اسم العميل</span>
+            <div class="inline-fields">
+              <div class="inline-field">
+                <span class="label">الاسم:</span>
                 <span class="value">{{ receipt?.customer?.name || 'عميل نقدي' }}</span>
               </div>
-              <div class="info-row">
-                <span class="label">رقم الهاتف</span>
+              <div class="inline-field">
+                <span class="label">هاتف:</span>
                 <span class="value">{{ receipt?.customer?.phone || '-' }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">العنوان</span>
-                <span class="value">{{ '-' }}</span>
               </div>
             </div>
           </div>
