@@ -294,7 +294,8 @@
       gap: 16px;
       justify-content: flex-start;
       flex-wrap: wrap;
-      transition: max-width 0.3s ease;
+      transition: max-width 0.2s ease-out, gap 0.2s ease-out;
+      will-change: max-width, gap;
 }
 
 /* Adjust width and content size when right sidebar is open (not hidden) */
@@ -429,8 +430,9 @@
       height: 32px;
       /* Standardize height with other buttons */
       cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
+      transition: min-width 0.2s ease-out, padding 0.2s ease-out, transform 0.1s, box-shadow 0.2s;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      will-change: min-width, padding;
 }
 
 .btn-main-action:hover {
@@ -480,7 +482,8 @@
       color: #1e3a8a;
       height: 32px;
       /* Consistent height */
-      transition: all 0.2s;
+      transition: padding 0.2s ease-out, gap 0.2s ease-out, background-color 0.2s, color 0.2s;
+      will-change: padding, gap;
 }
 
 .btn-outline:hover {
