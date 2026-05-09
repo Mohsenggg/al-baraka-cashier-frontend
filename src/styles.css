@@ -34,11 +34,11 @@ body {
     --pos-text-primary: #1f2937;
     --pos-text-secondary: #6b7280;
     
-    --pos-spacing-xs: 3px;
-    --pos-spacing-sm: 6px;
-    --pos-spacing-md: 12px;
-    --pos-spacing-lg: 18px;
-    --pos-spacing-xl: 24px;
+    --pos-spacing-xs: 2px;
+    --pos-spacing-sm: 4px;
+    --pos-spacing-md: 8px;
+    --pos-spacing-lg: 12px;
+    --pos-spacing-xl: 16px;
 
     --pos-radius-sm: 3px;
     --pos-radius-md: 6px;
@@ -55,7 +55,7 @@ body {
     border-radius: var(--pos-radius-md);
     font-family: var(--font-family);
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.2s ease;
     border: 1px solid transparent;
@@ -119,7 +119,7 @@ body {
     border: 1px solid var(--pos-border);
     border-radius: var(--pos-radius-md);
     font-family: var(--font-family);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--pos-text-primary);
     background-color: #ffffff;
     transition: border-color 0.2s, box-shadow 0.2s;
