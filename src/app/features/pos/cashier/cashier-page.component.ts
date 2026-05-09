@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signa
 import { CommonModule } from '@angular/common';
 import { CashierPageComponentsComponent } from './cashier-page-components/cashier-page-components.component';
 import { ReceiptService } from '../core/services/receipt.service';
+import { ProductService } from '../core/services/product.service';
 
 @Component({
   selector: 'app-cashier-page',
@@ -16,16 +17,25 @@ import { ReceiptService } from '../core/services/receipt.service';
 })
 export class CashierPageComponent implements OnInit {
   private receiptService = inject(ReceiptService);
+  private productService = inject(ProductService);
 
   sidebarVisible = signal(false);
   rightSidebarVisible = signal(false);
 
   // Observable and Signal bindings
   currentReceipt = this.receiptService.currentReceipt;
-  cartItems = this.receiptService.cartItems; // currently ReceiptItemInput[], might need mapping to full response for UI
+  cartItems = this.receiptService.cartItems;
+  
+  distinctItemsCount = this.receiptService.distinctItemsCount;
+  totalQuantity = this.receiptService.totalQuantity;
+  subtotal = this.receiptService.subtotal;
+  totalDiscount = this.receiptService.totalDiscount;
+  tax = this.receiptService.tax;
+  finalTotal = this.receiptService.finalTotal;
 
   ngOnInit() {
-    // Initialize or load any necessary state
+    // Load products locally for fast search and insertion
+    this.productService.loadAllProducts();
   }
 
   // Action Bar Events
@@ -88,7 +98,7 @@ export class CashierPageComponent implements OnInit {
 
   onUpdateQuantity(event: any) {
     console.log('Update quantity', event);
-    // Implement quantity update logic
+    this.receiptService.updateItemQuantity(event.item.productId, event.delta);
   }
 
   onAddItem(event: any) {

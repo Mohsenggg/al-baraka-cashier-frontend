@@ -13,7 +13,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ReceiptService } from '../../core/services/receipt.service';
-import { ReceiptResponse } from '../../core/models/pos.models';
+import { ProductService } from '../../core/services/product.service';
+import { ReceiptResponse, Product } from '../../core/models/pos.models';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
@@ -26,6 +27,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class CashierPageComponentsComponent implements OnInit {
   private receiptService = inject(ReceiptService);
+  private productService = inject(ProductService);
   private fb = inject(FormBuilder);
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
@@ -67,6 +69,10 @@ export class CashierPageComponentsComponent implements OnInit {
   loading$ = this.receiptService.loading$;
   searchControl = new FormControl('');
 
+  // Local Search state
+  searchResults = signal<Product[]>([]);
+  selectedSearchIndex = signal<number>(-1);
+
   // Sidebar navigation items
   navItems = [
     { label: 'الكاشير', icon: 'point_of_sale', active: true },
@@ -90,6 +96,18 @@ export class CashierPageComponentsComponent implements OnInit {
       distinctUntilChanged()
     ).subscribe(value => {
       this.receiptService.loadReceipts(1, 10, value || '');
+    });
+
+    // Handle local product search
+    this.inputForm.get('barcode')?.valueChanges.subscribe(value => {
+      if (typeof value === 'string' && value.trim()) {
+        const results = this.productService.searchProducts(value);
+        this.searchResults.set(results);
+        this.selectedSearchIndex.set(results.length > 0 ? 0 : -1);
+      } else {
+        this.searchResults.set([]);
+        this.selectedSearchIndex.set(-1);
+      }
     });
   }
 
@@ -177,11 +195,48 @@ export class CashierPageComponentsComponent implements OnInit {
   }
 
   submitInputRow() {
+    // Overriding normal submit if search results are active
+    const results = this.searchResults();
+    if (results.length > 0 && this.selectedSearchIndex() >= 0) {
+      this.selectProduct(results[this.selectedSearchIndex()]);
+      return;
+    }
+
     if (this.inputForm.valid) {
       this.addItem.emit(this.inputForm.getRawValue());
       this.inputForm.reset({ quantity: 1, price: 0, barcode: '' });
       this.focusSearch();
     }
+  }
+
+  onSearchKeyDown(event: KeyboardEvent) {
+    const results = this.searchResults();
+    if (results.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.selectedSearchIndex.update(idx => (idx + 1) % results.length);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.selectedSearchIndex.update(idx => (idx - 1 + results.length) % results.length);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.selectedSearchIndex() >= 0) {
+        this.selectProduct(results[this.selectedSearchIndex()]);
+      }
+    }
+  }
+
+  selectProduct(product: Product) {
+    // Get quantity if it was manually entered
+    const qty = this.inputForm.get('quantity')?.value || 1;
+    this.receiptService.addCartItem(product, qty);
+    
+    // Reset and focus
+    this.inputForm.patchValue({ barcode: '', quantity: 1, price: 0 });
+    this.searchResults.set([]);
+    this.selectedSearchIndex.set(-1);
+    this.focusSearch();
   }
 
   focusSearch() {

@@ -105,3 +105,22 @@ export interface Paginated<T> {
   totalElements?: number;
   totalPages?: number;
 }
+
+export interface CashierProductDto {
+  id: number;
+  code: string;
+  name: string;
+  price: number;
+  stock: number;
+}
+
+export interface CartItem {
+  productId: number;
+  productName: string;
+  quantity: number;
+  price: number;
+  discount: number;
+  total: number;
+  remainingStock: number;
+  product: Product;
+}

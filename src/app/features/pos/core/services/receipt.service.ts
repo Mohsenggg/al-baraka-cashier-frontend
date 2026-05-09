@@ -5,7 +5,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import type { 
   ReceiptResponse, CreateReceiptInput, UpdateReceiptInput, 
-  DeleteReceiptResponse, Product, ReceiptItemInput, Paginated 
+  DeleteReceiptResponse, Product, ReceiptItemInput, Paginated, CartItem 
 } from '../models/pos.models';
 
 @Injectable({
@@ -34,9 +34,16 @@ export class ReceiptService {
 
   // --------- Frontend POS Cart State (Signal based for UI reactivity) ---------
 
-  private draftItemsSignal = signal<ReceiptItemInput[]>([]);
+  private draftItemsSignal = signal<CartItem[]>([]);
   public cartItems = this.draftItemsSignal.asReadonly();
   
+  public distinctItemsCount = computed(() => this.draftItemsSignal().length);
+  public totalQuantity = computed(() => this.draftItemsSignal().reduce((acc, item) => acc + item.quantity, 0));
+  public subtotal = computed(() => this.draftItemsSignal().reduce((acc, item) => acc + item.total, 0));
+  public totalDiscount = computed(() => this.draftItemsSignal().reduce((acc, item) => acc + item.discount, 0));
+  public tax = computed(() => this.subtotal() * 0.15); // Example 15% tax if needed, adjust accordingly
+  public finalTotal = computed(() => this.subtotal() + this.tax()); // Or simply subtotal if tax is included
+
   private currentSavedReceiptSignal = signal<ReceiptResponse | null>(null);
   public currentReceipt = this.currentSavedReceiptSignal.asReadonly();
 
@@ -80,7 +87,26 @@ export class ReceiptService {
       tap((receipt) => {
         this.currentSavedReceiptSignal.set(receipt);
         this.draftItemsSignal.set(
-          receipt.items.map(i => ({ productId: i.productId, quantity: i.quantity, discount: i.discount }))
+          receipt.items.map(i => ({ 
+            productId: i.productId, 
+            productName: i.productName,
+            quantity: i.quantity, 
+            price: i.price,
+            discount: i.discount,
+            total: i.total,
+            remainingStock: i.remainingStock,
+            product: i.product ? {
+              id: i.product.id,
+              name: i.product.name,
+              barcode: i.product.barcode,
+              costPrice: 0,
+              sellingPrice: i.price,
+              stockQuantity: i.product.stockQuantity,
+              isActive: true,
+              createdAt: '',
+              updatedAt: ''
+            } : {} as Product
+          }))
         );
         this.clearError();
       }),
@@ -173,18 +199,32 @@ export class ReceiptService {
 
   // --------- Cart Form Helpers ---------
 
+  public addCartItem(product: Product, quantity: number = 1) {
+    const items = [...this.draftItemsSignal()];
+    const existingIdx = items.findIndex(i => i.productId === product.id);
+
+    if (existingIdx > -1) {
+      items[existingIdx].quantity += quantity;
+      items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+    } else {
+      items.push({ 
+        productId: product.id,
+        productName: product.name,
+        quantity, 
+        price: product.sellingPrice,
+        discount: 0,
+        total: product.sellingPrice * quantity,
+        remainingStock: product.stockQuantity,
+        product
+      });
+    }
+    this.draftItemsSignal.set(items);
+  }
+
   public async addItemToDraftByBarcode(barcode: string, quantity: number = 1) {
     try {
       const product = await this.getProductByBarcode(barcode);
-      const items = [...this.draftItemsSignal()];
-      const existingIdx = items.findIndex(i => i.productId === product.id);
-
-      if (existingIdx > -1) {
-        items[existingIdx].quantity += quantity;
-      } else {
-        items.push({ productId: product.id, quantity, discount: 0 });
-      }
-      this.draftItemsSignal.set(items);
+      this.addCartItem(product, quantity);
     } catch (err) {
       // Error is caught and set in the handleError method
     }
@@ -197,6 +237,22 @@ export class ReceiptService {
   public clearCart() {
     this.draftItemsSignal.set([]);
     this.currentSavedReceiptSignal.set(null);
+  }
+
+  public updateItemQuantity(productId: number, delta: number) {
+    const items = [...this.draftItemsSignal()];
+    const existingIdx = items.findIndex(i => i.productId === productId);
+
+    if (existingIdx > -1) {
+      const newQty = items[existingIdx].quantity + delta;
+      if (newQty > 0) {
+        items[existingIdx].quantity = newQty;
+        items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+      } else {
+        items.splice(existingIdx, 1);
+      }
+      this.draftItemsSignal.set(items);
+    }
   }
 
   // --------- Internal Helper Methods ---------
