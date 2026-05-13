@@ -11,7 +11,7 @@
 }
 
 .receipt-sidebar {
-      width: 220px;
+      width: 330px;
       background-color: var(--pos-card-bg);
       display: flex;
       flex-direction: column;
@@ -24,7 +24,7 @@
 }
 
 .right-sidebar-hidden .receipt-sidebar {
-      margin-right: -220px;
+      margin-right: -330px;
 }
 
 .sidebar {
@@ -193,7 +193,8 @@
       color: #94a3b8;
 }
 
-.pos-compact-input, .pos-compact-select {
+.pos-compact-input,
+.pos-compact-select {
       width: 100%;
       height: 30px;
       padding: 0 8px;
@@ -204,7 +205,8 @@
       color: var(--pos-text-primary);
 }
 
-.pos-compact-input:focus, .pos-compact-select:focus {
+.pos-compact-input:focus,
+.pos-compact-select:focus {
       outline: none;
       border-color: var(--pos-primary);
 }
@@ -233,13 +235,13 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .receipt-card:hover {
       border-color: #cbd5e1;
       transform: translateY(-1px);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .receipt-card.active {
@@ -316,13 +318,26 @@
       animation: pulse 1.5s infinite ease-in-out;
 }
 
-.skeleton-line.full { width: 100%; }
-.skeleton-line.short { width: 60%; }
+.skeleton-line.full {
+      width: 100%;
+}
+
+.skeleton-line.short {
+      width: 60%;
+}
 
 @keyframes pulse {
-      0% { opacity: 0.5; }
-      50% { opacity: 1; }
-      100% { opacity: 0.5; }
+      0% {
+            opacity: 0.5;
+      }
+
+      50% {
+            opacity: 1;
+      }
+
+      100% {
+            opacity: 0.5;
+      }
 }
 
 .empty-results {
@@ -380,12 +395,12 @@
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-main-action {
-      min-width: 140px;
-      padding: 4px 8px;
+      min-width: 100px;
+      padding: 2px 6px;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-main-action .text {
-      font-size: 0.7rem;
+      font-size: 0.5rem;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-outline {
