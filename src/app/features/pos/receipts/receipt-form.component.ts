@@ -160,8 +160,8 @@ export class ReceiptFormComponent implements OnInit {
     const existing = this.receiptService.currentReceipt();
     if (existing) {
       this.localPaymentMethod = existing.paymentMethod;
-      this.localDiscount = existing.discount;
-      this.localTax = existing.tax;
+      this.localDiscount = existing.discount || 0;
+      this.localTax = existing.tax || 0;
     }
   }
 
@@ -184,9 +184,11 @@ export class ReceiptFormComponent implements OnInit {
   saveReceipt() {
     const draftItems = this.receiptService.cartItems();
     if (draftItems.length === 0) return;
+    
+    const receiptData = this.receiptService.currentReceipt();
 
     const payload: CreateReceiptInput = {
-      customerName: 'Walk-in Customer',
+      customerName: receiptData?.customerName || receiptData?.customer?.name || 'Walk-in Customer',
       customerId: null,
       cashierId: this.currentCashierId,
       paymentMethod: this.localPaymentMethod,

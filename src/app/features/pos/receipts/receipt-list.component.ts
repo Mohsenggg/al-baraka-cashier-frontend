@@ -47,7 +47,7 @@ import { ReceiptService } from '../core/services/receipt.service';
           <tr *ngFor="let receipt of receiptService.receipts$ | async; trackBy: trackById">
             <td>{{ receipt.receiptNumber }}</td>
             <td>{{ receipt.customer?.name || '---' }}</td>
-            <td>{{ receipt.cashier.name || '---' }}</td>
+            <td>{{ receipt.cashier?.name || '---' }}</td>
             <td>{{ receipt.createdAt | date:'short' }}</td>
             <td>{{ receipt.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</td>
             <td class="font-bold text-primary">{{ receipt.finalTotal }}</td>

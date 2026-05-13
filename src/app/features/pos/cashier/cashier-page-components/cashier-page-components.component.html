@@ -189,8 +189,8 @@
                               <span class="material-icons-outlined">account_circle</span>
                         </div>
                         <div class="cashier-details">
-                              <span class="cashier-name">{{ receipt?.cashier?.name || 'أحمد محمود' }}</span>
-                              <span class="cashier-role">كاشير #{{ receipt?.cashier?.id || '1' }}</span>
+                              <span class="cashier-name">{{ receipt?.cashierName || receipt?.cashier?.name || 'أحمد محمود' }}</span>
+                              <span class="cashier-role">كاشير #{{ receipt?.cashierId || receipt?.cashier?.id || '1' }}</span>
                         </div>
                   </div>
 
@@ -232,7 +232,7 @@
                                           </div>
                                           <div class="inline-field">
                                                 <span class="label">تاريخ:</span>
-                                                <span class="value">{{ (receipt?.createdAt || today) | date:'yyyy/MM/dd'
+                                                <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) | date:'yyyy/MM/dd HH:mm'
                                                       }}</span>
                                           </div>
                                           <div class="inline-field">
@@ -252,11 +252,11 @@
                                     <div class="inline-fields">
                                           <div class="inline-field">
                                                 <span class="label">الاسم:</span>
-                                                <span class="value">{{ receipt?.customer?.name || 'عميل نقدي' }}</span>
+                                                <span class="value">{{ receipt?.customerName || 'عميل نقدي' }}</span>
                                           </div>
                                           <div class="inline-field">
                                                 <span class="label">هاتف:</span>
-                                                <span class="value">{{ receipt?.customer?.phone || '-' }}</span>
+                                                <span class="value">{{ receipt?.customer?.phone || '-------' }}</span>
                                           </div>
                                     </div>
                               </div>

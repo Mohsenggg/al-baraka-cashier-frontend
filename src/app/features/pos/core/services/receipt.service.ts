@@ -122,24 +122,24 @@ export class ReceiptService {
                         this.currentSavedReceiptSignal.set(receipt);
                         this.draftItemsSignal.set(
                               receipt.items.map(i => ({
-                                    productId: i.productId,
+                                    productId: 0, 
                                     productName: i.productName,
                                     quantity: i.quantity,
-                                    price: i.price,
-                                    discount: i.discount,
-                                    total: i.total,
+                                    price: i.unitPrice,
+                                    discount: 0,
+                                    total: i.totalPrice,
                                     remainingStock: i.remainingStock,
-                                    product: i.product ? {
-                                          id: i.product.id,
-                                          name: i.product.name,
-                                          barcode: i.product.barcode,
+                                    product: {
+                                          id: 0,
+                                          name: i.productName,
+                                          barcode: i.productCode,
                                           costPrice: 0,
-                                          sellingPrice: i.price,
-                                          stockQuantity: i.product.stockQuantity,
+                                          sellingPrice: i.unitPrice,
+                                          stockQuantity: i.remainingStock + i.quantity,
                                           isActive: true,
                                           createdAt: '',
                                           updatedAt: ''
-                                    } : {} as Product
+                                    } as Product
                               }))
                         );
                         this.clearError();

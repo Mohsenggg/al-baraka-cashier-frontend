@@ -54,37 +54,37 @@ export interface ReceiptProductSnapshot {
 }
 
 export interface ReceiptItemResponse {
-  id: number;
-  receiptId: number;
-  productId: number;
+  productCode: string;
   productName: string;
   quantity: number;
-  price: number;
-  discount: number;
-  total: number;
+  unitPrice: number;
+  totalPrice: number;
   remainingStock: number;
-  product: ReceiptProductSnapshot | null;
 }
 
 export interface ReceiptResponse {
   id: number;
   receiptNumber: string;
-  date: string;
-  subtotal: number;
-  discount: number;
-  tax: number;
-  finalTotal: number;
-  distinctItemsCount: number;
-  totalQuantity: number;
+  receiptDate: string;
   paymentMethod: PaymentMethod;
-  customerId: number | null;
+  receiptType: string;
+  customerName: string;
   cashierId: number;
-  isDeleted: boolean;
+  cashierName: string;
+  totalAmount: number;
+  totalQuantity: number;
+  totalItems: number;
+  status: string;
   createdAt: string;
-  updatedAt: string;
-  customer: ReceiptCustomer | null;
-  cashier: ReceiptCashier;
+  updatedAt: string | null;
   items: ReceiptItemResponse[];
+  customerId?: number | null;
+  customer?: ReceiptCustomer | null;
+  discount?: number;
+  tax?: number;
+  subtotal?: number;
+  finalTotal?: number;
+  cashier?: ReceiptCashier;
 }
 
 export interface DeleteReceiptResponse {
