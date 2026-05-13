@@ -13,7 +13,7 @@ import type {
 })
 export class ReceiptService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/receipts`;
+  private apiUrl = `${environment.apiUrl}/receipt`;
   private productsApiUrl = `${environment.apiUrl}/products`;
 
   // --------- State Management (RxJS BehaviorSubjects) ---------
@@ -206,6 +206,7 @@ export class ReceiptService {
     if (existingIdx > -1) {
       items[existingIdx].quantity += quantity;
       items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+      items[existingIdx].remainingStock = product.stockQuantity - items[existingIdx].quantity;
     } else {
       items.push({ 
         productId: product.id,
@@ -214,7 +215,7 @@ export class ReceiptService {
         price: product.sellingPrice,
         discount: 0,
         total: product.sellingPrice * quantity,
-        remainingStock: product.stockQuantity,
+        remainingStock: product.stockQuantity - quantity,
         product
       });
     }
@@ -248,6 +249,7 @@ export class ReceiptService {
       if (newQty > 0) {
         items[existingIdx].quantity = newQty;
         items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+        items[existingIdx].remainingStock = items[existingIdx].product.stockQuantity - newQty;
       } else {
         items.splice(existingIdx, 1);
       }

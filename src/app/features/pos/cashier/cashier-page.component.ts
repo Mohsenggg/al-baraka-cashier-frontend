@@ -4,6 +4,8 @@ import { CashierPageComponentsComponent } from './cashier-page-components/cashie
 import { ReceiptService } from '../core/services/receipt.service';
 import { ProductService } from '../core/services/product.service';
 
+import { CreateReceiptInput } from '../core/models/pos.models';
+
 @Component({
   selector: 'app-cashier-page',
   standalone: true,
@@ -40,18 +42,50 @@ export class CashierPageComponent implements OnInit {
 
   // Action Bar Events
   onSave() {
-    console.log('Save triggered');
-    // Implement save logic via receiptService
+    const items = this.cartItems();
+    if (items.length === 0) {
+      console.warn('Cart is empty, cannot save receipt');
+      return;
+    }
+
+    const receiptData = this.currentReceipt();
+
+    const payload: CreateReceiptInput = {
+      customerName: receiptData?.customer?.name || 'Walk-in Customer',
+      customerId: receiptData?.customerId || null,
+      cashierId: receiptData?.cashierId || 1,
+      paymentMethod: receiptData?.paymentMethod || 'CASH',
+      receiptType: 'SELL',
+      totalQuantity: this.totalQuantity(),
+      items: items.map(item => ({
+        productCode: item.product.barcode,
+        price: item.price,
+        quantity: item.quantity,
+        total: item.total,
+        remainingStock: item.remainingStock
+      }))
+    };
+
+    console.log('Saving receipt:', payload);
+
+    this.receiptService.createReceipt(payload).subscribe({
+      next: (res) => {
+        console.log('Receipt saved successfully:', res);
+        this.receiptService.loadReceipts();
+      },
+      error: (err) => {
+        console.error('Failed to save receipt:', err);
+      }
+    });
   }
 
   onSaveAndPrint() {
-    console.log('Save and Print triggered');
-    // Implement save and print logic
+    this.onSave();
+    this.onPrint();
   }
 
   onPrint() {
-    console.log('Print triggered');
-    // Implement print logic
+    console.log('Print triggered - Printing implementation will be added later.');
   }
 
   onNew() {

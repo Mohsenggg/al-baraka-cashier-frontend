@@ -186,15 +186,21 @@ export class ReceiptFormComponent implements OnInit {
     if (draftItems.length === 0) return;
 
     const payload: CreateReceiptInput = {
+      customerName: 'Walk-in Customer',
+      customerId: null,
       cashierId: this.currentCashierId,
       paymentMethod: this.localPaymentMethod,
+      receiptType: 'SELL',
+      totalQuantity: draftItems.reduce((acc, item) => acc + item.quantity, 0),
       discount: this.localDiscount,
       tax: this.localTax,
       items: draftItems.map(i => ({
-        productId: i.productId,
+        productCode: i.product.barcode || '',
+        price: i.price,
         quantity: i.quantity,
-        discount: i.discount
-      })) // Re-map to ensure cleanly passing by value
+        total: i.total,
+        remainingStock: i.remainingStock
+      }))
     };
 
     if (this.isEditing) {

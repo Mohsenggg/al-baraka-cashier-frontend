@@ -1,27 +1,35 @@
 export type PaymentMethod = "CASH" | "TRANSFER";
 
 export interface ReceiptItemInput {
-  productId: number;
+  productCode: string;
+  price: number;
   quantity: number;
-  discount?: number;
+  total: number;
+  remainingStock: number;
 }
 
 export interface CreateReceiptInput {
-  customerId?: number;
+  customerName: string;
+  customerId: number | null;
   cashierId: number;
   paymentMethod: PaymentMethod;
+  receiptType: string;
+  totalQuantity: number;
+  items: ReceiptItemInput[];
   tax?: number;
   discount?: number;
-  items: ReceiptItemInput[];
 }
 
 export interface UpdateReceiptInput {
-  customerId?: number;
+  customerName: string;
+  customerId: number | null;
   cashierId: number;
   paymentMethod: PaymentMethod;
+  receiptType: string;
+  totalQuantity: number;
+  items: ReceiptItemInput[];
   tax?: number;
   discount?: number;
-  items: ReceiptItemInput[];
 }
 
 export interface ReceiptCustomer {
