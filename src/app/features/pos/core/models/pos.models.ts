@@ -149,10 +149,14 @@ export interface ReceiptFilterParams {
 
 export interface ReceiptListItemDto {
   id: number;
-  receiptNumber: string;
-  createdAt: string;
-  finalTotal: number;
+  receiptCode: string;
+  receiptDate: string;
+  totalAmount: number;
   paymentMethod: string;
+  customerName?: string;
+  status?: string;
+  totalItems?: number;
+  cashierName?: string;
 }
 
 export interface PageResponseDto<T> {

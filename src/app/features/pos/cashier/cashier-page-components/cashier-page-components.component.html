@@ -71,11 +71,11 @@
                               (click)="onSelectReceipt(r.id)"
                               [class.active]="receipt?.id === r.id">
                               <div class="card-main">
-                                    <span class="receipt-id">#{{ r.receiptNumber }}</span>
-                                    <span class="receipt-total">{{ r.finalTotal | number:'1.2-2' }} ر.س</span>
+                                    <span class="receipt-id">#{{ r.receiptCode }}</span>
+                                    <span class="receipt-total">{{ r.totalAmount | number:'1.2-2' }} ر.س</span>
                               </div>
                               <div class="card-sub">
-                                    <span class="receipt-time">{{ formatDate(r.createdAt) }}</span>
+                                    <span class="receipt-time">{{ formatDate(r.receiptDate) }}</span>
                                     <span class="pay-method" [class.cash]="r.paymentMethod === 'CASH'">
                                           {{ getPaymentLabel(r.paymentMethod) }}
                                     </span>
