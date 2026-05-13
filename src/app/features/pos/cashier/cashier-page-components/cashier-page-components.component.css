@@ -73,9 +73,43 @@
 /* ============================= */
 
 .sidebar-header-new {
-      padding: var(--pos-spacing-md);
+      padding: 10px 14px;
       background: #ffffff;
       border-bottom: 1px solid var(--pos-border);
+}
+
+.header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+}
+
+.header-top h3 {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--pos-text-primary);
+}
+
+.close-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+}
+
+.close-btn:hover {
+      color: var(--pos-danger);
 }
 
 .filter-container {
@@ -147,12 +181,70 @@
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       opacity: 0;
+      background: #f8fafc;
+      border-radius: 0 0 12px 12px;
 }
 
 .advanced-filters-panel.expanded {
-      max-height: 500px;
-      padding-top: 12px;
+      max-height: 600px;
+      padding: 12px;
       opacity: 1;
+      border-top: 1px solid #e2e8f0;
+}
+
+.filter-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed #e2e8f0;
+}
+
+.btn-clear {
+      flex: 1;
+      height: 36px;
+      background: #ffffff;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+}
+
+.btn-clear:hover {
+      background: #f1f5f9;
+      color: var(--pos-danger);
+      border-color: #fca5a5;
+}
+
+.btn-apply {
+      flex: 1.5;
+      height: 36px;
+      background: var(--pos-primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.btn-apply:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.btn-apply .material-icons-outlined {
+      font-size: 1.1rem;
 }
 
 .filters-grid {

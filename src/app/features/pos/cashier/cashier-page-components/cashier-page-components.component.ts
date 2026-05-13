@@ -137,21 +137,38 @@ export class CashierPageComponentsComponent implements OnInit {
     this.filterForm.valueChanges.pipe(
       debounceTime(400),
       distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
-    ).subscribe(filters => {
-      this.receiptService.filterReceipts({
-        ...filters,
-        page: 0,
-        size: 20
-      });
+    ).subscribe(() => {
+      this.applyFilters();
     });
 
     // Initial load
+    this.applyFilters();
+  }
+
+  clearFilters() {
+    this.filterForm.reset({
+      sort: 'receiptDate,DESC',
+      code: '',
+      fromDate: '',
+      toDate: '',
+      totalMin: null,
+      totalMax: null,
+      customerName: '',
+      status: '',
+      paymentMethod: ''
+    });
+    this.applyFilters();
+  }
+
+  applyFilters() {
     this.receiptService.filterReceipts({
+      ...this.filterForm.value,
       page: 0,
-      size: 20,
-      sort: 'receiptDate,DESC'
+      size: 20
     });
   }
+
+
 
   toggleFilters() {
     this.showFilters.update(v => !v);

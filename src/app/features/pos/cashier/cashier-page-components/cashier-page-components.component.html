@@ -56,10 +56,18 @@
                                           <select formControlName="sort" class="pos-compact-select">
                                                 <option value="receiptDate,DESC">الأحدث أولاً</option>
                                                 <option value="receiptDate,ASC">الأقدم أولاً</option>
-                                                <option value="finalTotal,DESC">الأعلى مبلغاً</option>
-                                                <option value="finalTotal,ASC">الأقل مبلغاً</option>
+                                                <option value="totalAmount,DESC">الأعلى مبلغاً</option>
+                                                <option value="totalAmount,ASC">الأقل مبلغاً</option>
                                           </select>
                                     </div>
+                              </div>
+
+                              <div class="filter-actions">
+                                    <button type="button" class="btn-clear" (click)="clearFilters()">مسح التصفية</button>
+                                    <button type="button" class="btn-apply" (click)="applyFilters()">
+                                          <span class="material-icons-outlined">search</span>
+                                          بحث متقدم
+                                    </button>
                               </div>
                         </div>
                   </div>
