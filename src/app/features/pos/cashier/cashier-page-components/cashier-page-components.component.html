@@ -15,7 +15,8 @@
                   <div class="filter-container" [formGroup]="filterForm">
                         <div class="quick-search-bar">
                               <span class="material-icons-outlined search-icon">search</span>
-                              <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..." autocomplete="off">
+                              <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..." 
+                                     autocomplete="off" (keyup.enter)="applyFilters()">
                               <button type="button" class="filter-toggle" (click)="toggleFilters()" [class.active]="showFilters()">
                                     <span class="material-icons-outlined">tune</span>
                               </button>

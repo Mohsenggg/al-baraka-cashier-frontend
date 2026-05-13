@@ -134,14 +134,7 @@ export class CashierPageComponentsComponent implements OnInit {
   }
 
   private setupFilterSubscription() {
-    this.filterForm.valueChanges.pipe(
-      debounceTime(400),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
-    ).subscribe(() => {
-      this.applyFilters();
-    });
-
-    // Initial load
+    // Initial load to show recent receipts
     this.applyFilters();
   }
 
@@ -157,10 +150,15 @@ export class CashierPageComponentsComponent implements OnInit {
       status: '',
       paymentMethod: ''
     });
-    this.applyFilters();
+    this.fetchFilteredReceipts();
   }
 
   applyFilters() {
+    this.fetchFilteredReceipts();
+    this.showFilters.set(false);
+  }
+
+  private fetchFilteredReceipts() {
     this.receiptService.filterReceipts({
       ...this.filterForm.value,
       page: 0,
