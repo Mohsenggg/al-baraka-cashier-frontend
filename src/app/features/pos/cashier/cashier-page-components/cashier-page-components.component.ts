@@ -65,9 +65,14 @@ export class CashierPageComponentsComponent implements OnInit {
 
   // Form and state
   inputForm!: FormGroup;
+  filterForm!: FormGroup;
+  
   receipts$ = this.receiptService.receipts$;
+  filteredReceipts$ = this.receiptService.filteredReceipts$;
   loading$ = this.receiptService.loading$;
-  searchControl = new FormControl('');
+  pagination$ = this.receiptService.pagination$;
+  
+  showFilters = signal(false);
 
   // Local Search state
   searchResults = signal<Product[]>([]);
@@ -89,14 +94,9 @@ export class CashierPageComponentsComponent implements OnInit {
 
   ngOnInit() {
     this.initializeForm();
-    this.receiptService.loadReceipts();
-
-    this.searchControl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(value => {
-      this.receiptService.loadReceipts(1, 10, value || '');
-    });
+    this.initializeFilterForm();
+    
+    this.setupFilterSubscription();
 
     // Handle local product search
     this.inputForm.get('barcode')?.valueChanges.subscribe(value => {
@@ -117,6 +117,44 @@ export class CashierPageComponentsComponent implements OnInit {
       quantity: [1, [Validators.required, Validators.min(1)]],
       price: [{ value: 0, disabled: true }]
     });
+  }
+
+  private initializeFilterForm() {
+    this.filterForm = this.fb.group({
+      code: [''],
+      fromDate: [''],
+      toDate: [''],
+      totalMin: [null],
+      totalMax: [null],
+      customerName: [''],
+      status: [''],
+      paymentMethod: [''],
+      sort: ['receiptDate,DESC']
+    });
+  }
+
+  private setupFilterSubscription() {
+    this.filterForm.valueChanges.pipe(
+      debounceTime(400),
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+    ).subscribe(filters => {
+      this.receiptService.filterReceipts({
+        ...filters,
+        page: 0,
+        size: 20
+      });
+    });
+
+    // Initial load
+    this.receiptService.filterReceipts({
+      page: 0,
+      size: 20,
+      sort: 'receiptDate,DESC'
+    });
+  }
+
+  toggleFilters() {
+    this.showFilters.update(v => !v);
   }
 
   // Action Bar Methods

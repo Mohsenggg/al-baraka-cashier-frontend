@@ -5,7 +5,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import type { 
   ReceiptResponse, CreateReceiptInput, UpdateReceiptInput, 
-  DeleteReceiptResponse, Product, ReceiptItemInput, Paginated, CartItem 
+  DeleteReceiptResponse, Product, ReceiptItemInput, Paginated, CartItem,
+  ReceiptFilterParams, ReceiptListItemDto, PageResponseDto
 } from '../models/pos.models';
 
 @Injectable({
@@ -20,6 +21,9 @@ export class ReceiptService {
   
   private _receiptsList = new BehaviorSubject<ReceiptResponse[]>([]);
   public receipts$ = this._receiptsList.asObservable();
+
+  private _filteredReceipts = new BehaviorSubject<ReceiptListItemDto[]>([]);
+  public filteredReceipts$ = this._filteredReceipts.asObservable();
 
   private _loading = new BehaviorSubject<boolean>(false);
   public loading$ = this._loading.asObservable();
@@ -71,6 +75,36 @@ export class ReceiptService {
           size: res.size,
           total: res.total || res.totalElements || 0,
           totalPages: res.totalPages || Math.ceil((res.total || 0) / res.size)
+        });
+        this.clearError();
+      },
+      error: (err) => {
+        this.handleError(err);
+      },
+      complete: () => this.setLoading(false)
+    });
+  }
+
+  public filterReceipts(params: ReceiptFilterParams): void {
+    this.setLoading(true);
+    let httpParams = new HttpParams();
+    
+    // Map params to HttpParams
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        httpParams = httpParams.set(key, value.toString());
+      }
+    });
+
+    // Endpoint: /api/receipts/filter (environment.apiUrl is /api)
+    this.http.get<PageResponseDto<ReceiptListItemDto>>(`${environment.apiUrl}/receipts/filter`, { params: httpParams }).subscribe({
+      next: (res) => {
+        this._filteredReceipts.next(res.content || []);
+        this._pagination.next({
+          page: (res.number || 0) + 1,
+          size: res.size || 20,
+          total: res.totalElements || 0,
+          totalPages: res.totalPages || 0
         });
         this.clearError();
       },

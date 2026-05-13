@@ -132,3 +132,37 @@ export interface CartItem {
   remainingStock: number;
   product: Product;
 }
+
+export interface ReceiptFilterParams {
+  code?: string;
+  fromDate?: string;
+  toDate?: string;
+  totalMin?: number;
+  totalMax?: number;
+  customerName?: string;
+  status?: string;
+  paymentMethod?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface ReceiptListItemDto {
+  id: number;
+  receiptNumber: string;
+  createdAt: string;
+  finalTotal: number;
+  paymentMethod: string;
+}
+
+export interface PageResponseDto<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  last: boolean;
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
