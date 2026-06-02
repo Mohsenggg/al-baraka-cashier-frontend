@@ -1,0 +1,253 @@
+<!-- Products Management Page -->
+<div class="products-container">
+  
+  <!-- ============================= -->
+  <!-- HEADER SECTION -->
+  <!-- ============================= -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-titles">
+        <h1 class="page-title">Products</h1>
+        <p class="page-subtitle">Manage products, inventory, pricing, and barcodes</p>
+      </div>
+      <button class="btn-add-product">
+        <span class="material-icons-outlined">add_circle</span>
+        <span>Add Product</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- SEARCH & FILTER TOOLBAR -->
+  <!-- ============================= -->
+  <div class="toolbar-section">
+    
+    <!-- Search Bar -->
+    <div class="search-bar-wrapper">
+      <span class="material-icons-outlined search-icon">search</span>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search products by name, barcode, or code..."
+        (input)="onSearch($event)">
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+      <!-- Category Filter -->
+      <div class="filter-item">
+        <select class="filter-select" (change)="onFilterChange()">
+          <option value="">Category</option>
+          <option value="electronics">Electronics</option>
+          <option value="accessories">Accessories</option>
+          <option value="supplies">Supplies</option>
+        </select>
+      </div>
+
+      <!-- Type Filter -->
+      <div class="filter-item">
+        <select class="filter-select" (change)="onFilterChange()">
+          <option value="">Product Type</option>
+          <option value="inventory">Inventory Product</option>
+          <option value="service">Service</option>
+          <option value="bundle">Bundle</option>
+          <option value="raw">Raw Material</option>
+        </select>
+      </div>
+
+      <!-- Stock Status Filter -->
+      <div class="filter-item">
+        <select class="filter-select" (change)="onFilterChange()">
+          <option value="">Stock Status</option>
+          <option value="healthy">In Stock</option>
+          <option value="low">Low Stock</option>
+          <option value="critical">Critical</option>
+          <option value="outofstock">Out of Stock</option>
+        </select>
+      </div>
+
+      <!-- More Filters Button -->
+      <button class="btn-more-filters" (click)="toggleAdvancedFilters()">
+        <span class="material-icons-outlined">tune</span>
+        <span>More Filters</span>
+      </button>
+
+      <!-- Clear Filters (if active) -->
+      <button class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+        <span class="material-icons-outlined">close</span>
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- ADVANCED FILTERS PANEL -->
+  <!-- ============================= -->
+  <div class="advanced-filters-panel" [class.expanded]="showAdvancedFilters()">
+    <div class="filters-content">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Price Range (SAR)</label>
+          <div class="dual-input">
+            <input type="number" placeholder="Min" class="filter-input">
+            <span class="to-label">to</span>
+            <input type="number" placeholder="Max" class="filter-input">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Stock Quantity</label>
+          <div class="dual-input">
+            <input type="number" placeholder="Min" class="filter-input">
+            <span class="to-label">to</span>
+            <input type="number" placeholder="Max" class="filter-input">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Date Added</label>
+          <input type="date" class="filter-input">
+        </div>
+      </div>
+      <div class="filters-actions">
+        <button class="btn-filter-clear" (click)="clearFilters()">Clear All</button>
+        <button class="btn-filter-apply" (click)="applyAdvancedFilters()">
+          <span class="material-icons-outlined">search</span>
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- TABLE SECTION -->
+  <!-- ============================= -->
+  <div class="table-wrapper">
+    
+    <!-- Loading State -->
+    <div class="loading-skeleton" *ngIf="isLoading()">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-cell"></div>
+        <div class="skeleton-cell"></div>
+        <div class="skeleton-cell"></div>
+        <div class="skeleton-cell"></div>
+        <div class="skeleton-cell"></div>
+        <div class="skeleton-cell"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
+      <span class="material-icons-outlined empty-icon">inventory_2</span>
+      <h3>No Products Found</h3>
+      <p>Try changing your search criteria or create a new product.</p>
+      <button class="btn-add-product-empty">
+        <span class="material-icons-outlined">add_circle</span>
+        Add Product
+      </button>
+    </div>
+
+    <!-- Products Table -->
+    <table class="products-table" *ngIf="!isLoading() && products().length > 0">
+      <thead>
+        <tr>
+          <th class="col-product">Product</th>
+          <th class="col-barcode">Barcode Count</th>
+          <th class="col-price">Selling Price</th>
+          <th class="col-stock">Stock</th>
+          <th class="col-type">Product Type</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="product-row" *ngFor="let product of products()" (mouseenter)="onRowHover(product.id)" (mouseleave)="onRowLeave()">
+          
+          <!-- Product Column -->
+          <td class="col-product">
+            <div class="product-info">
+              <div class="product-image-placeholder" *ngIf="!product.imageUrl">
+                <span class="material-icons-outlined">image_not_supported</span>
+              </div>
+              <img *ngIf="product.imageUrl" [src]="product.imageUrl" class="product-image" alt="">
+              <div class="product-details">
+                <span class="product-name">{{ product.name }}</span>
+                <span class="product-code">{{ product.code }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Barcode Count Column -->
+          <td class="col-barcode">
+            <div class="barcode-badge">
+              <span class="barcode-count">{{ product.barcodeCount }}</span>
+              <span class="barcode-label">{{ product.barcodeCount === 1 ? 'Barcode' : 'Barcodes' }}</span>
+            </div>
+          </td>
+
+          <!-- Selling Price Column -->
+          <td class="col-price">
+            <span class="price-amount">{{ product.sellingPrice | number:'1.2-2' }} SAR</span>
+          </td>
+
+          <!-- Stock Column -->
+          <td class="col-stock">
+            <div class="stock-indicator" [ngClass]="getStockClass(product.stock)">
+              <span class="stock-dot"></span>
+              <span class="stock-text">{{ getStockLabel(product.stock) }}</span>
+            </div>
+          </td>
+
+          <!-- Product Type Column -->
+          <td class="col-type">
+            <span class="type-badge" [ngClass]="'type-' + product.type">
+              {{ getTypeLabel(product.type) }}
+            </span>
+          </td>
+
+          <!-- Actions Column -->
+          <td class="col-actions">
+            <div class="action-buttons">
+              <button class="btn-action btn-view" title="View" (click)="onViewProduct(product.id)">
+                <span class="material-icons-outlined">visibility</span>
+              </button>
+              <button class="btn-action btn-edit" title="Edit" (click)="onEditProduct(product.id)">
+                <span class="material-icons-outlined">edit</span>
+              </button>
+              <button class="btn-action btn-delete" title="Delete" (click)="onDeleteProduct(product.id)">
+                <span class="material-icons-outlined">delete_outline</span>
+              </button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <!-- ============================= -->
+  <!-- PAGINATION SECTION -->
+  <!-- ============================= -->
+  <div class="pagination-section" *ngIf="!isLoading() && products().length > 0">
+    <div class="results-summary">
+      <span>Showing {{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(), totalProducts()) }} of {{ totalProducts() }} products</span>
+    </div>
+    <div class="pagination-controls">
+      <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="previousPage()">
+        <span class="material-icons-outlined">chevron_left</span>
+        Previous
+      </button>
+      <div class="page-numbers">
+        <button *ngFor="let page of getPageNumbers()" 
+                class="btn-page-number" 
+                [class.active]="page === currentPage()"
+                (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </div>
+      <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+        Next
+        <span class="material-icons-outlined">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+</div>
