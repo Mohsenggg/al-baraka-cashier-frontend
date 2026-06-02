@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
@@ -208,6 +208,9 @@ export class ProductsMainPageComponent implements OnInit {
   // Hover state
   hoveredProductId = signal<string>('');
 
+  // Action menu open state (product id or null)
+  openMenuId = signal<string | null>(null);
+
   // Math reference for template
   Math = Math;
 
@@ -301,14 +304,14 @@ export class ProductsMainPageComponent implements OnInit {
 
   getStockClass(stock: number): string {
     const status = this.getStockStatus(stock, 10, 50);
-    return `stock-indicator-${status}`;
+    return status;
   }
 
   getStockLabel(stock: number): string {
-    if (stock === 0) return 'Out of Stock';
-    if (stock <= 10) return `Low Stock (${stock})`;
-    if (stock >= 100) return `${stock} Units`;
-    return `${stock} Units`;
+    if (stock === 0) return 'غير متاح';
+    if (stock <= 10) return `مخزون منخفض (${stock})`;
+    if (stock >= 100) return `${stock} وحدة`;
+    return `${stock} وحدة`;
   }
 
   // ===========================
@@ -317,10 +320,10 @@ export class ProductsMainPageComponent implements OnInit {
 
   getTypeLabel(type: string): string {
     const labels: Record<string, string> = {
-      inventory: 'Inventory Product',
-      service: 'Service',
-      bundle: 'Bundle',
-      raw: 'Raw Material'
+      inventory: 'منتج مخزون',
+      service: 'خدمة',
+      bundle: 'حزمة',
+      raw: 'مادة خام'
     };
     return labels[type] || type;
   }
@@ -335,6 +338,16 @@ export class ProductsMainPageComponent implements OnInit {
 
   onRowLeave(): void {
     this.hoveredProductId.set('');
+  }
+
+  toggleMenu(productId: string, event: Event): void {
+    event.stopPropagation();
+    this.openMenuId.set(this.openMenuId() === productId ? null : productId);
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleDocumentClick(_: Event) {
+    this.openMenuId.set(null);
   }
 
   // ===========================

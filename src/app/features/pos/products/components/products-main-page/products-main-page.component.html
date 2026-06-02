@@ -1,19 +1,19 @@
-<!-- Products Management Page -->
-<div class="products-container">
+<!-- Products Management Page - Arabic RTL -->
+<div class="products-container" dir="rtl">
   
   <!-- ============================= -->
   <!-- HEADER SECTION -->
   <!-- ============================= -->
   <div class="page-header">
     <div class="header-content">
-      <div class="header-titles">
-        <h1 class="page-title">Products</h1>
-        <p class="page-subtitle">Manage products, inventory, pricing, and barcodes</p>
-      </div>
       <button class="btn-add-product">
         <span class="material-icons-outlined">add_circle</span>
-        <span>Add Product</span>
+        <span>إضافة منتج</span>
       </button>
+      <div class="header-titles">
+        <h1 class="page-title">المنتجات</h1>
+        <p class="page-subtitle">إدارة المنتجات والمخزون والأسعار والباركودات</p>
+      </div>
     </div>
   </div>
 
@@ -28,54 +28,54 @@
       <input 
         type="text" 
         class="search-input" 
-        placeholder="Search products by name, barcode, or code..."
+        placeholder="ابحث عن المنتجات باستخدام الاسم أو الباركود أو الرمز..."
         (input)="onSearch($event)">
     </div>
 
     <!-- Filter Controls -->
     <div class="filter-controls">
-      <!-- Category Filter -->
+      <!-- Stock Status Filter -->
       <div class="filter-item">
         <select class="filter-select" (change)="onFilterChange()">
-          <option value="">Category</option>
-          <option value="electronics">Electronics</option>
-          <option value="accessories">Accessories</option>
-          <option value="supplies">Supplies</option>
+          <option value="">حالة المخزون</option>
+          <option value="healthy">متاح</option>
+          <option value="low">مخزون منخفض</option>
+          <option value="critical">حرج</option>
+          <option value="outofstock">غير متاح</option>
         </select>
       </div>
 
       <!-- Type Filter -->
       <div class="filter-item">
         <select class="filter-select" (change)="onFilterChange()">
-          <option value="">Product Type</option>
-          <option value="inventory">Inventory Product</option>
-          <option value="service">Service</option>
-          <option value="bundle">Bundle</option>
-          <option value="raw">Raw Material</option>
+          <option value="">نوع المنتج</option>
+          <option value="inventory">منتج مخزون</option>
+          <option value="service">خدمة</option>
+          <option value="bundle">حزمة</option>
+          <option value="raw">مادة خام</option>
         </select>
       </div>
 
-      <!-- Stock Status Filter -->
+      <!-- Category Filter -->
       <div class="filter-item">
         <select class="filter-select" (change)="onFilterChange()">
-          <option value="">Stock Status</option>
-          <option value="healthy">In Stock</option>
-          <option value="low">Low Stock</option>
-          <option value="critical">Critical</option>
-          <option value="outofstock">Out of Stock</option>
+          <option value="">الفئة</option>
+          <option value="electronics">إلكترونيات</option>
+          <option value="accessories">إكسسوارات</option>
+          <option value="supplies">مستلزمات</option>
         </select>
       </div>
 
       <!-- More Filters Button -->
       <button class="btn-more-filters" (click)="toggleAdvancedFilters()">
         <span class="material-icons-outlined">tune</span>
-        <span>More Filters</span>
+        <span>المزيد من التصفية</span>
       </button>
 
       <!-- Clear Filters (if active) -->
       <button class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearFilters()">
         <span class="material-icons-outlined">close</span>
-        Clear
+        مسح
       </button>
     </div>
   </div>
@@ -87,32 +87,32 @@
     <div class="filters-content">
       <div class="filter-row">
         <div class="filter-group">
-          <label>Price Range (SAR)</label>
-          <div class="dual-input">
-            <input type="number" placeholder="Min" class="filter-input">
-            <span class="to-label">to</span>
-            <input type="number" placeholder="Max" class="filter-input">
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Stock Quantity</label>
-          <div class="dual-input">
-            <input type="number" placeholder="Min" class="filter-input">
-            <span class="to-label">to</span>
-            <input type="number" placeholder="Max" class="filter-input">
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Date Added</label>
+          <label>التاريخ المضاف</label>
           <input type="date" class="filter-input">
+        </div>
+        <div class="filter-group">
+          <label>كمية المخزون</label>
+          <div class="dual-input">
+            <input type="number" placeholder="الحد الأقصى" class="filter-input">
+            <span class="to-label">إلى</span>
+            <input type="number" placeholder="الحد الأدنى" class="filter-input">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>نطاق السعر (ر.س)</label>
+          <div class="dual-input">
+            <input type="number" placeholder="الحد الأقصى" class="filter-input">
+            <span class="to-label">إلى</span>
+            <input type="number" placeholder="الحد الأدنى" class="filter-input">
+          </div>
         </div>
       </div>
       <div class="filters-actions">
-        <button class="btn-filter-clear" (click)="clearFilters()">Clear All</button>
         <button class="btn-filter-apply" (click)="applyAdvancedFilters()">
           <span class="material-icons-outlined">search</span>
-          Apply Filters
+          تطبيق التصفية
         </button>
+        <button class="btn-filter-clear" (click)="clearFilters()">مسح الكل</button>
       </div>
     </div>
   </div>
@@ -137,11 +137,11 @@
     <!-- Empty State -->
     <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
       <span class="material-icons-outlined empty-icon">inventory_2</span>
-      <h3>No Products Found</h3>
-      <p>Try changing your search criteria or create a new product.</p>
+      <h3>لم يتم العثور على منتجات</h3>
+      <p>جرب تغيير معايير البحث أو إنشاء منتج جديد.</p>
       <button class="btn-add-product-empty">
         <span class="material-icons-outlined">add_circle</span>
-        Add Product
+        إضافة منتج
       </button>
     </div>
 
@@ -149,28 +149,28 @@
     <table class="products-table" *ngIf="!isLoading() && products().length > 0">
       <thead>
         <tr>
-          <th class="col-product">Product</th>
-          <th class="col-barcode">Barcode Count</th>
-          <th class="col-price">Selling Price</th>
-          <th class="col-stock">Stock</th>
-          <th class="col-type">Product Type</th>
-          <th class="col-actions">Actions</th>
+          <th class="col-product">المنتج</th>
+          <th class="col-barcode">عدد الباركودات</th>
+          <th class="col-price">سعر البيع</th>
+          <th class="col-stock">المخزون</th>
+          <th class="col-type">نوع المنتج</th>
+          <th class="col-actions">الإجراءات</th>
         </tr>
       </thead>
       <tbody>
         <tr class="product-row" *ngFor="let product of products()" (mouseenter)="onRowHover(product.id)" (mouseleave)="onRowLeave()">
-          
-          <!-- Product Column -->
+
+          <!-- Product Column (rightmost visual) -->
           <td class="col-product">
             <div class="product-info">
-              <div class="product-image-placeholder" *ngIf="!product.imageUrl">
-                <span class="material-icons-outlined">image_not_supported</span>
-              </div>
-              <img *ngIf="product.imageUrl" [src]="product.imageUrl" class="product-image" alt="">
               <div class="product-details">
                 <span class="product-name">{{ product.name }}</span>
                 <span class="product-code">{{ product.code }}</span>
               </div>
+              <div class="product-image-placeholder" *ngIf="!product.imageUrl">
+                <span class="material-icons-outlined">image_not_supported</span>
+              </div>
+              <img *ngIf="product.imageUrl" [src]="product.imageUrl" class="product-image" alt="">
             </div>
           </td>
 
@@ -178,13 +178,13 @@
           <td class="col-barcode">
             <div class="barcode-badge">
               <span class="barcode-count">{{ product.barcodeCount }}</span>
-              <span class="barcode-label">{{ product.barcodeCount === 1 ? 'Barcode' : 'Barcodes' }}</span>
+              <span class="barcode-label">{{ product.barcodeCount === 1 ? 'باركود' : 'باركودات' }}</span>
             </div>
           </td>
 
           <!-- Selling Price Column -->
           <td class="col-price">
-            <span class="price-amount">{{ product.sellingPrice | number:'1.2-2' }} SAR</span>
+            <span class="price-amount">{{ product.sellingPrice | number:'1.2-2' }} ر.س</span>
           </td>
 
           <!-- Stock Column -->
@@ -202,18 +202,18 @@
             </span>
           </td>
 
-          <!-- Actions Column -->
+          <!-- Actions Column (leftmost visual) -->
           <td class="col-actions">
-            <div class="action-buttons">
-              <button class="btn-action btn-view" title="View" (click)="onViewProduct(product.id)">
-                <span class="material-icons-outlined">visibility</span>
+            <div class="action-menu-wrapper">
+              <button class="btn-action btn-menu" aria-haspopup="true" [attr.aria-expanded]="openMenuId() === product.id" (click)="toggleMenu(product.id, $event)">
+                <span class="material-icons-outlined">more_vert</span>
               </button>
-              <button class="btn-action btn-edit" title="Edit" (click)="onEditProduct(product.id)">
-                <span class="material-icons-outlined">edit</span>
-              </button>
-              <button class="btn-action btn-delete" title="Delete" (click)="onDeleteProduct(product.id)">
-                <span class="material-icons-outlined">delete_outline</span>
-              </button>
+
+              <div class="menu" *ngIf="openMenuId() === product.id" (click)="$event.stopPropagation()">
+                <button class="menu-item" (click)="onViewProduct(product.id)">عـرض</button>
+                <button class="menu-item" (click)="onEditProduct(product.id)">تعديل</button>
+                <button class="menu-item danger" (click)="onDeleteProduct(product.id)">حـذف</button>
+              </div>
             </div>
           </td>
 
@@ -227,13 +227,10 @@
   <!-- PAGINATION SECTION -->
   <!-- ============================= -->
   <div class="pagination-section" *ngIf="!isLoading() && products().length > 0">
-    <div class="results-summary">
-      <span>Showing {{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(), totalProducts()) }} of {{ totalProducts() }} products</span>
-    </div>
     <div class="pagination-controls">
-      <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="previousPage()">
+      <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
         <span class="material-icons-outlined">chevron_left</span>
-        Previous
+        التالي
       </button>
       <div class="page-numbers">
         <button *ngFor="let page of getPageNumbers()" 
@@ -243,10 +240,13 @@
           {{ page }}
         </button>
       </div>
-      <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-        Next
+      <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="previousPage()">
+        السابق
         <span class="material-icons-outlined">chevron_right</span>
       </button>
+    </div>
+    <div class="results-summary">
+      <span>عرض {{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(), totalProducts()) }} من {{ totalProducts() }} منتج</span>
     </div>
   </div>
 
