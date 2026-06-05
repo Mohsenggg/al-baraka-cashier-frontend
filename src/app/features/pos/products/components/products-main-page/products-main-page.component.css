@@ -661,15 +661,20 @@
   color: var(--pos-text-primary);
 }
 
-.product-text-sep {
-  color: #cbd5e1;
-  font-weight: 400;
-  user-select: none;
-}
-
-.product-description {
+.product-desc-attrs {
+  display: inline;
   font-weight: 400;
   color: var(--pos-text-secondary);
+}
+
+.desc-attr-primary {
+  font-weight: 500;
+  color: var(--pos-text-secondary);
+}
+
+.desc-attr-secondary {
+  font-weight: 400;
+  color: #94a3b8;
 }
 
 /* Barcode Column Styling */

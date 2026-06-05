@@ -3,10 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
 // Types for Product Model
+interface DescAttribute {
+  id: number;
+  name: string;
+  value: string;
+  ui?: 1 | 2;
+}
+
 interface Product {
   id: string;
   name: string;
-  description?: string;
+  descAttributes?: DescAttribute[];
   code: string;
   imageUrl?: string;
   barcodeCount: number;
@@ -36,7 +43,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '1',
       name: 'صابون سائل',
-      description: 'أصفر كيلو',
+      descAttributes: [
+        { id: 1, name: 'Color', value: 'أصفر', ui: 2 },
+        { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
+      ],
       code: 'WBS-2024-001',
       imageUrl: undefined,
       barcodeCount: 1,
@@ -51,7 +61,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '2',
       name: 'صابون سائل',
-      description: 'أخضر كيلو',
+      descAttributes: [
+        { id: 1, name: 'Color', value: 'أخضر', ui: 2 },
+        { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
+      ],
       code: 'TRP-2024-002',
       imageUrl: undefined,
       barcodeCount: 3,
@@ -66,7 +79,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '3',
       name: 'كلور سائل',
-      description: 'عادى كيلو',
+      descAttributes: [
+        { id: 1, name: 'Type', value: 'عادى', ui: 1 },
+        { id: 2, name: 'Size', value: 'كيلو', ui: 2 }
+      ],
       code: 'SVC-2024-003',
       imageUrl: undefined,
       barcodeCount: 0,
@@ -79,7 +95,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '4',
       name: 'كلور سائل',
-      description: 'مركز كيلو',
+      descAttributes: [
+        { id: 1, name: 'Type', value: 'مركز', ui: 1 },
+        { id: 2, name: 'Size', value: 'كيلو', ui: 2 }
+      ],
       code: 'BLR-2024-004',
       imageUrl: undefined,
       barcodeCount: 5,
@@ -94,7 +113,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '5',
       name: 'كلور سائل',
-      description: 'مركز جمدانة',
+      descAttributes: [
+        { id: 1, name: 'Type', value: 'مركز', ui: 1 },
+        { id: 2, name: 'Size', value: 'جمدانة', ui: 2 }
+      ],
       code: 'BND-2024-005',
       imageUrl: undefined,
       barcodeCount: 8,
@@ -107,7 +129,9 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '6',
       name: 'ألمنيوم مركب (خام)',
-      description: 'مادة خام للتصنيع والإنتاج',
+      descAttributes: [
+        { id: 1, name: 'Description', value: 'مادة خام للتصنيع والإنتاج', ui: 1 }
+      ],
       code: 'RAW-2024-006',
       imageUrl: undefined,
       barcodeCount: 0,
@@ -122,7 +146,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '7',
       name: 'سلفونيك',
-      description: 'شفاف كيلو',
+      descAttributes: [
+        { id: 1, name: 'Color', value: 'شفاف', ui: 2 },
+        { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
+      ],
       code: 'USB-2024-007',
       imageUrl: undefined,
       barcodeCount: 2,
@@ -137,7 +164,10 @@ export class ProductsMainPageComponent implements OnInit {
     {
       id: '8',
       name: 'سلفونيك',
-      description: 'شفاف جمدانة',
+      descAttributes: [
+        { id: 1, name: 'Color', value: 'شفاف', ui: 2 },
+        { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
+      ],
       code: 'DRW-2024-008',
       imageUrl: undefined,
       barcodeCount: 1,
@@ -176,7 +206,7 @@ export class ProductsMainPageComponent implements OnInit {
     if (query) {
       products = products.filter(p =>
         p.name.toLowerCase().includes(query) ||
-        p.description?.toLowerCase().includes(query) ||
+        p.descAttributes?.some(attr => attr.value.toLowerCase().includes(query)) ||
         p.code.toLowerCase().includes(query)
       );
     }
@@ -336,6 +366,24 @@ export class ProductsMainPageComponent implements OnInit {
       raw: 'مادة خام'
     };
     return labels[type] || type;
+  }
+
+  // ===========================
+  // DESCRIPTION ATTRIBUTES
+  // ===========================
+
+  getVisibleDescAttributes(product: Product): DescAttribute[] {
+    if (!product.descAttributes?.length) {
+      return [];
+    }
+
+    return [...product.descAttributes]
+      .filter(attr => attr.ui === 1 || attr.ui === 2)
+      .sort((a, b) => (a.ui ?? 99) - (b.ui ?? 99));
+  }
+
+  getDescAttrClass(ui?: 1 | 2): string {
+    return ui === 1 ? 'desc-attr-primary' : 'desc-attr-secondary';
   }
 
   // ===========================

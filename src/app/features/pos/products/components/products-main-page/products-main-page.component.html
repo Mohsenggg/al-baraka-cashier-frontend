@@ -168,7 +168,12 @@
           <!-- Product Column (rightmost visual) -->
           <td class="col-product">
             <p class="product-text">
-              <span class="product-name">{{ product.name }}</span><ng-container *ngIf="product.description"><span class="product-text-sep"> · </span><span class="product-description">{{ product.description }}</span></ng-container>
+              <span class="product-name">{{ product.name }}</span>
+              <ng-container *ngIf="getVisibleDescAttributes(product) as descAttrs">
+                <ng-container *ngIf="descAttrs.length">
+                  {{ ' ' }}<span class="product-desc-attrs"><ng-container *ngFor="let attr of descAttrs; let last = last"><span [class]="getDescAttrClass(attr.ui)">{{ attr.value }}</span><ng-container *ngIf="!last">{{ ' ' }}</ng-container></ng-container></span>
+                </ng-container>
+              </ng-container>
             </p>
           </td>
 
