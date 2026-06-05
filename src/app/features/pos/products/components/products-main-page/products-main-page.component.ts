@@ -2,12 +2,27 @@ import { Component, signal, computed, OnInit, HostListener } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
-// Types for Product Model
 interface DescAttribute {
   id: number;
   name: string;
   value: string;
   ui?: 1 | 2;
+}
+
+interface ProductBarcode {
+  id: number;
+  barcode: string;
+  sellingPrice: number;
+  buyingPrice: number;
+  stock: number;
+  default: boolean;
+}
+
+interface ProductSummary {
+  defaultBarcodeId: number;
+  maxSellingPrice: number;
+  totalStock: number;
+  barcodeCount: number;
 }
 
 interface Product {
@@ -16,10 +31,10 @@ interface Product {
   descAttributes?: DescAttribute[];
   code: string;
   imageUrl?: string;
-  barcodeCount: number;
-  sellingPrice: number;
-  stock: number;
+  barcodes: ProductBarcode[];
+  summary: ProductSummary;
   type: 'inventory' | 'service' | 'bundle' | 'raw';
+  status: 'active' | 'inactive' | 'draft';
   category?: string;
   minStockLevel?: number;
   maxStockLevel?: number;
@@ -34,11 +49,6 @@ interface Product {
   styleUrl: './products-main-page.component.css'
 })
 export class ProductsMainPageComponent implements OnInit {
-  // ===========================
-  // SIGNALS FOR STATE MANAGEMENT
-  // ===========================
-
-  // Product data
   allProducts = signal<Product[]>([
     {
       id: '1',
@@ -48,11 +58,12 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
       ],
       code: 'WBS-2024-001',
-      imageUrl: undefined,
-      barcodeCount: 1,
-      sellingPrice: 20.00,
-      stock: 125,
+      barcodes: [
+        { id: 1, barcode: '6281001001001', sellingPrice: 20.00, buyingPrice: 15.00, stock: 125, default: true }
+      ],
+      summary: { defaultBarcodeId: 1, maxSellingPrice: 20.00, totalStock: 125, barcodeCount: 1 },
       type: 'inventory',
+      status: 'active',
       category: 'electronics',
       minStockLevel: 10,
       maxStockLevel: 500,
@@ -66,11 +77,14 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
       ],
       code: 'TRP-2024-002',
-      imageUrl: undefined,
-      barcodeCount: 3,
-      sellingPrice: 1200.00,
-      stock: 8,
+      barcodes: [
+        { id: 1, barcode: '6281001002001', sellingPrice: 22.00, buyingPrice: 17.00, stock: 30, default: false },
+        { id: 2, barcode: '6281001002002', sellingPrice: 25.00, buyingPrice: 19.00, stock: 45, default: true },
+        { id: 3, barcode: '6281001002003', sellingPrice: 18.00, buyingPrice: 14.00, stock: 20, default: false }
+      ],
+      summary: { defaultBarcodeId: 2, maxSellingPrice: 25.00, totalStock: 95, barcodeCount: 3 },
       type: 'inventory',
+      status: 'active',
       category: 'electronics',
       minStockLevel: 5,
       maxStockLevel: 50,
@@ -80,15 +94,14 @@ export class ProductsMainPageComponent implements OnInit {
       id: '3',
       name: 'كلور سائل',
       descAttributes: [
-        { id: 1, name: 'Type', value: 'عادى', ui: 1 },
-        { id: 2, name: 'Size', value: 'كيلو', ui: 2 }
+        { id: 2, name: 'Size', value: 'كيلو', ui: 2 },
+        { id: 1, name: 'Type', value: 'عادى', ui: 1 }
       ],
       code: 'SVC-2024-003',
-      imageUrl: undefined,
-      barcodeCount: 0,
-      sellingPrice: 500.00,
-      stock: 1000,
+      barcodes: [],
+      summary: { defaultBarcodeId: 0, maxSellingPrice: 500.00, totalStock: 1000, barcodeCount: 0 },
       type: 'service',
+      status: 'active',
       category: 'services',
       createdAt: new Date('2024-02-01')
     },
@@ -100,11 +113,13 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 2, name: 'Size', value: 'كيلو', ui: 2 }
       ],
       code: 'BLR-2024-004',
-      imageUrl: undefined,
-      barcodeCount: 5,
-      sellingPrice: 45.00,
-      stock: 2,
+      barcodes: [
+        { id: 1, barcode: '6281001004001', sellingPrice: 45.00, buyingPrice: 35.00, stock: 1, default: true },
+        { id: 2, barcode: '6281001004002', sellingPrice: 48.00, buyingPrice: 38.00, stock: 1, default: false }
+      ],
+      summary: { defaultBarcodeId: 1, maxSellingPrice: 48.00, totalStock: 2, barcodeCount: 2 },
       type: 'inventory',
+      status: 'active',
       category: 'supplies',
       minStockLevel: 20,
       maxStockLevel: 200,
@@ -118,11 +133,15 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 2, name: 'Size', value: 'جمدانة', ui: 2 }
       ],
       code: 'BND-2024-005',
-      imageUrl: undefined,
-      barcodeCount: 8,
-      sellingPrice: 3500.00,
-      stock: 15,
+      barcodes: [
+        { id: 1, barcode: '6281001005001', sellingPrice: 3500.00, buyingPrice: 3000.00, stock: 5, default: true },
+        { id: 2, barcode: '6281001005002', sellingPrice: 3600.00, buyingPrice: 3100.00, stock: 4, default: false },
+        { id: 3, barcode: '6281001005003', sellingPrice: 3400.00, buyingPrice: 2900.00, stock: 3, default: false },
+        { id: 4, barcode: '6281001005004', sellingPrice: 3550.00, buyingPrice: 3050.00, stock: 3, default: false }
+      ],
+      summary: { defaultBarcodeId: 1, maxSellingPrice: 3600.00, totalStock: 15, barcodeCount: 4 },
       type: 'bundle',
+      status: 'active',
       category: 'electronics',
       createdAt: new Date('2024-02-05')
     },
@@ -133,11 +152,10 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 1, name: 'Description', value: 'مادة خام للتصنيع والإنتاج', ui: 1 }
       ],
       code: 'RAW-2024-006',
-      imageUrl: undefined,
-      barcodeCount: 0,
-      sellingPrice: 120.00,
-      stock: 0,
+      barcodes: [],
+      summary: { defaultBarcodeId: 0, maxSellingPrice: 120.00, totalStock: 0, barcodeCount: 0 },
       type: 'raw',
+      status: 'inactive',
       category: 'materials',
       minStockLevel: 50,
       maxStockLevel: 500,
@@ -151,11 +169,14 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
       ],
       code: 'USB-2024-007',
-      imageUrl: undefined,
-      barcodeCount: 2,
-      sellingPrice: 35.00,
-      stock: 500,
+      barcodes: [
+        { id: 1, barcode: '123456', sellingPrice: 35.00, buyingPrice: 28.00, stock: 50, default: false },
+        { id: 2, barcode: '999999', sellingPrice: 38.00, buyingPrice: 30.00, stock: 60, default: true },
+        { id: 3, barcode: '888888', sellingPrice: 32.00, buyingPrice: 25.00, stock: 40, default: false }
+      ],
+      summary: { defaultBarcodeId: 2, maxSellingPrice: 38.00, totalStock: 150, barcodeCount: 3 },
       type: 'inventory',
+      status: 'active',
       category: 'accessories',
       minStockLevel: 100,
       maxStockLevel: 1000,
@@ -169,11 +190,12 @@ export class ProductsMainPageComponent implements OnInit {
         { id: 2, name: 'Size', value: 'كيلو', ui: 1 }
       ],
       code: 'DRW-2024-008',
-      imageUrl: undefined,
-      barcodeCount: 1,
-      sellingPrice: 180.00,
-      stock: 42,
+      barcodes: [
+        { id: 1, barcode: '6281001008001', sellingPrice: 180.00, buyingPrice: 150.00, stock: 42, default: true }
+      ],
+      summary: { defaultBarcodeId: 1, maxSellingPrice: 180.00, totalStock: 42, barcodeCount: 1 },
       type: 'inventory',
+      status: 'active',
       category: 'accessories',
       minStockLevel: 10,
       maxStockLevel: 100,
@@ -181,53 +203,46 @@ export class ProductsMainPageComponent implements OnInit {
     }
   ]);
 
-  // UI State
   isLoading = signal<boolean>(false);
   showAdvancedFilters = signal<boolean>(false);
 
-  // Search & Filter
   searchQuery = signal<string>('');
   selectedCategory = signal<string>('');
   selectedType = signal<string>('');
   selectedStockStatus = signal<string>('');
 
-  // Pagination
   currentPage = signal<number>(1);
   pageSize = signal<number>(20);
   totalPages = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()));
   totalProducts = computed(() => this.filteredProducts().length);
 
-  // Computed signals for filtering
   filteredProducts = computed(() => {
     let products = this.allProducts();
-
-    // Search filter
     const query = this.searchQuery().toLowerCase();
+
     if (query) {
       products = products.filter(p =>
         p.name.toLowerCase().includes(query) ||
         p.descAttributes?.some(attr => attr.value.toLowerCase().includes(query)) ||
-        p.code.toLowerCase().includes(query)
+        p.code.toLowerCase().includes(query) ||
+        p.barcodes.some(b => b.barcode.toLowerCase().includes(query))
       );
     }
 
-    // Category filter
     const category = this.selectedCategory();
     if (category) {
       products = products.filter(p => p.category === category);
     }
 
-    // Type filter
     const type = this.selectedType();
     if (type) {
       products = products.filter(p => p.type === type);
     }
 
-    // Stock status filter
     const stockStatus = this.selectedStockStatus();
     if (stockStatus) {
       products = products.filter(p => {
-        const status = this.getStockStatus(p.stock, p.minStockLevel, p.maxStockLevel);
+        const status = this.getStockStatus(p.summary.totalStock, p.minStockLevel, p.maxStockLevel);
         return status === stockStatus;
       });
     }
@@ -235,23 +250,17 @@ export class ProductsMainPageComponent implements OnInit {
     return products;
   });
 
-  // Paginated products
   products = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
     const end = start + this.pageSize();
     return this.filteredProducts().slice(start, end);
   });
 
-  // Form for advanced filters
   filterForm!: FormGroup;
-
-  // Hover state
   hoveredProductId = signal<string>('');
-
-  // Action menu open state (product id or null)
   openMenuId = signal<string | null>(null);
+  openBarcodePopoverId = signal<string | null>(null);
 
-  // Math reference for template
   Math = Math;
 
   constructor(private formBuilder: FormBuilder) {
@@ -259,13 +268,8 @@ export class ProductsMainPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Load products from service (simulated)
     this.simulateDataLoad();
   }
-
-  // ===========================
-  // INITIALIZATION
-  // ===========================
 
   private initializeFilterForm(): void {
     this.filterForm = this.formBuilder.group({
@@ -278,25 +282,20 @@ export class ProductsMainPageComponent implements OnInit {
   }
 
   private simulateDataLoad(): void {
-    // Simulate loading delay
     this.isLoading.set(true);
     setTimeout(() => {
       this.isLoading.set(false);
     }, 500);
   }
 
-  // ===========================
-  // SEARCH & FILTER ACTIONS
-  // ===========================
-
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
-    this.currentPage.set(1); // Reset to first page on search
+    this.currentPage.set(1);
   }
 
   onFilterChange(): void {
-    this.currentPage.set(1); // Reset to first page on filter change
+    this.currentPage.set(1);
   }
 
   toggleAdvancedFilters(): void {
@@ -304,9 +303,6 @@ export class ProductsMainPageComponent implements OnInit {
   }
 
   applyAdvancedFilters(): void {
-    // Get form values and update filter signals
-    const formValue = this.filterForm.value;
-    // Implementation for advanced filters
     this.currentPage.set(1);
     this.showAdvancedFilters.set(false);
   }
@@ -331,10 +327,6 @@ export class ProductsMainPageComponent implements OnInit {
     );
   }
 
-  // ===========================
-  // STOCK HELPERS
-  // ===========================
-
   private getStockStatus(stock: number, minLevel?: number, maxLevel?: number): string {
     if (stock === 0) return 'outofstock';
     if (minLevel && stock <= minLevel) return 'critical';
@@ -342,21 +334,15 @@ export class ProductsMainPageComponent implements OnInit {
     return 'healthy';
   }
 
-  getStockClass(stock: number): string {
-    const status = this.getStockStatus(stock, 10, 50);
-    return status;
+  getStockClass(product: Product): string {
+    return this.getStockStatus(product.summary.totalStock, product.minStockLevel, product.maxStockLevel);
   }
 
-  getStockLabel(stock: number): string {
-    if (stock === 0) return 'غير متاح';
-    if (stock <= 10) return `مخزون منخفض (${stock})`;
-    if (stock >= 100) return `${stock} وحدة`;
-    return `${stock} وحدة`;
+  getStockLabel(product: Product): string {
+    const stock = product.summary.totalStock;
+    if (stock === 0) return '0';
+    return `${stock}`;
   }
-
-  // ===========================
-  // TYPE HELPERS
-  // ===========================
 
   getTypeLabel(type: string): string {
     const labels: Record<string, string> = {
@@ -368,9 +354,18 @@ export class ProductsMainPageComponent implements OnInit {
     return labels[type] || type;
   }
 
-  // ===========================
-  // DESCRIPTION ATTRIBUTES
-  // ===========================
+  getStatusLabel(status: Product['status']): string {
+    const labels: Record<Product['status'], string> = {
+      active: 'نشط',
+      inactive: 'غير نشط',
+      draft: 'مسودة'
+    };
+    return labels[status];
+  }
+
+  getStatusClass(status: Product['status']): string {
+    return `status-${status}`;
+  }
 
   getVisibleDescAttributes(product: Product): DescAttribute[] {
     if (!product.descAttributes?.length) {
@@ -386,9 +381,17 @@ export class ProductsMainPageComponent implements OnInit {
     return ui === 1 ? 'desc-attr-primary' : 'desc-attr-secondary';
   }
 
-  // ===========================
-  // ROW HOVER
-  // ===========================
+  hasMultipleBarcodes(product: Product): boolean {
+    return product.summary.barcodeCount > 1;
+  }
+
+  toggleBarcodePopover(productId: string, event: Event): void {
+    event.stopPropagation();
+    this.openMenuId.set(null);
+    this.openBarcodePopoverId.set(
+      this.openBarcodePopoverId() === productId ? null : productId
+    );
+  }
 
   onRowHover(productId: string): void {
     this.hoveredProductId.set(productId);
@@ -400,41 +403,32 @@ export class ProductsMainPageComponent implements OnInit {
 
   toggleMenu(productId: string, event: Event): void {
     event.stopPropagation();
+    this.openBarcodePopoverId.set(null);
     this.openMenuId.set(this.openMenuId() === productId ? null : productId);
   }
 
-  @HostListener('document:click', ['$event'])
-  handleDocumentClick(_: Event) {
+  @HostListener('document:click')
+  handleDocumentClick(): void {
     this.openMenuId.set(null);
+    this.openBarcodePopoverId.set(null);
   }
-
-  // ===========================
-  // TABLE ACTIONS
-  // ===========================
 
   onViewProduct(productId: string): void {
     console.log('View product:', productId);
-    // Navigate to product detail view
   }
 
   onEditProduct(productId: string): void {
     console.log('Edit product:', productId);
-    // Navigate to product edit page
   }
 
   onDeleteProduct(productId: string): void {
     console.log('Delete product:', productId);
-    // Show confirmation and delete
-    if (confirm('Are you sure you want to delete this product?')) {
+    if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
       this.allProducts.update(products =>
         products.filter(p => p.id !== productId)
       );
     }
   }
-
-  // ===========================
-  // PAGINATION
-  // ===========================
 
   getPageNumbers(): number[] {
     const total = this.totalPages();
@@ -446,17 +440,17 @@ export class ProductsMainPageComponent implements OnInit {
     }
 
     const pages: number[] = [];
-    let start = Math.max(1, current - 2);
-    let end = Math.min(total, current + 2);
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
 
     if (start > 1) pages.push(1);
-    if (start > 2) pages.push(-1); // Separator
+    if (start > 2) pages.push(-1);
 
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    if (end < total - 1) pages.push(-1); // Separator
+    if (end < total - 1) pages.push(-1);
     if (end < total) pages.push(total);
 
     return pages;
@@ -480,4 +474,3 @@ export class ProductsMainPageComponent implements OnInit {
     }
   }
 }
-

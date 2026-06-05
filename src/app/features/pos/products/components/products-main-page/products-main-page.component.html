@@ -131,6 +131,7 @@
         <div class="skeleton-cell"></div>
         <div class="skeleton-cell"></div>
         <div class="skeleton-cell"></div>
+        <div class="skeleton-cell"></div>
       </div>
     </div>
 
@@ -155,11 +156,12 @@
               <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span> الوصف</span>
             </div>
           </th>
-          <th class="col-barcode">عدد الباركودات</th>
           <th class="col-price">سعر البيع</th>
-          <th class="col-stock">المخزون</th>
+          <th class="col-stock">إجمالي المخزون</th>
           <th class="col-type">نوع المنتج</th>
+          <th class="col-status">الحالة</th>
           <th class="col-actions">الإجراءات</th>
+          <th class="col-barcode">متعدد الباركود</th>
         </tr>
       </thead>
       <tbody>
@@ -177,24 +179,16 @@
             </p>
           </td>
 
-          <!-- Barcode Count Column -->
-          <td class="col-barcode">
-            <div class="barcode-badge">
-              <span class="barcode-count">{{ product.barcodeCount }}</span>
-              <span class="barcode-label">{{ product.barcodeCount === 1 ? 'باركود' : 'باركودات' }}</span>
-            </div>
-          </td>
-
           <!-- Selling Price Column -->
           <td class="col-price">
-            <span class="price-amount">{{ product.sellingPrice | number:'1.2-2' }} ر.س</span>
+            <span class="price-amount">{{ product.summary.maxSellingPrice | number:'1.2-2' }} ر.س</span>
           </td>
 
-          <!-- Stock Column -->
+          <!-- Total Stock Column -->
           <td class="col-stock">
-            <div class="stock-indicator" [ngClass]="getStockClass(product.stock)">
+            <div class="stock-indicator" [ngClass]="getStockClass(product)">
               <span class="stock-dot"></span>
-              <span class="stock-text">{{ getStockLabel(product.stock) }}</span>
+              <span class="stock-text">{{ getStockLabel(product) }}</span>
             </div>
           </td>
 
@@ -205,7 +199,14 @@
             </span>
           </td>
 
-          <!-- Actions Column (leftmost visual) -->
+          <!-- Status Column -->
+          <td class="col-status">
+            <span class="status-badge" [ngClass]="getStatusClass(product.status)">
+              {{ getStatusLabel(product.status) }}
+            </span>
+          </td>
+
+          <!-- Actions Column -->
           <td class="col-actions">
             <div class="action-menu-wrapper">
               <button class="btn-action btn-menu" aria-haspopup="true" [attr.aria-expanded]="openMenuId() === product.id" (click)="toggleMenu(product.id, $event)">
@@ -216,6 +217,61 @@
                 <button class="menu-item" (click)="onViewProduct(product.id)">عـرض</button>
                 <button class="menu-item" (click)="onEditProduct(product.id)">تعديل</button>
                 <button class="menu-item danger" (click)="onDeleteProduct(product.id)">حـذف</button>
+              </div>
+            </div>
+          </td>
+
+          <!-- Barcode Column (leftmost, minimal) -->
+          <td class="col-barcode">
+            <div class="barcode-popover-wrapper" *ngIf="hasMultipleBarcodes(product)">
+              <button
+                class="btn-barcode-details"
+                type="button"
+                title="تفاصيل الباركودات"
+                [attr.aria-expanded]="openBarcodePopoverId() === product.id"
+                (click)="toggleBarcodePopover(product.id, $event)">
+                <span class="material-icons-outlined">info</span>
+                <span class="barcode-multi-label">متعدد الباركود</span>
+              </button>
+
+              <div
+                class="barcode-popover"
+                *ngIf="openBarcodePopoverId() === product.id"
+                (click)="$event.stopPropagation()">
+                <div class="popover-header">تفاصيل الباركودات</div>
+
+                <table class="barcode-details-table">
+                  <thead>
+                    <tr>
+                      <th>الباركود</th>
+                      <th>سعر البيع</th>
+                      <th>سعر الشراء</th>
+                      <th>المخزون</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let barcode of product.barcodes" [class.is-default]="barcode.id === product.summary.defaultBarcodeId">
+                      <td>
+                        <span class="barcode-cell-value">{{ barcode.barcode }}</span>
+                        <span class="default-tag" *ngIf="barcode.id === product.summary.defaultBarcodeId">افتراضي</span>
+                      </td>
+                      <td>{{ barcode.sellingPrice | number:'1.2-2' }} ر.س</td>
+                      <td>{{ barcode.buyingPrice | number:'1.2-2' }} ر.س</td>
+                      <td>{{ barcode.stock }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="popover-footer">
+                  <div class="popover-summary-item">
+                    <span class="popover-summary-label">إجمالي المخزون</span>
+                    <span class="popover-summary-value">{{ product.summary.totalStock }}</span>
+                  </div>
+                  <div class="popover-summary-item">
+                    <span class="popover-summary-label">أعلى سعر بيع</span>
+                    <span class="popover-summary-value">{{ product.summary.maxSellingPrice | number:'1.2-2' }} ر.س</span>
+                  </div>
+                </div>
               </div>
             </div>
           </td>

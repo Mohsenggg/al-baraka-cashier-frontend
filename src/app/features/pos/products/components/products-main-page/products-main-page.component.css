@@ -412,7 +412,7 @@
 
 .skeleton-row {
   display: grid;
-  grid-template-columns: 1fr 1.2fr 1fr 1fr 1fr 2fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.8fr 0.6fr 0.7fr;
   gap: 12px;
   padding: 12px;
   background-color: #f8fafc;
@@ -542,11 +542,9 @@
 
 /* Column sizing */
 .col-actions {
-  width: 10%;
   text-align: center;
+  position: relative;
 }
-/* Ensure menu wrapper is positioned relative for absolute menu */
-.col-actions { position: relative; }
 
 .action-menu-wrapper { display: flex; align-items: center; justify-content: center; }
 
@@ -595,25 +593,37 @@
 
 .menu-item.danger { color: var(--pos-danger-text); }
 
-.col-type {
-  width: 14%;
-}
-
-.col-stock {
-  width: 14%;
+.col-product {
+  width: 26%;
+  text-align: right;
 }
 
 .col-price {
+  width: 11%;
+}
+
+.col-stock {
+  width: 11%;
+}
+
+.col-type {
   width: 12%;
 }
 
-.col-barcode {
-  width: 14%;
+.col-status {
+  width: 10%;
 }
 
-.col-product {
-  width: 28%;
-  text-align: right;
+.col-actions {
+  width: 9%;
+}
+
+.col-barcode {
+  width: 9%;
+  min-width: 108px;
+  padding: 14px 10px;
+  text-align: center;
+  position: relative;
 }
 
 /* Product Column Header — composite title + inline subtitles */
@@ -677,26 +687,172 @@
   color: #94a3b8;
 }
 
-/* Barcode Column Styling */
-.barcode-badge {
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.status-active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.status-inactive {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-badge.status-draft {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+/* Barcode Column — minimal, lowest priority */
+.barcode-popover-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-barcode-details {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
-  background-color: #e0e7ff;
-  color: #3730a3;
+  height: 28px;
+  padding: 0 6px;
+  background: transparent;
+  border: none;
   border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  cursor: pointer;
+  color: var(--pos-text-secondary);
+  transition: all 0.15s ease;
   flex-direction: row-reverse;
 }
 
-.barcode-count {
-  font-weight: 700;
+.btn-barcode-details:hover,
+.btn-barcode-details[aria-expanded="true"] {
+  background-color: #f1f5f9;
+  color: var(--pos-primary);
 }
 
-.barcode-label {
+.btn-barcode-details .material-icons-outlined {
+  font-size: 0.95rem;
+}
+
+.barcode-multi-label {
+  font-size: 0.72rem;
   font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+}
+
+/* Barcode Details Popover */
+.barcode-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 380px;
+  background: var(--pos-card-bg);
+  border: 1px solid var(--pos-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(12, 34, 63, 0.14);
+  z-index: 70;
+  overflow: hidden;
+}
+
+.popover-header {
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--pos-text-primary);
+  border-bottom: 1px solid var(--pos-border);
+  background-color: #f8fafc;
+}
+
+.barcode-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.barcode-details-table th {
+  padding: 8px 12px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--pos-text-secondary);
+  background-color: #fafbfc;
+  border-bottom: 1px solid var(--pos-border);
+  white-space: nowrap;
+}
+
+.barcode-details-table td {
+  padding: 8px 12px;
+  text-align: right;
+  color: var(--pos-text-primary);
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.barcode-details-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.barcode-details-table tbody tr.is-default {
+  background-color: #f8fafc;
+}
+
+.barcode-cell-value {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+.default-tag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--pos-primary);
+  background-color: #dbeafe;
+  border-radius: 4px;
+  font-family: var(--font-family);
+}
+
+.popover-footer {
+  display: flex;
+  gap: 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--pos-border);
+  background-color: #f8fafc;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+.popover-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.popover-summary-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--pos-text-secondary);
+}
+
+.popover-summary-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--pos-text-primary);
 }
 
 /* Price Column Styling */
