@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angul
 interface Product {
   id: string;
   name: string;
+  description?: string;
   code: string;
   imageUrl?: string;
   barcodeCount: number;
@@ -34,11 +35,12 @@ export class ProductsMainPageComponent implements OnInit {
   allProducts = signal<Product[]>([
     {
       id: '1',
-      name: 'Wireless Barcode Scanner',
+      name: 'صابون سائل',
+      description: 'أصفر كيلو',
       code: 'WBS-2024-001',
       imageUrl: undefined,
       barcodeCount: 1,
-      sellingPrice: 250.00,
+      sellingPrice: 20.00,
       stock: 125,
       type: 'inventory',
       category: 'electronics',
@@ -48,7 +50,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '2',
-      name: 'Thermal Receipt Printer',
+      name: 'صابون سائل',
+      description: 'أخضر كيلو',
       code: 'TRP-2024-002',
       imageUrl: undefined,
       barcodeCount: 3,
@@ -62,7 +65,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '3',
-      name: 'POS Installation Service',
+      name: 'كلور سائل',
+      description: 'عادى كيلو',
       code: 'SVC-2024-003',
       imageUrl: undefined,
       barcodeCount: 0,
@@ -74,7 +78,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '4',
-      name: 'Barcode Labels Roll',
+      name: 'كلور سائل',
+      description: 'مركز كيلو',
       code: 'BLR-2024-004',
       imageUrl: undefined,
       barcodeCount: 5,
@@ -88,7 +93,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '5',
-      name: 'Cash Register Bundle',
+      name: 'كلور سائل',
+      description: 'مركز جمدانة',
       code: 'BND-2024-005',
       imageUrl: undefined,
       barcodeCount: 8,
@@ -100,7 +106,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '6',
-      name: 'Aluminum Composite (Raw)',
+      name: 'ألمنيوم مركب (خام)',
+      description: 'مادة خام للتصنيع والإنتاج',
       code: 'RAW-2024-006',
       imageUrl: undefined,
       barcodeCount: 0,
@@ -114,7 +121,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '7',
-      name: 'USB Cable Type-C',
+      name: 'سلفونيك',
+      description: 'شفاف كيلو',
       code: 'USB-2024-007',
       imageUrl: undefined,
       barcodeCount: 2,
@@ -128,7 +136,8 @@ export class ProductsMainPageComponent implements OnInit {
     },
     {
       id: '8',
-      name: 'Protective Drawer',
+      name: 'سلفونيك',
+      description: 'شفاف جمدانة',
       code: 'DRW-2024-008',
       imageUrl: undefined,
       barcodeCount: 1,
@@ -167,6 +176,7 @@ export class ProductsMainPageComponent implements OnInit {
     if (query) {
       products = products.filter(p =>
         p.name.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query) ||
         p.code.toLowerCase().includes(query)
       );
     }

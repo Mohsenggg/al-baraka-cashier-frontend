@@ -149,7 +149,12 @@
     <table class="products-table" *ngIf="!isLoading() && products().length > 0">
       <thead>
         <tr>
-          <th class="col-product">المنتج</th>
+          <th class="col-product">
+            <div class="product-col-header">
+              <span class="col-title">المنتج</span>
+              <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span> الوصف</span>
+            </div>
+          </th>
           <th class="col-barcode">عدد الباركودات</th>
           <th class="col-price">سعر البيع</th>
           <th class="col-stock">المخزون</th>
@@ -162,16 +167,9 @@
 
           <!-- Product Column (rightmost visual) -->
           <td class="col-product">
-            <div class="product-info">
-              <div class="product-details">
-                <span class="product-name">{{ product.name }}</span>
-                <span class="product-code">{{ product.code }}</span>
-              </div>
-              <div class="product-image-placeholder" *ngIf="!product.imageUrl">
-                <span class="material-icons-outlined">image_not_supported</span>
-              </div>
-              <img *ngIf="product.imageUrl" [src]="product.imageUrl" class="product-image" alt="">
-            </div>
+            <p class="product-text">
+              <span class="product-name">{{ product.name }}</span><ng-container *ngIf="product.description"><span class="product-text-sep"> · </span><span class="product-description">{{ product.description }}</span></ng-container>
+            </p>
           </td>
 
           <!-- Barcode Count Column -->
