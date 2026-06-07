@@ -236,6 +236,8 @@
 
               <div
                 class="barcode-popover"
+                [class.popover-up]="popoverPosition() === 'up'"
+                [class.popover-down]="popoverPosition() === 'down'"
                 *ngIf="openBarcodePopoverId() === product.id"
                 (click)="$event.stopPropagation()">
                 <div class="popover-header">تفاصيل الباركودات</div>

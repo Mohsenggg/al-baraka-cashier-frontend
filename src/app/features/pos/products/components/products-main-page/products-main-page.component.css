@@ -103,14 +103,16 @@
   border-bottom: 1px solid var(--pos-border);
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
 }
 
 .search-bar-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .search-icon {
@@ -755,8 +757,7 @@
 /* Barcode Details Popover */
 .barcode-popover {
   position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  left: 0;
   width: 380px;
   background: var(--pos-card-bg);
   border: 1px solid var(--pos-border);
@@ -764,6 +765,42 @@
   box-shadow: 0 12px 32px rgba(12, 34, 63, 0.14);
   z-index: 70;
   overflow: hidden;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popoverFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.barcode-popover.popover-down {
+  top: calc(100% + 6px);
+  bottom: auto;
+  transform-origin: top left;
+  animation: popoverFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.barcode-popover.popover-up {
+  bottom: calc(100% + 6px);
+  top: auto;
+  transform-origin: bottom left;
+  animation: popoverFadeInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .popover-header {
@@ -1117,6 +1154,9 @@
 
   .toolbar-section {
     padding: 10px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
 
   .pagination-section {
@@ -1367,14 +1407,16 @@
   border-bottom: 1px solid var(--pos-border);
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
 }
 
 .search-bar-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .search-icon {
@@ -2093,6 +2135,9 @@
 
   .toolbar-section {
     padding: 10px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
 
   .pagination-section {

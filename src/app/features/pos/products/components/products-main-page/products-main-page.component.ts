@@ -260,6 +260,7 @@ export class ProductsMainPageComponent implements OnInit {
   hoveredProductId = signal<string>('');
   openMenuId = signal<string | null>(null);
   openBarcodePopoverId = signal<string | null>(null);
+  popoverPosition = signal<'up' | 'down'>('down');
 
   Math = Math;
 
@@ -388,9 +389,25 @@ export class ProductsMainPageComponent implements OnInit {
   toggleBarcodePopover(productId: string, event: Event): void {
     event.stopPropagation();
     this.openMenuId.set(null);
-    this.openBarcodePopoverId.set(
-      this.openBarcodePopoverId() === productId ? null : productId
-    );
+    
+    const isOpening = this.openBarcodePopoverId() !== productId;
+    this.openBarcodePopoverId.set(isOpening ? productId : null);
+    
+    if (isOpening) {
+      const button = event.currentTarget as HTMLElement;
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - rect.bottom;
+        
+        // If space below is less than 320px and we have more space above, open upwards
+        if (spaceBelow < 320 && rect.top > spaceBelow) {
+          this.popoverPosition.set('up');
+        } else {
+          this.popoverPosition.set('down');
+        }
+      }
+    }
   }
 
   onRowHover(productId: string): void {
