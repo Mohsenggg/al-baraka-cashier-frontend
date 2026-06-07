@@ -1,314 +1,326 @@
 <!-- Products Management Page - Arabic RTL -->
 <div class="products-container" dir="rtl">
-  
-  <!-- ============================= -->
-  <!-- HEADER SECTION -->
-  <!-- ============================= -->
-  <div class="page-header">
-    <div class="header-content">
-      <button class="btn-add-product">
-        <span class="material-icons-outlined">add_circle</span>
-        <span>إضافة منتج</span>
-      </button>
-      <div class="header-titles">
-        <h1 class="page-title">المنتجات</h1>
-        <p class="page-subtitle">إدارة المنتجات والمخزون والأسعار والباركودات</p>
-      </div>
-    </div>
-  </div>
 
-  <!-- ============================= -->
-  <!-- SEARCH & FILTER TOOLBAR -->
-  <!-- ============================= -->
-  <div class="toolbar-section">
-    
-    <!-- Search Bar -->
-    <div class="search-bar-wrapper">
-      <span class="material-icons-outlined search-icon">search</span>
-      <input 
-        type="text" 
-        class="search-input" 
-        placeholder="ابحث عن المنتجات باستخدام الاسم أو الباركود أو الرمز..."
-        (input)="onSearch($event)">
-    </div>
-
-    <!-- Filter Controls -->
-    <div class="filter-controls">
-      <!-- Stock Status Filter -->
-      <div class="filter-item">
-        <select class="filter-select" (change)="onFilterChange()">
-          <option value="">حالة المخزون</option>
-          <option value="healthy">متاح</option>
-          <option value="low">مخزون منخفض</option>
-          <option value="critical">حرج</option>
-          <option value="outofstock">غير متاح</option>
-        </select>
-      </div>
-
-      <!-- Type Filter -->
-      <div class="filter-item">
-        <select class="filter-select" (change)="onFilterChange()">
-          <option value="">نوع المنتج</option>
-          <option value="inventory">منتج مخزون</option>
-          <option value="service">خدمة</option>
-          <option value="bundle">حزمة</option>
-          <option value="raw">مادة خام</option>
-        </select>
-      </div>
-
-      <!-- Category Filter -->
-      <div class="filter-item">
-        <select class="filter-select" (change)="onFilterChange()">
-          <option value="">الفئة</option>
-          <option value="electronics">إلكترونيات</option>
-          <option value="accessories">إكسسوارات</option>
-          <option value="supplies">مستلزمات</option>
-        </select>
-      </div>
-
-      <!-- More Filters Button -->
-      <button class="btn-more-filters" (click)="toggleAdvancedFilters()">
-        <span class="material-icons-outlined">tune</span>
-        <span>المزيد من التصفية</span>
-      </button>
-
-      <!-- Clear Filters (if active) -->
-      <button class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearFilters()">
-        <span class="material-icons-outlined">close</span>
-        مسح
-      </button>
-    </div>
-  </div>
-
-  <!-- ============================= -->
-  <!-- ADVANCED FILTERS PANEL -->
-  <!-- ============================= -->
-  <div class="advanced-filters-panel" [class.expanded]="showAdvancedFilters()">
-    <div class="filters-content">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>التاريخ المضاف</label>
-          <input type="date" class="filter-input">
-        </div>
-        <div class="filter-group">
-          <label>كمية المخزون</label>
-          <div class="dual-input">
-            <input type="number" placeholder="الحد الأقصى" class="filter-input">
-            <span class="to-label">إلى</span>
-            <input type="number" placeholder="الحد الأدنى" class="filter-input">
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>نطاق السعر (ر.س)</label>
-          <div class="dual-input">
-            <input type="number" placeholder="الحد الأقصى" class="filter-input">
-            <span class="to-label">إلى</span>
-            <input type="number" placeholder="الحد الأدنى" class="filter-input">
-          </div>
-        </div>
-      </div>
-      <div class="filters-actions">
-        <button class="btn-filter-apply" (click)="applyAdvancedFilters()">
-          <span class="material-icons-outlined">search</span>
-          تطبيق التصفية
-        </button>
-        <button class="btn-filter-clear" (click)="clearFilters()">مسح الكل</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================= -->
-  <!-- TABLE SECTION -->
-  <!-- ============================= -->
-  <div class="table-wrapper">
-    
-    <!-- Loading State -->
-    <div class="loading-skeleton" *ngIf="isLoading()">
-      <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
-        <div class="skeleton-cell"></div>
-        <div class="skeleton-cell"></div>
-        <div class="skeleton-cell"></div>
-        <div class="skeleton-cell"></div>
-        <div class="skeleton-cell"></div>
-        <div class="skeleton-cell"></div>
-        <div class="skeleton-cell"></div>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
-      <span class="material-icons-outlined empty-icon">inventory_2</span>
-      <h3>لم يتم العثور على منتجات</h3>
-      <p>جرب تغيير معايير البحث أو إنشاء منتج جديد.</p>
-      <button class="btn-add-product-empty">
-        <span class="material-icons-outlined">add_circle</span>
-        إضافة منتج
-      </button>
-    </div>
-
-    <!-- Products Table -->
-    <table class="products-table" *ngIf="!isLoading() && products().length > 0">
-      <thead>
-        <tr>
-          <th class="col-product">
-            <div class="product-col-header">
-              <span class="col-title">المنتج</span>
-              <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span> الوصف</span>
+      <!-- ============================= -->
+      <!-- HEADER SECTION -->
+      <!-- ============================= -->
+      <div class="page-header">
+            <div class="header-content">
+                  <button class="btn-add-product">
+                        <span class="material-icons-outlined">add_circle</span>
+                        <span>إضافة منتج</span>
+                  </button>
+                  <div class="header-titles">
+                        <h1 class="page-title">المنتجات</h1>
+                        <p class="page-subtitle">إدارة المنتجات والمخزون والأسعار والباركودات</p>
+                  </div>
             </div>
-          </th>
-          <th class="col-price">سعر البيع</th>
-          <th class="col-stock">إجمالي المخزون</th>
-          <th class="col-type">نوع المنتج</th>
-          <th class="col-status">الحالة</th>
-          <th class="col-actions">الإجراءات</th>
-          <th class="col-barcode">متعدد الباركود</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="product-row" *ngFor="let product of products()" (mouseenter)="onRowHover(product.id)" (mouseleave)="onRowLeave()">
+      </div>
 
-          <!-- Product Column (rightmost visual) -->
-          <td class="col-product">
-            <p class="product-text">
-              <span class="product-name">{{ product.name }}</span>
-              <ng-container *ngIf="getVisibleDescAttributes(product) as descAttrs">
-                <ng-container *ngIf="descAttrs.length">
-                  {{ ' ' }}<span class="product-desc-attrs"><ng-container *ngFor="let attr of descAttrs; let last = last"><span [class]="getDescAttrClass(attr.ui)">{{ attr.value }}</span><ng-container *ngIf="!last">{{ ' ' }}</ng-container></ng-container></span>
-                </ng-container>
-              </ng-container>
-            </p>
-          </td>
+      <!-- ============================= -->
+      <!-- SEARCH & FILTER TOOLBAR -->
+      <!-- ============================= -->
+      <div class="toolbar-section">
 
-          <!-- Selling Price Column -->
-          <td class="col-price">
-            <span class="price-amount">{{ product.summary.maxSellingPrice | number:'1.2-2' }} ر.س</span>
-          </td>
-
-          <!-- Total Stock Column -->
-          <td class="col-stock">
-            <div class="stock-indicator" [ngClass]="getStockClass(product)">
-              <span class="stock-dot"></span>
-              <span class="stock-text">{{ getStockLabel(product) }}</span>
+            <!-- Search Bar -->
+            <div class="search-bar-wrapper">
+                  <span class="material-icons-outlined search-icon">search</span>
+                  <input type="text" class="search-input"
+                        placeholder="ابحث عن المنتجات باستخدام الاسم أو الباركود أو الرمز..."
+                        (input)="onSearch($event)">
             </div>
-          </td>
 
-          <!-- Product Type Column -->
-          <td class="col-type">
-            <span class="type-badge" [ngClass]="'type-' + product.type">
-              {{ getTypeLabel(product.type) }}
-            </span>
-          </td>
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                  <!-- Stock Status Filter -->
+                  <div class="filter-item">
+                        <select class="filter-select" (change)="onFilterChange()">
+                              <option value="">حالة المخزون</option>
+                              <option value="healthy">متاح</option>
+                              <option value="low">مخزون منخفض</option>
+                              <option value="critical">حرج</option>
+                              <option value="outofstock">غير متاح</option>
+                        </select>
+                  </div>
 
-          <!-- Status Column -->
-          <td class="col-status">
-            <span class="status-badge" [ngClass]="getStatusClass(product.status)">
-              {{ getStatusLabel(product.status) }}
-            </span>
-          </td>
+                  <!-- Type Filter -->
+                  <div class="filter-item">
+                        <select class="filter-select" (change)="onFilterChange()">
+                              <option value="">نوع المنتج</option>
+                              <option value="inventory">منتج مخزون</option>
+                              <option value="service">خدمة</option>
+                              <option value="bundle">حزمة</option>
+                              <option value="raw">مادة خام</option>
+                        </select>
+                  </div>
 
-          <!-- Actions Column -->
-          <td class="col-actions">
-            <div class="action-menu-wrapper">
-              <button class="btn-action btn-menu" aria-haspopup="true" [attr.aria-expanded]="openMenuId() === product.id" (click)="toggleMenu(product.id, $event)">
-                <span class="material-icons-outlined">more_vert</span>
-              </button>
+                  <!-- Category Filter -->
+                  <div class="filter-item">
+                        <select class="filter-select" (change)="onFilterChange()">
+                              <option value="">الفئة</option>
+                              <option value="electronics">إلكترونيات</option>
+                              <option value="accessories">إكسسوارات</option>
+                              <option value="supplies">مستلزمات</option>
+                        </select>
+                  </div>
 
-              <div class="menu" *ngIf="openMenuId() === product.id" (click)="$event.stopPropagation()">
-                <button class="menu-item" (click)="onViewProduct(product.id)">عـرض</button>
-                <button class="menu-item" (click)="onEditProduct(product.id)">تعديل</button>
-                <button class="menu-item danger" (click)="onDeleteProduct(product.id)">حـذف</button>
-              </div>
+                  <!-- More Filters Button -->
+                  <button class="btn-more-filters" (click)="toggleAdvancedFilters()">
+                        <span class="material-icons-outlined">tune</span>
+                        <span>المزيد من التصفية</span>
+                  </button>
+
+                  <!-- Clear Filters (if active) -->
+                  <button class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+                        <span class="material-icons-outlined">close</span>
+                        مسح
+                  </button>
             </div>
-          </td>
+      </div>
 
-          <!-- Barcode Column (leftmost, minimal) -->
-          <td class="col-barcode">
-            <div class="barcode-popover-wrapper" *ngIf="hasMultipleBarcodes(product)">
-              <button
-                class="btn-barcode-details"
-                type="button"
-                title="تفاصيل الباركودات"
-                [attr.aria-expanded]="openBarcodePopoverId() === product.id"
-                (click)="toggleBarcodePopover(product.id, $event)">
-                <span class="material-icons-outlined">info</span>
-                <span class="barcode-multi-label">متعدد الباركود</span>
-              </button>
+      <!-- ============================= -->
+      <!-- ADVANCED FILTERS PANEL -->
+      <!-- ============================= -->
+      <div class="advanced-filters-panel" [class.expanded]="showAdvancedFilters()">
+            <div class="filters-content">
+                  <div class="filter-row">
+                        <div class="filter-group">
+                              <label>التاريخ المضاف</label>
+                              <input type="date" class="filter-input">
+                        </div>
+                        <div class="filter-group">
+                              <label>كمية المخزون</label>
+                              <div class="dual-input">
+                                    <input type="number" placeholder="الحد الأقصى" class="filter-input">
+                                    <span class="to-label">إلى</span>
+                                    <input type="number" placeholder="الحد الأدنى" class="filter-input">
+                              </div>
+                        </div>
+                        <div class="filter-group">
+                              <label>نطاق السعر </label>
+                              <div class="dual-input">
+                                    <input type="number" placeholder="الحد الأقصى" class="filter-input">
+                                    <span class="to-label">إلى</span>
+                                    <input type="number" placeholder="الحد الأدنى" class="filter-input">
+                              </div>
+                        </div>
+                  </div>
+                  <div class="filters-actions">
+                        <button class="btn-filter-apply" (click)="applyAdvancedFilters()">
+                              <span class="material-icons-outlined">search</span>
+                              تطبيق التصفية
+                        </button>
+                        <button class="btn-filter-clear" (click)="clearFilters()">مسح الكل</button>
+                  </div>
+            </div>
+      </div>
 
-              <div
-                class="barcode-popover"
-                [class.popover-up]="popoverPosition() === 'up'"
-                [class.popover-down]="popoverPosition() === 'down'"
-                *ngIf="openBarcodePopoverId() === product.id"
-                (click)="$event.stopPropagation()">
-                <div class="popover-header">تفاصيل الباركودات</div>
+      <!-- ============================= -->
+      <!-- TABLE SECTION -->
+      <!-- ============================= -->
+      <div class="table-wrapper">
 
-                <table class="barcode-details-table">
+            <!-- Loading State -->
+            <div class="loading-skeleton" *ngIf="isLoading()">
+                  <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                        <div class="skeleton-cell"></div>
+                  </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
+                  <span class="material-icons-outlined empty-icon">inventory_2</span>
+                  <h3>لم يتم العثور على منتجات</h3>
+                  <p>جرب تغيير معايير البحث أو إنشاء منتج جديد.</p>
+                  <button class="btn-add-product-empty">
+                        <span class="material-icons-outlined">add_circle</span>
+                        إضافة منتج
+                  </button>
+            </div>
+
+            <!-- Products Table -->
+            <table class="products-table" *ngIf="!isLoading() && products().length > 0">
                   <thead>
-                    <tr>
-                      <th>الباركود</th>
-                      <th>سعر البيع</th>
-                      <th>سعر الشراء</th>
-                      <th>المخزون</th>
-                    </tr>
+                        <tr>
+                              <th class="col-product">
+                                    <div class="product-col-header">
+                                          <span class="col-title">المنتج</span>
+                                          <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span>
+                                                الوصف</span>
+                                    </div>
+                              </th>
+                              <th class="col-price">سعر البيع</th>
+                              <th class="col-stock">إجمالي المخزون</th>
+                              <th class="col-type">نوع المنتج</th>
+                              <th class="col-status">الحالة</th>
+                              <th class="col-actions">الإجراءات</th>
+                              <th class="col-barcode">متعدد الباركود</th>
+                        </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let barcode of product.barcodes" [class.is-default]="barcode.id === product.summary.defaultBarcodeId">
-                      <td>
-                        <span class="barcode-cell-value">{{ barcode.barcode }}</span>
-                        <span class="default-tag" *ngIf="barcode.id === product.summary.defaultBarcodeId">افتراضي</span>
-                      </td>
-                      <td>{{ barcode.sellingPrice | number:'1.2-2' }} ر.س</td>
-                      <td>{{ barcode.buyingPrice | number:'1.2-2' }} ر.س</td>
-                      <td>{{ barcode.stock }}</td>
-                    </tr>
+                        <tr class="product-row" *ngFor="let product of products()" (mouseenter)="onRowHover(product.id)"
+                              (mouseleave)="onRowLeave()">
+
+                              <!-- Product Column (rightmost visual) -->
+                              <td class="col-product">
+                                    <p class="product-text">
+                                          <span class="product-name">{{ product.name }}</span>
+                                          <ng-container *ngIf="getVisibleDescAttributes(product) as descAttrs">
+                                                <ng-container *ngIf="descAttrs.length">
+                                                      {{ ' ' }}<span class="product-desc-attrs"><ng-container
+                                                                  *ngFor="let attr of descAttrs; let last = last"><span
+                                                                        [class]="getDescAttrClass(attr.ui)">{{
+                                                                        attr.value }}</span><ng-container
+                                                                        *ngIf="!last">{{ ' '
+                                                                        }}</ng-container></ng-container></span>
+                                                </ng-container>
+                                          </ng-container>
+                                    </p>
+                              </td>
+
+                              <!-- Selling Price Column -->
+                              <td class="col-price">
+                                    <span class="price-amount">{{ product.summary.maxSellingPrice | number:'1.2-2'
+                                          }}</span>
+                              </td>
+
+                              <!-- Total Stock Column -->
+                              <td class="col-stock">
+                                    <div class="stock-indicator" [ngClass]="getStockClass(product)">
+                                          <span class="stock-dot"></span>
+                                          <span class="stock-text">{{ getStockLabel(product) }}</span>
+                                    </div>
+                              </td>
+
+                              <!-- Product Type Column -->
+                              <td class="col-type">
+                                    <span class="type-badge" [ngClass]="'type-' + product.type">
+                                          {{ getTypeLabel(product.type) }}
+                                    </span>
+                              </td>
+
+                              <!-- Status Column -->
+                              <td class="col-status">
+                                    <span class="status-badge" [ngClass]="getStatusClass(product.status)">
+                                          {{ getStatusLabel(product.status) }}
+                                    </span>
+                              </td>
+
+                              <!-- Actions Column -->
+                              <td class="col-actions">
+                                    <div class="action-menu-wrapper">
+                                          <button class="btn-action btn-menu" aria-haspopup="true"
+                                                [attr.aria-expanded]="openMenuId() === product.id"
+                                                (click)="toggleMenu(product.id, $event)">
+                                                <span class="material-icons-outlined">more_vert</span>
+                                          </button>
+
+                                          <div class="menu" *ngIf="openMenuId() === product.id"
+                                                (click)="$event.stopPropagation()">
+                                                <button class="menu-item"
+                                                      (click)="onViewProduct(product.id)">عـرض</button>
+                                                <button class="menu-item"
+                                                      (click)="onEditProduct(product.id)">تعديل</button>
+                                                <button class="menu-item danger"
+                                                      (click)="onDeleteProduct(product.id)">حـذف</button>
+                                          </div>
+                                    </div>
+                              </td>
+
+                              <!-- Barcode Column (leftmost, minimal) -->
+                              <td class="col-barcode">
+                                    <div class="barcode-popover-wrapper" *ngIf="hasMultipleBarcodes(product)">
+                                          <button class="btn-barcode-details" type="button" title="تفاصيل الباركودات"
+                                                [attr.aria-expanded]="openBarcodePopoverId() === product.id"
+                                                (click)="toggleBarcodePopover(product.id, $event)">
+                                                <span class="material-icons-outlined">info</span>
+                                                <span class="barcode-multi-label">متعدد الباركود</span>
+                                          </button>
+
+                                          <div class="barcode-popover" [class.popover-up]="popoverPosition() === 'up'"
+                                                [class.popover-down]="popoverPosition() === 'down'"
+                                                *ngIf="openBarcodePopoverId() === product.id"
+                                                (click)="$event.stopPropagation()">
+                                                <div class="popover-header">تفاصيل الباركودات</div>
+
+                                                <table class="barcode-details-table">
+                                                      <thead>
+                                                            <tr>
+                                                                  <th>الباركود</th>
+                                                                  <th>سعر البيع</th>
+                                                                  <th>سعر الشراء</th>
+                                                                  <th>المخزون</th>
+                                                            </tr>
+                                                      </thead>
+                                                      <tbody>
+                                                            <tr *ngFor="let barcode of product.barcodes"
+                                                                  [class.is-default]="barcode.id === product.summary.defaultBarcodeId">
+                                                                  <td>
+                                                                        <span class="barcode-cell-value">{{
+                                                                              barcode.barcode }}</span>
+                                                                        <span class="default-tag"
+                                                                              *ngIf="barcode.id === product.summary.defaultBarcodeId">افتراضي</span>
+                                                                  </td>
+                                                                  <td>{{ barcode.sellingPrice | number:'1.2-2' }}</td>
+                                                                  <td>{{ barcode.buyingPrice | number:'1.2-2' }}</td>
+                                                                  <td>{{ barcode.stock }}</td>
+                                                            </tr>
+                                                      </tbody>
+                                                </table>
+
+                                                <div class="popover-footer">
+                                                      <div class="popover-summary-item">
+                                                            <span class="popover-summary-label">إجمالي المخزون</span>
+                                                            <span class="popover-summary-value">{{
+                                                                  product.summary.totalStock }}</span>
+                                                      </div>
+                                                      <div class="popover-summary-item">
+                                                            <span class="popover-summary-label">أعلى سعر بيع</span>
+                                                            <span class="popover-summary-value">{{
+                                                                  product.summary.maxSellingPrice | number:'1.2-2'
+                                                                  }}</span>
+                                                      </div>
+                                                </div>
+                                          </div>
+                                    </div>
+                              </td>
+
+                        </tr>
                   </tbody>
-                </table>
+            </table>
 
-                <div class="popover-footer">
-                  <div class="popover-summary-item">
-                    <span class="popover-summary-label">إجمالي المخزون</span>
-                    <span class="popover-summary-value">{{ product.summary.totalStock }}</span>
-                  </div>
-                  <div class="popover-summary-item">
-                    <span class="popover-summary-label">أعلى سعر بيع</span>
-                    <span class="popover-summary-value">{{ product.summary.maxSellingPrice | number:'1.2-2' }} ر.س</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </td>
-
-        </tr>
-      </tbody>
-    </table>
-
-  </div>
-
-  <!-- ============================= -->
-  <!-- PAGINATION SECTION -->
-  <!-- ============================= -->
-  <div class="pagination-section" *ngIf="!isLoading() && products().length > 0">
-    <div class="pagination-controls">
-      <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-        <span class="material-icons-outlined">chevron_left</span>
-        التالي
-      </button>
-      <div class="page-numbers">
-        <button *ngFor="let page of getPageNumbers()" 
-                class="btn-page-number" 
-                [class.active]="page === currentPage()"
-                (click)="goToPage(page)">
-          {{ page }}
-        </button>
       </div>
-      <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="previousPage()">
-        السابق
-        <span class="material-icons-outlined">chevron_right</span>
-      </button>
-    </div>
-    <div class="results-summary">
-      <span>عرض {{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(), totalProducts()) }} من {{ totalProducts() }} منتج</span>
-    </div>
-  </div>
+
+      <!-- ============================= -->
+      <!-- PAGINATION SECTION -->
+      <!-- ============================= -->
+      <div class="pagination-section" *ngIf="!isLoading() && products().length > 0">
+            <div class="pagination-controls">
+                  <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                        <span class="material-icons-outlined">chevron_left</span>
+                        التالي
+                  </button>
+                  <div class="page-numbers">
+                        <button *ngFor="let page of getPageNumbers()" class="btn-page-number"
+                              [class.active]="page === currentPage()" (click)="goToPage(page)">
+                              {{ page }}
+                        </button>
+                  </div>
+                  <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="previousPage()">
+                        السابق
+                        <span class="material-icons-outlined">chevron_right</span>
+                  </button>
+            </div>
+            <div class="results-summary">
+                  <span>عرض {{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(),
+                        totalProducts()) }} من {{ totalProducts() }} منتج</span>
+            </div>
+      </div>
 
 </div>
