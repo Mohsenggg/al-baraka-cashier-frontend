@@ -6,74 +6,76 @@
       <!-- ============================= -->
       <div class="page-header">
             <div class="header-content">
+                  <div class="header-titles">
+                        <h1 class="page-title">المنتجات</h1>
+                        <!-- <p class="page-subtitle">إدارة المنتجات والمخزون والأسعار والباركودات</p> -->
+                  </div>
+
+                  <!-- ============================= -->
+                  <!-- SEARCH & FILTER TOOLBAR -->
+                  <!-- ============================= -->
+                  <div class="toolbar-section">
+
+                        <!-- Search Bar -->
+                        <div class="search-bar-wrapper">
+                              <span class="material-icons-outlined search-icon">search</span>
+                              <input type="text" class="search-input"
+                                    placeholder="ابحث عن المنتجات باستخدام الاسم أو الباركود أو الرمز..."
+                                    [value]="searchQuery()"
+                                    (input)="onSearch($event)">
+                        </div>
+
+                        <!-- Filter Controls -->
+                        <div class="filter-controls">
+                              <!-- Stock Status Filter -->
+                              <div class="filter-item">
+                                    <select class="filter-select" [value]="selectedStockStatus()" (change)="selectedStockStatus.set($any($event.target).value); onFilterChange()">
+                                          <option value="">حالة المخزون</option>
+                                          <option value="healthy">متاح</option>
+                                          <option value="low">مخزون منخفض</option>
+                                          <option value="critical">حرج</option>
+                                          <option value="outofstock">غير متاح</option>
+                                    </select>
+                              </div>
+
+                              <!-- Type Filter -->
+                              <div class="filter-item">
+                                    <select class="filter-select" [value]="selectedType()" (change)="selectedType.set($any($event.target).value); onFilterChange()">
+                                          <option value="">نوع المنتج</option>
+                                          <option value="inventory">منتج مخزون</option>
+                                          <option value="service">خدمة</option>
+                                          <option value="bundle">حزمة</option>
+                                          <option value="raw">مادة خام</option>
+                                    </select>
+                              </div>
+
+                              <!-- Category Filter -->
+                              <div class="filter-item">
+                                    <select class="filter-select" [value]="selectedCategory()" (change)="selectedCategory.set($any($event.target).value); onFilterChange()">
+                                          <option value="">الفئة</option>
+                                          <option value="electronics">إلكترونيات</option>
+                                          <option value="accessories">إكسسوارات</option>
+                                          <option value="supplies">مستلزمات</option>
+                                    </select>
+                              </div>
+
+                              <!-- More Filters Button -->
+                              <button class="btn-more-filters" [class.active]="showAdvancedFilters()" (click)="toggleAdvancedFilters()">
+                                    <span class="material-icons-outlined">tune</span>
+                                    <span>المزيد من التصفية</span>
+                              </button>
+
+                              <!-- Clear Filters (if active) -->
+                              <button class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+                                    <span class="material-icons-outlined">close</span>
+                                    مسح
+                              </button>
+                        </div>
+                  </div>
+
                   <button class="btn-add-product">
                         <span class="material-icons-outlined">add_circle</span>
                         <span>إضافة منتج</span>
-                  </button>
-                  <div class="header-titles">
-                        <h1 class="page-title">المنتجات</h1>
-                        <p class="page-subtitle">إدارة المنتجات والمخزون والأسعار والباركودات</p>
-                  </div>
-            </div>
-      </div>
-
-      <!-- ============================= -->
-      <!-- SEARCH & FILTER TOOLBAR -->
-      <!-- ============================= -->
-      <div class="toolbar-section">
-
-            <!-- Search Bar -->
-            <div class="search-bar-wrapper">
-                  <span class="material-icons-outlined search-icon">search</span>
-                  <input type="text" class="search-input"
-                        placeholder="ابحث عن المنتجات باستخدام الاسم أو الباركود أو الرمز..."
-                        (input)="onSearch($event)">
-            </div>
-
-            <!-- Filter Controls -->
-            <div class="filter-controls">
-                  <!-- Stock Status Filter -->
-                  <div class="filter-item">
-                        <select class="filter-select" (change)="onFilterChange()">
-                              <option value="">حالة المخزون</option>
-                              <option value="healthy">متاح</option>
-                              <option value="low">مخزون منخفض</option>
-                              <option value="critical">حرج</option>
-                              <option value="outofstock">غير متاح</option>
-                        </select>
-                  </div>
-
-                  <!-- Type Filter -->
-                  <div class="filter-item">
-                        <select class="filter-select" (change)="onFilterChange()">
-                              <option value="">نوع المنتج</option>
-                              <option value="inventory">منتج مخزون</option>
-                              <option value="service">خدمة</option>
-                              <option value="bundle">حزمة</option>
-                              <option value="raw">مادة خام</option>
-                        </select>
-                  </div>
-
-                  <!-- Category Filter -->
-                  <div class="filter-item">
-                        <select class="filter-select" (change)="onFilterChange()">
-                              <option value="">الفئة</option>
-                              <option value="electronics">إلكترونيات</option>
-                              <option value="accessories">إكسسوارات</option>
-                              <option value="supplies">مستلزمات</option>
-                        </select>
-                  </div>
-
-                  <!-- More Filters Button -->
-                  <button class="btn-more-filters" (click)="toggleAdvancedFilters()">
-                        <span class="material-icons-outlined">tune</span>
-                        <span>المزيد من التصفية</span>
-                  </button>
-
-                  <!-- Clear Filters (if active) -->
-                  <button class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearFilters()">
-                        <span class="material-icons-outlined">close</span>
-                        مسح
                   </button>
             </div>
       </div>
