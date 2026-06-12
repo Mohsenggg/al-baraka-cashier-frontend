@@ -465,9 +465,45 @@
       will-change: max-width, gap;
 }
 
+/* Action Bar Smooth Sizing Transitions */
+.action-bar-container,
+.main-actions-bar,
+.middle-group {
+      transition: gap 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-bar-container {
+      flex-wrap: nowrap !important;
+}
+
+.main-actions-bar {
+      flex-wrap: nowrap !important;
+}
+
+.middle-group {
+      flex-wrap: nowrap !important;
+}
+
+.btn-main-action .shortcut,
+.btn-outline .shortcut {
+      display: inline-block;
+      max-width: 50px;
+      opacity: 0.7;
+      overflow: hidden;
+      white-space: nowrap;
+      vertical-align: bottom;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drafts-info .subtitle {
+      max-height: 20px;
+      opacity: 1;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Adjust width and content size when right sidebar is open (not hidden) */
 .cashier-layout:not(.right-sidebar-hidden) .action-bar-container {
-      flex-wrap: nowrap;
       gap: 8px;
 }
 
@@ -475,12 +511,10 @@
       flex: 1;
       max-width: 100%;
       gap: 6px;
-      flex-wrap: nowrap;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .middle-group {
       gap: 4px;
-      flex-wrap: nowrap;
       padding: 2px 4px;
 }
 
@@ -494,7 +528,9 @@
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-main-action .shortcut {
-      display: none;
+      max-width: 0;
+      opacity: 0;
+      margin: 0;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-outline {
@@ -507,7 +543,9 @@
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-outline .shortcut {
-      display: none;
+      max-width: 0;
+      opacity: 0;
+      margin: 0;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .material-icons-outlined {
@@ -515,7 +553,9 @@
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .drafts-info .subtitle {
-      display: none;
+      max-height: 0;
+      opacity: 0;
+      margin: 0;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-delete {
