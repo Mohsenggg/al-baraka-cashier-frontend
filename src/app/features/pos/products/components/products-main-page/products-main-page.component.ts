@@ -41,14 +41,22 @@ interface Product {
       createdAt?: Date;
 }
 
+import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
+
 @Component({
       selector: 'app-products-main-page',
       standalone: true,
-      imports: [CommonModule, FormsModule, ReactiveFormsModule],
+      imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent],
       templateUrl: './products-main-page.component.html',
       styleUrl: './products-main-page.component.css'
 })
 export class ProductsMainPageComponent implements OnInit {
+      sidebarVisible = signal(false);
+
+      onToggleSidebar() {
+            this.sidebarVisible.update(v => !v);
+      }
+
       allProducts = signal<Product[]>([
             {
                   id: '1',

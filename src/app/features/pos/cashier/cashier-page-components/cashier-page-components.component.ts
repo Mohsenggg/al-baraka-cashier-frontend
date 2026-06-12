@@ -16,11 +16,12 @@ import { ReceiptService } from '../../core/services/receipt.service';
 import { ProductService } from '../../core/services/product.service';
 import { ReceiptResponse, Product } from '../../core/models/pos.models';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-cashier-page-components',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SidebarComponent],
   templateUrl: './cashier-page-components.component.html',
   styleUrls: ['./cashier-page-components.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -77,16 +78,6 @@ export class CashierPageComponentsComponent implements OnInit {
   // Local Search state
   searchResults = signal<Product[]>([]);
   selectedSearchIndex = signal<number>(-1);
-
-  // Sidebar navigation items
-  navItems = [
-    { label: 'الكاشير', icon: 'point_of_sale', active: true },
-    { label: 'إدارة المخزون', icon: 'inventory_2', active: false },
-    { label: 'إدارة المشتريات', icon: 'shopping_cart', active: false },
-    { label: 'تقارير المبيعات', icon: 'bar_chart', active: false },
-    { label: 'أدوات الطباعة', icon: 'print', active: false },
-    { label: 'الإعدادات', icon: 'settings', active: false }
-  ];
 
   get today() {
     return new Date();
@@ -315,11 +306,6 @@ export class CashierPageComponentsComponent implements OnInit {
       return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
     }
     return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
-  }
-
-  // Sidebar close handler
-  onCloseSidebar() {
-    this.toggleSidebar.emit();
   }
 
   onCloseReceiptSidebar() {

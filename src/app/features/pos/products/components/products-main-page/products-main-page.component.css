@@ -1,5 +1,5 @@
 /* ============================= */
-/* MAIN CONTAINER */
+/* MAIN CONTAINER & LAYOUT */
 /* ============================= */
 
 :host {
@@ -8,7 +8,17 @@
       height: 100%;
 }
 
+.products-layout {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      background-color: var(--pos-bg);
+      overflow: hidden;
+      direction: rtl;
+}
+
 .products-container {
+      flex: 1;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -38,9 +48,33 @@
 
 .header-titles {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      align-items: center;
+      gap: 12px;
       text-align: right;
+}
+
+.header-menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background-color: #ffffff;
+      color: var(--pos-primary, #1e3a8a);
+      border: 1px solid var(--pos-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+}
+
+.header-menu-btn:hover {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+}
+
+.header-menu-btn .material-icons-outlined {
+      font-size: 1.25rem;
 }
 
 .page-title {

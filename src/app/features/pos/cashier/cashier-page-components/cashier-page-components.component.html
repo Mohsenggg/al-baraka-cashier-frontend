@@ -1,5 +1,4 @@
-<div class="cashier-layout" [class.sidebar-hidden]="!sidebarVisible()"
-      [class.right-sidebar-hidden]="!rightSidebarVisible()">
+<div class="cashier-layout" [class.right-sidebar-hidden]="!rightSidebarVisible()">
 
       <!-- ============================= -->
       <!-- RIGHT SIDEBAR: RECEIPT HISTORY -->
@@ -10,18 +9,19 @@
                         <h3>سجل الفواتير</h3>
                         <button class="close-btn" (click)="onCloseReceiptSidebar()">×</button>
                   </div>
-                  
+
                   <!-- Filter Section -->
                   <div class="filter-container" [formGroup]="filterForm">
                         <div class="quick-search-bar">
                               <span class="material-icons-outlined search-icon">search</span>
-                              <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..." 
-                                     autocomplete="off" (keyup.enter)="applyFilters()">
-                              <button type="button" class="filter-toggle" (click)="toggleFilters()" [class.active]="showFilters()">
+                              <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..."
+                                    autocomplete="off" (keyup.enter)="applyFilters()">
+                              <button type="button" class="filter-toggle" (click)="toggleFilters()"
+                                    [class.active]="showFilters()">
                                     <span class="material-icons-outlined">tune</span>
                               </button>
                         </div>
-                        
+
                         <!-- Advanced Filters (Collapsible) -->
                         <div class="advanced-filters-panel" [class.expanded]="showFilters()">
                               <div class="filters-grid">
@@ -36,13 +36,16 @@
                                     <div class="filter-field">
                                           <label>المبلغ (من - إلى)</label>
                                           <div class="dual-input">
-                                                <input type="number" formControlName="totalMin" placeholder="الأدنى" class="pos-compact-input">
-                                                <input type="number" formControlName="totalMax" placeholder="الأعلى" class="pos-compact-input">
+                                                <input type="number" formControlName="totalMin" placeholder="الأدنى"
+                                                      class="pos-compact-input">
+                                                <input type="number" formControlName="totalMax" placeholder="الأعلى"
+                                                      class="pos-compact-input">
                                           </div>
                                     </div>
                                     <div class="filter-field">
                                           <label>اسم العميل</label>
-                                          <input type="text" formControlName="customerName" placeholder="الاسم..." class="pos-compact-input">
+                                          <input type="text" formControlName="customerName" placeholder="الاسم..."
+                                                class="pos-compact-input">
                                     </div>
                                     <div class="filter-field">
                                           <label>طريقة الدفع</label>
@@ -64,7 +67,8 @@
                               </div>
 
                               <div class="filter-actions">
-                                    <button type="button" class="btn-clear" (click)="clearFilters()">مسح التصفية</button>
+                                    <button type="button" class="btn-clear" (click)="clearFilters()">مسح
+                                          التصفية</button>
                                     <button type="button" class="btn-apply" (click)="applyFilters()">
                                           <span class="material-icons-outlined">search</span>
                                           بحث متقدم
@@ -76,9 +80,8 @@
 
             <div class="list-viewport">
                   <div class="receipt-list-modern" *ngIf="!(loading$ | async); else loader">
-                        <div class="receipt-card" *ngFor="let r of filteredReceipts$ | async" 
-                              (click)="onSelectReceipt(r.id)"
-                              [class.active]="receipt?.id === r.id">
+                        <div class="receipt-card" *ngFor="let r of filteredReceipts$ | async"
+                              (click)="onSelectReceipt(r.id)" [class.active]="receipt?.id === r.id">
                               <div class="card-main">
                                     <span class="receipt-id">#{{ r.receiptCode }}</span>
                                     <span class="receipt-total">{{ r.totalAmount | number:'1.2-2' }} ر.س</span>
@@ -189,17 +192,20 @@
                               <span class="material-icons-outlined">account_circle</span>
                         </div>
                         <div class="cashier-details">
-                              <span class="cashier-name">{{ receipt?.cashierName || receipt?.cashier?.name || 'أحمد محمود' }}</span>
-                              <span class="cashier-role">كاشير #{{ receipt?.cashierId || receipt?.cashier?.id || '1' }}</span>
+                              <span class="cashier-name">{{ receipt?.cashierName || receipt?.cashier?.name || 'أحمد
+                                    محمود' }}</span>
+                              <span class="cashier-role">كاشير #{{ receipt?.cashierId || receipt?.cashier?.id || '1'
+                                    }}</span>
                         </div>
                   </div>
 
                   <!-- Left side: Navigation Toggle -->
-                  <div class="side-toggle left-toggle">
+
+                  <!-- <div class="side-toggle left-toggle">
                         <button class="toggle-btn menu-btn" (click)="onToggleSidebar()">
                               <span class="material-icons-outlined">menu</span>
                         </button>
-                  </div>
+                  </div> -->
 
             </div>
 
@@ -232,7 +238,8 @@
                                           </div>
                                           <div class="inline-field">
                                                 <span class="label">تاريخ:</span>
-                                                <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) | date:'yyyy/MM/dd HH:mm'
+                                                <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt ||
+                                                      today) | date:'yyyy/MM/dd HH:mm'
                                                       }}</span>
                                           </div>
                                           <div class="inline-field">
@@ -446,30 +453,6 @@
       <!-- ============================= -->
       <!-- LEFT SIDEBAR: NAVIGATION -->
       <!-- ============================= -->
-      <aside class="sidebar">
-            <div class="menu-btn-container">
-                  <button class="menu-btn" (click)="onCloseSidebar()">
-                        <span class="material-icons-outlined">menu</span>
-                  </button>
-            </div>
-
-            <nav class="nav-menu">
-                  <ul>
-                        <li *ngFor="let item of navItems" [class.active]="item.active">
-                              <a href="javascript:void(0)" class="nav-link">
-                                    <span class="material-icons-outlined icon">{{ item.icon }}</span>
-                                    <span class="label">{{ item.label }}</span>
-                              </a>
-                        </li>
-                  </ul>
-            </nav>
-
-            <div class="user-container">
-                  <button class="user-btn">
-                        <span class="material-icons-outlined icon">manage_accounts</span>
-                        <span class="label">تغيير المستخدم</span>
-                  </button>
-            </div>
-      </aside>
+      <app-sidebar [expanded]="sidebarVisible()" (toggle)="onToggleSidebar()"></app-sidebar>
 
 </div>

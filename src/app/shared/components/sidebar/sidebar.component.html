@@ -1,0 +1,45 @@
+<div class="sidebar-backdrop" *ngIf="expanded" (click)="onClose()"></div>
+
+<div class="sidebar-container" [class.expanded]="expanded">
+  <aside class="sidebar" [class.expanded]="expanded">
+    <div class="menu-btn-container">
+      <button class="menu-btn" (click)="toggle.emit()">
+        <span class="material-icons-outlined">menu</span>
+      </button>
+    </div>
+
+    <nav class="nav-menu">
+      <ul>
+        <li *ngFor="let item of navItems">
+          <!-- Router Link -->
+          <a *ngIf="item.route !== '#'; else hashLink" 
+             [routerLink]="item.route" 
+             routerLinkActive="active" 
+             class="nav-link" 
+             [attr.data-tooltip]="item.label"
+             (click)="onSelectNavItem()">
+            <span class="material-icons-outlined icon">{{ item.icon }}</span>
+            <span class="label">{{ item.label }}</span>
+          </a>
+          <!-- Anchor Fallback for non-implemented paths -->
+          <ng-template #hashLink>
+            <a href="javascript:void(0)" 
+               class="nav-link" 
+               [attr.data-tooltip]="item.label"
+               (click)="onSelectNavItem()">
+              <span class="material-icons-outlined icon">{{ item.icon }}</span>
+              <span class="label">{{ item.label }}</span>
+            </a>
+          </ng-template>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="user-container">
+      <button class="user-btn" data-tooltip="تغيير المستخدم">
+        <span class="material-icons-outlined icon">manage_accounts</span>
+        <span class="label">تغيير المستخدم</span>
+      </button>
+    </div>
+  </aside>
+</div>

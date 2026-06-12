@@ -1,152 +1,69 @@
-👨‍👩‍👧‍👦 Family Tree Component
-An interactive Angular component to render, manage, and edit a hierarchical family tree using drag-and-drop functionality and zoomable SVG connections. This component supports dynamic updates, touch gestures, zooming, saving, and node editing.
+Implementation Plan - Generic Mini + Overlay Sidebar Component
+Refactor the Cashier Page left sidebar navigation to a generic, reusable <app-sidebar> component in the shared components directory, and integrate it on both the Cashier Page and the Product Page.
 
-📦 Features
-🖱️ Drag-and-drop positioning for family members.
+Proposed Changes
+Reusable Sidebar Component
+Create a new shared sidebar component using Angular's routing capabilities (routerLink, routerLinkActive) and signals.
 
-✍️ Edit Panel: Rename, add children, or remove members.
-
-🔍 Zoom Controls: Smooth zoom in/out with automatic centering.
-
-📱 Mobile support: Double-tap to select members on touch devices.
-
-🔗 SVG Lines: Automatically connects parents to children.
-
-💾 Save Functionality: Save the updated family tree.
-
-🛠️ Technologies Used
-Angular (standalone component)
-
-HTML + CSS
-
-TypeScript
-
-Angular Animations
-
-Two-way data binding (FormsModule)
-
-Font: Amiri (for Arabic/Urdu-style names)
-
-📁 File Structure
-rust
-Copy
-Edit
-tree.component.ts       → Main logic and interactivity
-tree.component.html     → Template layout for tree structure
-tree.component.css      → Styling for member cards, edit panel, and zoom controls
-🧠 Component Overview
-📌 TreeComponent
-Selector: app-tree
-
-Standalone: ✅
-
-Inputs: None
-
-Dependencies: CommonModule, FormsModule
-
-🧩 Core Concepts
-🧱 Tree Structure
-The family tree is made up of FamilyMember objects:
-
-ts
-Copy
-Edit
-interface FamilyMember {
-  id: number;
-  name: string;
-  x: number;
-  y: number;
-  children: FamilyMember[];
-}
-✨ Member Cards
-Displayed as circular cards.
-
-Positioned absolutely based on x and y.
-
-Double-click (or double-tap on touch devices) opens an edit panel.
-
-⚙️ Edit Panel
-When a member is selected:
-
-You can edit the name.
-
-Add a child to the member.
-
-Delete the member.
-
-View and select children in a dropdown list.
-
-➕ Zoom Functionality
-Buttons + and – allow zooming in/out.
-
-Initial zoom level is auto-fit to screen.
-
-Content scrolls to center automatically.
-
-🔄 Drag & Drop
-Members can be dragged using mouse or touch.
-
-Position updates are stored in the tree structure.
-
-💾 Save Function
-Calls TreeService.saveTree() and displays a success/failure message.
-
-✅ How to Use
-1. Load Data
-Ensure TreeService.loadTree() returns a FamilyMember[] to initialize the tree.
-
-2. Save Tree
-Hook TreeService.saveTree() to persist the updated tree.
-
-📸 UI Preview (Text-Based)
-sql
-Copy
-Edit
-+-------------------------+
-|        Zoom (+/-)      |
-+-------------------------+
-
-[ Parent ]
-    |
-[ Child 1 ]     [ Child 2 ]
-
-↳ Edit member
-↳ Add child
-↳ Remove member
-↳ Rename member
-🧪 Interactions
-Interaction	Behavior
-Drag node	Moves member in tree
-Double-click/tap	Opens edit panel for the member
-Zoom in/out buttons	Adjusts tree scaling
-Save button	Persists tree to backend
-
-💡 Customization
-🎨 Modify tree.component.css to change themes or shapes.
-
-🔧 Update TreeService for API integration.
-
-🌐 Add internationalization for UI text if needed.
-
-⚠️ Notes
-Ensure all members have unique ids.
-
-All coordinates (x, y) are relative to the tree container.
-
-SVG lines assume each node is 100x100 and centered accordingly.
-
-📂 Dependencies
-ts
-Copy
-Edit
-@NgModule({
-  imports: [
-    CommonModule,
-    FormsModule
-  ]
-})
-Optional: Add BrowserAnimationsModule if not already included globally.
-
-📬 Support
-For bugs, improvements, or suggestions, feel free to reach out or open an issue in your repo.
-
+[Component: Shared Sidebar]
+[NEW] 
+sidebar.component.ts
+A standalone Angular component (selector: 'app-sidebar').
+Takes an @Input() expanded: boolean = false; to control open state.
+Emits a @Output() toggle = new EventEmitter<void>(); when the menu icon or backdrop is clicked.
+Listens to document Escape key HostListener('document:keydown.escape') to emit toggle when expanded.
+Defines a list of navigation items linked to actual routes:
+Cashier (/pos/cashier)
+Inventory (/pos/products)
+Sales Reports (/pos/receipts)
+Print Tools (/pos/receipt-form)
+Settings (#)
+Closes the sidebar on item select if screen width is < 1024px.
+[NEW] 
+sidebar.component.html
+Backdrop div: <div class="sidebar-backdrop" *ngIf="expanded" (click)="onClose()"></div>
+Sidebar structure containing the toggle menu button, the list of navigation links with routerLink and routerLinkActive="active", and the bottom user action button.
+Add tooltips using data attributes ([attr.data-tooltip]).
+[NEW] 
+sidebar.component.css
+Layout CSS for the mini sidebar (always visible, width 72px in layout flow on desktop).
+Overlay CSS for the expanded state (width 260px, absolute position, drop shadow, blur backdrop).
+Animated premium CSS tooltips visible on hover in mini mode.
+Mobile drawer mode (screen width <= 1024px): sidebar hidden off-screen left (-260px), slides in when expanded (left: 0).
+[Component: Cashier Page]
+[MODIFY] 
+cashier-page-components.component.ts
+Import the new SidebarComponent from src/app/shared/components/sidebar/sidebar.component.ts.
+Remove the local navItems array and onCloseSidebar handlers that are no longer needed.
+[MODIFY] 
+cashier-page-components.component.html
+Replace the legacy <aside class="sidebar"> markup with the new <app-sidebar [expanded]="sidebarVisible()" (toggle)="onToggleSidebar()"></app-sidebar>.
+Remove references to !sidebarVisible() toggling classes on the root layout container.
+[MODIFY] 
+cashier-page-components.component.css
+Remove CSS rules related to .sidebar, .menu-btn-container, .nav-menu, .user-container, and responsive rules overriding them.
+[Component: Product Page]
+[MODIFY] 
+products-main-page.component.ts
+Import the SidebarComponent and place it in the imports array.
+Declare the sidebarVisible signal: sidebarVisible = signal(false);.
+Add the toggle handler onToggleSidebar() { this.sidebarVisible.update(v => !v); }.
+[MODIFY] 
+products-main-page.component.html
+Wrap the main template content in a <div class="products-layout"> container.
+Place the <app-sidebar [expanded]="sidebarVisible()" (toggle)="onToggleSidebar()"></app-sidebar> at the start of the layout.
+Add a menu toggle button inside the header next to the page title المنتجات to trigger sidebar expansion.
+[MODIFY] 
+products-main-page.component.css
+Add styling for the .products-layout container (display: flex; height: 100vh; overflow: hidden; direction: rtl;).
+Set .products-container to flex: 1; height: 100%; overflow: hidden; so it doesn't wrap or resize in a layout-breaking way.
+Verification Plan
+Manual Verification
+Open the Cashier Page:
+Verify that the mini-sidebar is always visible (72px) with icons and has sleek tooltips on hover.
+Click the menu toggle (either in sidebar or action bar); verify it expands smoothly above the workspace.
+Press Escape or click on the backdrop to collapse it.
+Navigate to the Products Page (by clicking "إدارة المخزون" in the sidebar):
+Verify that the mini-sidebar is visible.
+Verify that the active styling correctly highlights "إدارة المخزون" using routerLinkActive.
+Click the menu button next to the title "المنتجات" or the sidebar menu button; verify the sidebar expands overlaying the page.

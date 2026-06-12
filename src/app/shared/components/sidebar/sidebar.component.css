@@ -1,0 +1,355 @@
+/* ============================= */
+/* SIDEBAR CONTAINER & FLOW */
+/* ============================= */
+.sidebar-container {
+      width: 72px;
+      height: 100%;
+      flex-shrink: 0;
+      position: relative;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-container.expanded {
+      width: 72px; /* Container remains 72px in desktop flow to prevent layout push */
+}
+
+.sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 72px;
+      height: 100%;
+      background-color: var(--pos-card-bg, #ffffff);
+      border-right: 1px solid var(--pos-border, #e2e8f0);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+      overflow-x: hidden;
+      direction: rtl;
+}
+
+/* Expanded Overlay State */
+.sidebar.expanded {
+      width: 260px;
+      box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
+}
+
+/* ============================= */
+/* MENU TOGGLE BUTTON */
+/* ============================= */
+.menu-btn-container {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      transition: padding 0.3s;
+}
+
+.sidebar.expanded .menu-btn-container {
+      justify-content: flex-start;
+      padding: 16px 20px;
+}
+
+.menu-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--pos-primary, #1e3a8a);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+}
+
+/* ============================= */
+/* NAVIGATION MENU */
+/* ============================= */
+.nav-menu {
+      flex-grow: 1;
+      padding: 0 10px;
+      overflow-y: auto;
+      transition: padding 0.3s;
+}
+
+.sidebar.expanded .nav-menu {
+      padding: 0 16px;
+}
+
+.nav-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+}
+
+.nav-menu li {
+      margin-bottom: 8px;
+}
+
+.nav-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0;
+      text-decoration: none;
+      color: var(--pos-text-secondary, #64748b);
+      border-radius: var(--pos-radius-md, 10px);
+      transition: all 0.3s ease;
+      height: 44px;
+      font-weight: 600;
+      font-size: 0.8rem;
+}
+
+.sidebar.expanded .nav-link {
+      justify-content: flex-start;
+      padding: 8px 16px;
+}
+
+.nav-link:hover {
+      background-color: #f3f4f6;
+      color: var(--pos-text-primary, #1e293b);
+}
+
+.nav-link.active {
+      background-color: #eff6ff;
+      color: var(--pos-primary, #1e3a8a);
+}
+
+.nav-link .icon {
+      margin-left: 0;
+      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      transition: margin-left 0.3s, font-size 0.3s;
+}
+
+.sidebar.expanded .nav-link .icon {
+      margin-left: 12px;
+      font-size: 1.2rem;
+}
+
+.nav-link .label {
+      display: none;
+      white-space: nowrap;
+      opacity: 0;
+}
+
+.sidebar.expanded .nav-link .label {
+      display: inline-block;
+      opacity: 1;
+      animation: fadeInLabel 0.2s ease forwards;
+}
+
+/* ============================= */
+/* USER SECTION */
+/* ============================= */
+.user-container {
+      padding: 16px 10px;
+      border-top: 1px solid var(--pos-border, #e2e8f0);
+      transition: padding 0.3s;
+}
+
+.sidebar.expanded .user-container {
+      padding: 20px 16px;
+}
+
+.user-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 44px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid var(--pos-border, #e2e8f0);
+      border-radius: var(--pos-radius-md, 10px);
+      cursor: pointer;
+      color: var(--pos-text-primary, #1e293b);
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.3s ease;
+}
+
+.sidebar.expanded .user-btn {
+      padding: 8px 16px;
+      justify-content: flex-start;
+}
+
+.user-btn:hover {
+      background-color: #f9fafb;
+}
+
+.user-btn .icon {
+      margin-left: 0;
+      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      transition: margin-left 0.3s, font-size 0.3s;
+}
+
+.sidebar.expanded .user-btn .icon {
+      margin-left: 12px;
+      font-size: 1.2rem;
+}
+
+.user-btn .label {
+      display: none;
+      white-space: nowrap;
+      opacity: 0;
+}
+
+.sidebar.expanded .user-btn .label {
+      display: inline-block;
+      opacity: 1;
+      animation: fadeInLabel 0.2s ease forwards;
+}
+
+@keyframes fadeInLabel {
+      from { opacity: 0; transform: translateX(5px); }
+      to { opacity: 1; transform: translateX(0); }
+}
+
+/* ============================= */
+/* TOOLTIPS FOR MINI SIDEBAR */
+/* ============================= */
+.sidebar:not(.expanded) .nav-link,
+.sidebar:not(.expanded) .user-btn {
+      position: relative;
+}
+
+.sidebar:not(.expanded) .nav-link::after,
+.sidebar:not(.expanded) .user-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%) translateX(-10px);
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      z-index: 1000;
+}
+
+.sidebar:not(.expanded) .nav-link::before,
+.sidebar:not(.expanded) .user-btn::before {
+      content: '';
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%) translateX(-2px);
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent #1e293b transparent transparent;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+}
+
+.sidebar:not(.expanded) .nav-link:hover::after,
+.sidebar:not(.expanded) .nav-link:hover::before,
+.sidebar:not(.expanded) .user-btn:hover::after,
+.sidebar:not(.expanded) .user-btn:hover::before {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-50%) translateX(0);
+}
+
+/* ============================= */
+/* TRANSITIONAL BACKDROP */
+/* ============================= */
+.sidebar-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(15, 23, 42, 0.3);
+      backdrop-filter: blur(2px);
+      z-index: 95;
+      animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+}
+
+/* ============================= */
+/* RESPONSIVE STYLING */
+/* ============================= */
+@media (max-width: 1024px) {
+      .sidebar-container {
+            width: 0 !important;
+      }
+
+      .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            z-index: 1000;
+            box-shadow: none;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid var(--pos-border, #e2e8f0);
+      }
+
+      .sidebar.expanded {
+            left: 0;
+            box-shadow: 4px 0 24px rgba(15, 23, 42, 0.2);
+      }
+
+      .sidebar-backdrop {
+            z-index: 999;
+      }
+
+      /* Force expanded visual rules when drawer is open on mobile */
+      .sidebar .label {
+            display: inline-block !important;
+            opacity: 1 !important;
+      }
+
+      .sidebar .nav-link {
+            justify-content: flex-start !important;
+            padding: 8px 16px !important;
+      }
+
+      .sidebar .nav-link .icon {
+            margin-left: 12px !important;
+            font-size: 1.2rem !important;
+      }
+
+      .sidebar .user-btn {
+            padding: 8px 16px !important;
+            justify-content: flex-start !important;
+      }
+
+      .sidebar .user-btn .icon {
+            margin-left: 12px !important;
+            font-size: 1.2rem !important;
+      }
+
+      .sidebar .user-btn .label {
+            display: inline-block !important;
+            opacity: 1 !important;
+      }
+      
+      .sidebar .menu-btn-container {
+            justify-content: flex-start !important;
+            padding: 16px 20px !important;
+      }
+}
