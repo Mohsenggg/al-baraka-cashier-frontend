@@ -466,19 +466,35 @@
 }
 
 /* Adjust width and content size when right sidebar is open (not hidden) */
+.cashier-layout:not(.right-sidebar-hidden) .action-bar-container {
+      flex-wrap: nowrap;
+      gap: 8px;
+}
+
 .cashier-layout:not(.right-sidebar-hidden) .main-actions-bar {
-      flex: 0 0 70%;
-      max-width: 70%;
-      gap: 10px;
+      flex: 1;
+      max-width: 100%;
+      gap: 6px;
+      flex-wrap: nowrap;
+}
+
+.cashier-layout:not(.right-sidebar-hidden) .middle-group {
+      gap: 4px;
+      flex-wrap: nowrap;
+      padding: 2px 4px;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-main-action {
-      min-width: 100px;
-      padding: 2px 6px;
+      min-width: auto;
+      padding: 2px 8px;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-main-action .text {
-      font-size: 0.5rem;
+      font-size: 0.7rem;
+}
+
+.cashier-layout:not(.right-sidebar-hidden) .btn-main-action .shortcut {
+      display: none;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-outline {
@@ -487,15 +503,24 @@
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-outline .text {
-      font-size: 0.65rem;
+      font-size: 0.7rem;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .btn-outline .shortcut {
-      font-size: 0.55rem;
+      display: none;
 }
 
 .cashier-layout:not(.right-sidebar-hidden) .material-icons-outlined {
-      font-size: 0.8rem;
+      font-size: 1rem;
+}
+
+.cashier-layout:not(.right-sidebar-hidden) .drafts-info .subtitle {
+      display: none;
+}
+
+.cashier-layout:not(.right-sidebar-hidden) .btn-delete {
+      min-width: auto;
+      padding: 2px 8px;
 }
 
 .compact-cashier-info {
