@@ -20,11 +20,12 @@
       box-shadow: -2px 0 10px rgba(0, 0, 0, 0.02);
       z-index: 90;
       flex-shrink: 0;
+      margin-right: -330px; /* Hidden by default */
       transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.right-sidebar-hidden .receipt-sidebar {
-      margin-right: -330px;
+.cashier-layout.right-sidebar-visible .receipt-sidebar {
+      margin-right: 0;
 }
 
 
@@ -502,63 +503,63 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Adjust width and content size when right sidebar is open (not hidden) */
-.cashier-layout:not(.right-sidebar-hidden) .action-bar-container {
+/* Adjust width and content size when right sidebar is open (visible) */
+.cashier-layout.right-sidebar-visible .action-bar-container {
       gap: 8px;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .main-actions-bar {
+.cashier-layout.right-sidebar-visible .main-actions-bar {
       flex: 1;
       max-width: 100%;
       gap: 6px;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .middle-group {
+.cashier-layout.right-sidebar-visible .middle-group {
       gap: 4px;
       padding: 2px 4px;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-main-action {
+.cashier-layout.right-sidebar-visible .btn-main-action {
       min-width: auto;
       padding: 2px 8px;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-main-action .text {
+.cashier-layout.right-sidebar-visible .btn-main-action .text {
       font-size: 0.7rem;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-main-action .shortcut {
+.cashier-layout.right-sidebar-visible .btn-main-action .shortcut {
       max-width: 0;
       opacity: 0;
       margin: 0;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-outline {
+.cashier-layout.right-sidebar-visible .btn-outline {
       padding: 2px 6px;
       gap: 4px;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-outline .text {
+.cashier-layout.right-sidebar-visible .btn-outline .text {
       font-size: 0.7rem;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-outline .shortcut {
+.cashier-layout.right-sidebar-visible .btn-outline .shortcut {
       max-width: 0;
       opacity: 0;
       margin: 0;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .material-icons-outlined {
+.cashier-layout.right-sidebar-visible .material-icons-outlined {
       font-size: 1rem;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .drafts-info .subtitle {
+.cashier-layout.right-sidebar-visible .drafts-info .subtitle {
       max-height: 0;
       opacity: 0;
       margin: 0;
 }
 
-.cashier-layout:not(.right-sidebar-hidden) .btn-delete {
+.cashier-layout.right-sidebar-visible .btn-delete {
       min-width: auto;
       padding: 2px 8px;
 }
