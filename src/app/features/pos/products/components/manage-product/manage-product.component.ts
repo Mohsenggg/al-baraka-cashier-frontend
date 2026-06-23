@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
 import {
@@ -9,24 +9,33 @@ import {
   ProductAttributeOption,
   NamedEntity
 } from '../../services/product-reference-data.service';
+import { ProductMaterialCatalogService } from '../../services/product-material-catalog.service';
+import { ProductMaterialsTabComponent } from '../product-materials-tab/product-materials-tab.component';
+import { duplicateMaterialValidator } from '../../validators/product-material.validators';
+import { ProductMaterialDto } from '../../models/product-material.models';
 
 @Component({
   selector: 'app-manage-product',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, ProductMaterialsTabComponent],
   templateUrl: './manage-product.component.html',
   styleUrl: './manage-product.component.css'
 })
 export class ManageProductComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly referenceData = inject(ProductReferenceDataService);
+  private readonly materialCatalog = inject(ProductMaterialCatalogService);
   private readonly destroy$ = new Subject<void>();
 
   productForm!: FormGroup;
-  activeTab: 'basic' | 'composition' = 'basic';
+  activeTab: 'basic' | 'materials' = 'basic';
   generatedName = '';
   sidebarVisible = signal(false);
+  productId = signal<number | null>(null);
+  isEditMode = signal(false);
+  isPageLoading = signal(false);
 
   activeDropdown: 'attribute' | 'category' | 'manufacturer' | 'supplier' | null = null;
   dropdownSearchTerms = {
@@ -52,6 +61,47 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     this.initForm();
     this.setupSubscriptions();
     this.addBarcode();
+    this.resolveEditMode();
+  }
+
+  private resolveEditMode(): void {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (!idParam) return;
+
+    const id = Number(idParam);
+    if (isNaN(id)) return;
+
+    this.productId.set(id);
+    this.isEditMode.set(true);
+    this.loadProductForEdit(id);
+  }
+
+  private loadProductForEdit(id: number): void {
+    this.isPageLoading.set(true);
+
+    setTimeout(() => {
+      if (id === 15) {
+        this.productForm.patchValue({
+          baseName: 'شامبو',
+        });
+        this.updateGeneratedName();
+        this.loadMaterialsForEdit(id);
+      }
+      this.isPageLoading.set(false);
+    }, 400);
+  }
+
+  private loadMaterialsForEdit(productId: number): void {
+    const rows = this.materialCatalog.loadProductMaterials(productId);
+    this.materialsFormArray.clear();
+
+    rows.forEach(row => {
+      this.materialsFormArray.push(
+        ProductMaterialsTabComponent.createMaterialGroup(this.fb, row)
+      );
+    });
+
+    this.materialsFormArray.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {
@@ -68,10 +118,15 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       baseName: ['', Validators.required],
       attributes: this.fb.array([]),
       barcodes: this.fb.array([]),
+      materials: this.fb.array([], [duplicateMaterialValidator()]),
       categoryId: [null],
       manufacturerId: [null],
       supplierIds: [[]]
     });
+  }
+
+  get materialsFormArray(): FormArray {
+    return this.productForm.get('materials') as FormArray;
   }
 
   get attributesFormArray(): FormArray {
@@ -317,14 +372,53 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     this.router.navigate(['/pos/products']);
   }
 
+  get pageTitle(): string {
+    return this.isEditMode() ? 'تعديل منتج' : 'اضافة منتج جديد';
+  }
+
+  get parentProductName(): string {
+    return this.generatedName || this.productForm.get('baseName')?.value || '';
+  }
+
+  buildProductPayload(): Record<string, unknown> {
+    const materials: ProductMaterialDto[] = this.materialsFormArray.value.map(
+      (m: ProductMaterialDto & { notes?: string }) => ({
+        materialId: m.materialId,
+        quantity: Number(m.quantity),
+        unitId: m.unitId,
+        wastePercentage: m.wastePercentage ?? null,
+        notes: m.notes || ''
+      })
+    );
+
+    return {
+      id: this.productId(),
+      name: this.generatedName || this.productForm.get('baseName')?.value,
+      baseName: this.productForm.get('baseName')?.value,
+      attributes: this.attributesFormArray.value,
+      barcodes: this.barcodesFormArray.value,
+      categoryId: this.productForm.get('categoryId')?.value,
+      manufacturerId: this.productForm.get('manufacturerId')?.value,
+      supplierIds: this.productForm.get('supplierIds')?.value,
+      materials
+    };
+  }
+
   onSave(): void {
     this.productForm.markAllAsTouched();
+    this.materialsFormArray.controls.forEach(ctrl => ctrl.markAllAsTouched());
 
     if (this.productForm.invalid) {
-      this.saveError.set('يرجى تعبئة الحقول المطلوبة قبل الحفظ');
+      if (this.materialsFormArray.invalid) {
+        this.saveError.set('يرجى تصحيح بيانات المواد قبل الحفظ');
+        this.activeTab = 'materials';
+      } else {
+        this.saveError.set('يرجى تعبئة الحقول المطلوبة قبل الحفظ');
+      }
       return;
     }
 
+    const payload = this.buildProductPayload();
     this.isSaving.set(true);
     this.saveError.set(null);
     this.saveSuccess.set(false);
@@ -332,6 +426,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.isSaving.set(false);
       this.saveSuccess.set(true);
+      console.log('Product aggregate payload:', payload);
     }, 800);
   }
 }

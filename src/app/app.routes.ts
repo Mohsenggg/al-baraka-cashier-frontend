@@ -11,5 +11,6 @@ export const routes: Routes = [
       { path: 'pos/receipt-form', loadComponent: () => import('./features/pos/receipts/receipt-form.component').then(c => c.ReceiptFormComponent) },
       { path: 'pos/products', loadComponent: () => import('./features/pos/products/components/products-main-page/products-main-page.component').then(c => c.ProductsMainPageComponent) },
       { path: 'pos/product/manage', loadComponent: () => import('./features/pos/products/components/manage-product/manage-product.component').then(c => c.ManageProductComponent) },
+      { path: 'pos/product/manage/:id', loadComponent: () => import('./features/pos/products/components/manage-product/manage-product.component').then(c => c.ManageProductComponent) },
 
 ];

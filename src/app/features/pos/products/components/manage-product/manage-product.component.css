@@ -143,6 +143,20 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #dbeafe;
+  color: var(--pos-primary);
+  border-radius: 9px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
 /* ============================= */
 /* FORM BODY */
 /* ============================= */

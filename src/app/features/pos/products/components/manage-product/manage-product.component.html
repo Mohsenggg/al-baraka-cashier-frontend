@@ -9,8 +9,8 @@
             <span class="material-icons-outlined">arrow_forward</span>
           </button>
           <div class="header-titles">
-            <h1 class="page-title">اضافة منتج جديد</h1>
-            <p class="page-subtitle">أدخل بيانات المنتج والباركودات والتصنيف</p>
+            <h1 class="page-title">{{ pageTitle }}</h1>
+            <p class="page-subtitle">أدخل بيانات المنتج والباركودات والمواد الخام</p>
           </div>
         </div>
 
@@ -19,9 +19,10 @@
             <span class="material-icons-outlined">inventory_2</span>
             معلومات أساسية
           </button>
-          <button type="button" class="tab-btn" [class.active]="activeTab === 'composition'" (click)="activeTab = 'composition'; $event.stopPropagation()">
-            <span class="material-icons-outlined">category</span>
-            معلومات التجزئة
+          <button type="button" class="tab-btn" [class.active]="activeTab === 'materials'" (click)="activeTab = 'materials'; $event.stopPropagation()">
+            <span class="material-icons-outlined">science</span>
+            مواد المنتج
+            <span class="tab-badge" *ngIf="materialsFormArray.length">{{ materialsFormArray.length }}</span>
           </button>
         </nav>
       </div>
@@ -309,11 +310,14 @@
           </section>
         </div>
 
-        <!-- COMPOSITION TAB -->
-        <div *ngIf="activeTab === 'composition'" class="composition-placeholder">
-          <span class="material-icons-outlined placeholder-icon">construction</span>
-          <h3>معلومات التجزئة</h3>
-          <p>محتوى معلومات التجزئة سيتم اضافته لاحقاً...</p>
+        <!-- MATERIALS TAB -->
+        <div *ngIf="activeTab === 'materials'" formArrayName="materials">
+          <app-product-materials-tab
+            [materialsFormArray]="materialsFormArray"
+            [parentProductId]="productId()"
+            [parentProductName]="parentProductName"
+            [loading]="isPageLoading()">
+          </app-product-materials-tab>
         </div>
 
       </form>
