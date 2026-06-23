@@ -311,7 +311,7 @@
         </div>
 
         <!-- MATERIALS TAB -->
-        <div *ngIf="activeTab === 'materials'" formArrayName="materials">
+        <div *ngIf="activeTab === 'materials'">
           <app-product-materials-tab
             [materialsFormArray]="materialsFormArray"
             [parentProductId]="productId()"

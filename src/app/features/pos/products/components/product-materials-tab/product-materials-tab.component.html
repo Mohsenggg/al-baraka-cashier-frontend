@@ -74,16 +74,17 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of materialsFormArray.controls; let i = index" [formGroupName]="i">
+          <tr *ngFor="let row of materialsFormArray.controls; let i = index; trackBy: trackByIndex"
+            [formGroup]="asFormGroup(row)">
             <td class="col-material">
-              <span class="material-name">{{ getRowGroup(i).get('materialName')?.value }}</span>
-              <span class="material-notes" *ngIf="getRowGroup(i).get('notes')?.value">
-                {{ getRowGroup(i).get('notes')?.value }}
+              <span class="material-name">{{ asFormGroup(row).get('materialName')?.value }}</span>
+              <span class="material-notes" *ngIf="asFormGroup(row).get('notes')?.value">
+                {{ asFormGroup(row).get('notes')?.value }}
               </span>
             </td>
             <td class="col-qty" [class.has-error]="isQuantityInvalid(i)">
               <input type="number" formControlName="quantity" class="form-input form-input-compact"
-                min="0" step="0.01" (blur)="getRowGroup(i).get('quantity')?.markAsTouched()">
+                min="0" step="0.01" (blur)="asFormGroup(row).get('quantity')?.markAsTouched()">
               <span class="inline-error" *ngIf="isQuantityInvalid(i)">{{ getQuantityError(i) }}</span>
             </td>
             <td class="col-unit">
@@ -91,9 +92,9 @@
                 <option *ngFor="let unit of units()" [ngValue]="unit.id">{{ unit.name }}</option>
               </select>
             </td>
-            <td class="col-cost" dir="ltr">{{ getRowGroup(i).get('costPerUnit')?.value | number:'1.2-2' }}</td>
+            <td class="col-cost" dir="ltr">{{ asFormGroup(row).get('costPerUnit')?.value | number:'1.2-2' }}</td>
             <td class="col-total" dir="ltr">
-              <strong>{{ getRowTotalCost(getRowGroup(i)) | number:'1.2-2' }}</strong>
+              <strong>{{ getRowTotalCost(asFormGroup(row)) | number:'1.2-2' }}</strong>
             </td>
             <td class="col-waste">
               <input type="number" formControlName="wastePercentage" class="form-input form-input-compact"

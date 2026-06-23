@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -6,7 +6,8 @@ import {
   FormArray,
   FormBuilder,
   FormGroup,
-  Validators
+  Validators,
+  AbstractControl
 } from '@angular/forms';
 import { ProductMaterialCatalogService } from '../../services/product-material-catalog.service';
 import {
@@ -25,6 +26,7 @@ import { positiveQuantityValidator } from '../../validators/product-material.val
 export class ProductMaterialsTabComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly catalog = inject(ProductMaterialCatalogService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input({ required: true }) materialsFormArray!: FormArray;
   @Input() parentProductId: number | null = null;
@@ -142,13 +144,23 @@ export class ProductMaterialsTabComponent implements OnInit {
       return;
     }
 
+    const normalized = {
+      ...value,
+      quantity: value.quantity != null ? Number(value.quantity) : null,
+      costPerUnit: Number(value.costPerUnit) || 0,
+      wastePercentage: value.wastePercentage != null && value.wastePercentage !== ''
+        ? Number(value.wastePercentage) : null
+    };
+
     if (this.editingMaterialIndex !== null) {
-      (this.materialsFormArray.at(this.editingMaterialIndex) as FormGroup).patchValue(value);
+      (this.materialsFormArray.at(this.editingMaterialIndex) as FormGroup).patchValue(normalized);
     } else {
-      this.materialsFormArray.push(this.createMaterialGroup(value));
+      this.materialsFormArray.push(this.createMaterialGroup(normalized));
     }
 
+    this.materialsFormArray.markAsDirty();
     this.materialsFormArray.updateValueAndValidity();
+    this.cdr.markForCheck();
     this.closeMaterialDialog();
   }
 
@@ -160,7 +172,9 @@ export class ProductMaterialsTabComponent implements OnInit {
   confirmRemoveMaterial(): void {
     if (this.deleteTargetIndex !== null) {
       this.materialsFormArray.removeAt(this.deleteTargetIndex);
+      this.materialsFormArray.markAsDirty();
       this.materialsFormArray.updateValueAndValidity();
+      this.cdr.markForCheck();
     }
     this.cancelRemoveMaterial();
   }
@@ -178,6 +192,14 @@ export class ProductMaterialsTabComponent implements OnInit {
 
   getRowGroup(index: number): FormGroup {
     return this.materialsFormArray.at(index) as FormGroup;
+  }
+
+  asFormGroup(control: AbstractControl): FormGroup {
+    return control as FormGroup;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 
   isQuantityInvalid(index: number): boolean {
