@@ -302,15 +302,15 @@
         </span>
       </div>
       <div class="action-buttons">
-        <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSaving()">
-          <span class="material-icons-outlined">close</span>
-          إلغاء
-        </button>
         <button type="button" class="btn-save" (click)="onSave()"
           [disabled]="isSaving() || productForm.invalid">
           <span class="material-icons-outlined" *ngIf="!isSaving()">save</span>
           <span class="spinner" *ngIf="isSaving()"></span>
           {{ isSaving() ? 'جاري الحفظ...' : 'حفظ المنتج' }}
+        </button>
+        <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSaving()">
+          <span class="material-icons-outlined">close</span>
+          إلغاء
         </button>
       </div>
     </footer>
@@ -321,7 +321,7 @@
 </div>
 
 <!-- OVERLAY: Add Category / Manufacturer / Supplier -->
-<div class="overlay" *ngIf="showOverlay" (click)="closeOverlay()">
+<div class="overlay" *ngIf="showOverlay" (click)="closeOverlay()" dir="rtl">
   <div class="overlay-panel modern-panel" (click)="$event.stopPropagation()">
     <div class="panel-header">
       <h3>اضافة {{ showOverlay === 'category' ? 'قسم' : (showOverlay === 'manufacturer' ? 'شركة مصنعة' : 'مورد') }} جديد</h3>

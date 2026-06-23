@@ -1,6 +1,10 @@
 /* ============================= */
 /* SIDEBAR CONTAINER & FLOW */
 /* ============================= */
+:host {
+      direction: ltr;
+}
+
 .sidebar-container {
       width: 72px;
       height: 100%;
@@ -26,7 +30,7 @@
       z-index: 100;
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
       overflow-x: hidden;
-      direction: rtl;
+      direction: ltr;
 }
 
 /* Expanded Overlay State */
@@ -121,11 +125,11 @@
       align-items: center;
       justify-content: center;
       width: 24px;
-      transition: margin-left 0.3s, font-size 0.3s;
+      transition: margin-right 0.3s, font-size 0.3s;
 }
 
 .sidebar.expanded .nav-link .icon {
-      margin-left: 12px;
+      margin-right: 12px;
       font-size: 1.2rem;
 }
 
@@ -187,11 +191,11 @@
       align-items: center;
       justify-content: center;
       width: 24px;
-      transition: margin-left 0.3s, font-size 0.3s;
+      transition: margin-right 0.3s, font-size 0.3s;
 }
 
 .sidebar.expanded .user-btn .icon {
-      margin-left: 12px;
+      margin-right: 12px;
       font-size: 1.2rem;
 }
 
@@ -208,7 +212,7 @@
 }
 
 @keyframes fadeInLabel {
-      from { opacity: 0; transform: translateX(5px); }
+      from { opacity: 0; transform: translateX(-5px); }
       to { opacity: 1; transform: translateX(0); }
 }
 
@@ -329,7 +333,7 @@
       }
 
       .sidebar .nav-link .icon {
-            margin-left: 12px !important;
+            margin-right: 12px !important;
             font-size: 1.2rem !important;
       }
 
@@ -339,7 +343,7 @@
       }
 
       .sidebar .user-btn .icon {
-            margin-left: 12px !important;
+            margin-right: 12px !important;
             font-size: 1.2rem !important;
       }
 
