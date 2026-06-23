@@ -1,1 +1,197 @@
-<p>manage-product works!</p>
+<div class="pos-card p-xl manage-product-wrapper" dir="rtl">
+  <div class="header-section mb-xl flex justify-between items-center">
+    <h2>اضافة منتج جديد</h2>
+    <div class="tabs">
+      <button class="pos-btn" [class.active-tab]="activeTab === 'basic'" (click)="activeTab = 'basic'">معلومات أساسية</button>
+      <button class="pos-btn" [class.active-tab]="activeTab === 'composition'" (click)="activeTab = 'composition'">معلومات التجزئة</button>
+    </div>
+  </div>
+
+  <form [formGroup]="productForm">
+    <!-- BASIC TAB -->
+    <div *ngIf="activeTab === 'basic'" class="tab-content flex-col gap-lg">
+      
+      <!-- Top Section (Name & Attributes) -->
+      <div class="section-container bg-light-green p-md rounded-md flex-col gap-md">
+        <!-- Base Name & Generated Name -->
+        <div class="flex gap-md w-full">
+           <div class="form-group flex-1">
+             <label>اسم المنتج</label>
+             <input type="text" formControlName="baseName" class="pos-input">
+           </div>
+           <div class="form-group flex-2">
+              <label>&nbsp;</label>
+              <div class="generated-name-display flex items-center gap-sm">
+                <span class="done-badge pos-btn pos-btn-primary">تم</span>
+                <input type="text" [value]="generatedName" readonly class="pos-input readonly-input flex-1">
+              </div>
+           </div>
+        </div>
+        
+        <!-- Attributes Selector -->
+        <div class="attributes-row flex gap-sm items-center flex-wrap" formArrayName="attributes">
+          <!-- Dropdown for Adding Attribute -->
+          <div class="dropdown-container">
+            <button type="button" class="pos-btn btn-add-attr" (click)="toggleDropdown('attribute')">
+               اضافة +
+            </button>
+            <div class="dropdown-menu" *ngIf="activeDropdown === 'attribute'">
+              <input type="text" class="pos-input mb-sm" placeholder="بحث بالاسم" [(ngModel)]="dropdownSearchTerms.attribute" [ngModelOptions]="{standalone: true}">
+              <div class="dropdown-list">
+                <div class="dropdown-item" *ngFor="let attr of getFilteredList('attribute')" (click)="addAttribute(attr)">
+                  {{attr.name}}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Selected Attributes Chips -->
+          <div class="attr-chip pos-btn pos-btn-outline" 
+               *ngFor="let attrCtrl of attributesFormArray.controls; let i = index"
+               [class.active-chip]="activeAttributeIndex === i"
+               (click)="selectAttribute(i)">
+            {{attrCtrl.get('name')?.value}}
+            <span class="remove-chip" (click)="removeAttribute(i); $event.stopPropagation()">×</span>
+          </div>
+        </div>
+
+        <!-- Active Attribute Value Input -->
+        <div class="active-attr-input mt-sm" *ngIf="activeAttributeIndex !== null" formArrayName="attributes">
+          <div [formGroupName]="activeAttributeIndex">
+            <label>{{ attributesFormArray.at(activeAttributeIndex).get('name')?.value }}</label>
+            <input type="text" formControlName="value" class="pos-input" (input)="updateGeneratedName()">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Barcodes Section -->
+      <div class="section-container border-light p-md rounded-md flex-col gap-sm">
+        <div class="flex justify-between items-center mb-md">
+          <button type="button" class="pos-btn btn-add-barcode" (click)="addBarcode()">متعدد الباركود +</button>
+          <div class="total-stock pos-btn pos-btn-outline">
+            <strong>الكمية الاجمالية: </strong> {{ getTotalStock() }}
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="barcodes-table w-full">
+            <thead>
+              <tr>
+                <th>الباركود</th>
+                <th>سعر البيع</th>
+                <th>سعر الشراء</th>
+                <th>هامش الربح</th>
+                <th>الكمية</th>
+                <th class="text-center">الباركود الأساسي</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody formArrayName="barcodes">
+              <tr *ngFor="let row of barcodesFormArray.controls; let i = index" [formGroupName]="i">
+                <td><input type="text" formControlName="barcode" class="pos-input"></td>
+                <td><input type="number" formControlName="sellingPrice" class="pos-input w-24"></td>
+                <td><input type="number" formControlName="buyingPrice" class="pos-input w-24"></td>
+                <td>
+                  <div class="profit-display flex gap-xs">
+                    <span class="pos-input readonly-input w-16 text-center" dir="ltr">%{{ calculateProfitMargin(row.get('buyingPrice')?.value, row.get('sellingPrice')?.value).percentage | number:'1.0-2' }}</span>
+                    <span class="pos-input readonly-input w-20 text-center">{{ calculateProfitMargin(row.get('buyingPrice')?.value, row.get('sellingPrice')?.value).value | number:'1.0-2' }}</span>
+                  </div>
+                </td>
+                <td><input type="number" formControlName="stock" class="pos-input w-20"></td>
+                <td class="text-center">
+                  <input type="radio" [checked]="row.get('isDefault')?.value" (change)="setDefaultBarcode(i)">
+                </td>
+                <td>
+                  <button type="button" class="pos-btn-icon-only danger" (click)="removeBarcode(i)">حذف</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button type="button" class="pos-btn pos-btn-outline w-full mt-sm" (click)="addBarcode()">اضافة اخر +</button>
+        </div>
+      </div>
+
+      <!-- Categorization Section -->
+      <div class="grid grid-cols-3 gap-md">
+         <!-- Category -->
+         <div class="form-group dropdown-container">
+           <label>القسم</label>
+           <div class="pos-input cursor-pointer" (click)="toggleDropdown('category')">
+              {{ selectedCategoryName }}
+           </div>
+           <div class="dropdown-menu" *ngIf="activeDropdown === 'category'">
+              <input type="text" class="pos-input mb-sm" placeholder="البحث بالاسم" [(ngModel)]="dropdownSearchTerms.category" [ngModelOptions]="{standalone: true}">
+              <div class="dropdown-list">
+                <div class="dropdown-item" *ngFor="let cat of getFilteredList('category')" (click)="selectCategory(cat)">
+                  {{cat.name}}
+                </div>
+              </div>
+              <button type="button" class="pos-btn pos-btn-outline w-full mt-xs" (click)="openOverlay('category')">اضافة قسم جديد +</button>
+           </div>
+         </div>
+
+         <!-- Manufacturer -->
+         <div class="form-group dropdown-container">
+           <label>الشركة المصنعة</label>
+           <div class="pos-input cursor-pointer" (click)="toggleDropdown('manufacturer')">
+              {{ selectedManufacturerName }}
+           </div>
+           <div class="dropdown-menu" *ngIf="activeDropdown === 'manufacturer'">
+              <input type="text" class="pos-input mb-sm" placeholder="البحث بالاسم" [(ngModel)]="dropdownSearchTerms.manufacturer" [ngModelOptions]="{standalone: true}">
+              <div class="dropdown-list">
+                <div class="dropdown-item" *ngFor="let man of getFilteredList('manufacturer')" (click)="selectManufacturer(man)">
+                  {{man.name}}
+                </div>
+              </div>
+              <button type="button" class="pos-btn pos-btn-outline w-full mt-xs" (click)="openOverlay('manufacturer')">اضافة شركة جديدة +</button>
+           </div>
+         </div>
+
+         <!-- Suppliers -->
+         <div class="form-group dropdown-container">
+           <label>الموردين</label>
+           <div class="pos-input cursor-pointer flex gap-xs flex-wrap min-h-38 p-1" (click)="toggleDropdown('supplier')">
+              <span *ngIf="selectedSuppliers.length === 0" class="text-gray-400 p-1">اختر الموردين...</span>
+              <span class="selected-badge" *ngFor="let sup of selectedSuppliers">
+                {{sup.name}} <span class="remove" (click)="removeSupplier(sup.id); $event.stopPropagation()">×</span>
+              </span>
+           </div>
+           <div class="dropdown-menu" *ngIf="activeDropdown === 'supplier'">
+              <input type="text" class="pos-input mb-sm" placeholder="البحث بالاسم" [(ngModel)]="dropdownSearchTerms.supplier" [ngModelOptions]="{standalone: true}">
+              <div class="dropdown-list">
+                <div class="dropdown-item flex items-center gap-sm" *ngFor="let sup of getFilteredList('supplier')" (click)="toggleSupplier(sup); $event.stopPropagation()">
+                  <input type="checkbox" [checked]="isSupplierSelected(sup)"> {{sup.name}}
+                </div>
+              </div>
+              <button type="button" class="pos-btn pos-btn-outline w-full mt-xs" (click)="openOverlay('supplier')">اضافة مورد جديد +</button>
+           </div>
+         </div>
+      </div>
+    </div>
+    
+    <!-- COMPOSITION TAB -->
+    <div *ngIf="activeTab === 'composition'" class="tab-content p-xl text-center text-gray-500 border-light rounded-md">
+       محتوى معلومات التجزئة سيتم اضافته لاحقاً...
+    </div>
+
+  </form>
+</div>
+
+<!-- OVERLAY FOR ADDING NEW ENTITY -->
+<div class="overlay" *ngIf="showOverlay">
+  <div class="overlay-panel modern-panel">
+    <div class="panel-header">
+      <h3>اضافة {{ showOverlay === 'category' ? 'قسم' : (showOverlay === 'manufacturer' ? 'شركة مصنعة' : 'مورد') }} جديد</h3>
+    </div>
+    <div class="panel-content">
+      <div class="form-group">
+        <label>الاسم</label>
+        <input type="text" #newItemName class="modern-input">
+      </div>
+      <div class="panel-actions">
+        <button type="button" class="btn-modern btn-primary" (click)="addNewItem(showOverlay, newItemName.value)">اضافة</button>
+        <button type="button" class="btn-modern btn-secondary" (click)="closeOverlay()">الغاء</button>
+      </div>
+    </div>
+  </div>
+</div>

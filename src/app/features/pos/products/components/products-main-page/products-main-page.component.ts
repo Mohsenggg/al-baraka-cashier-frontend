@@ -41,12 +41,13 @@ interface Product {
       createdAt?: Date;
 }
 
+import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
 
 @Component({
       selector: 'app-products-main-page',
       standalone: true,
-      imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent],
+      imports: [CommonModule, FormsModule, ReactiveFormsModule, SidebarComponent, RouterModule],
       templateUrl: './products-main-page.component.html',
       styleUrl: './products-main-page.component.css'
 })
