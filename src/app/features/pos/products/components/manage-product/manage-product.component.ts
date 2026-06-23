@@ -46,7 +46,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
   };
 
   showOverlay: 'category' | 'manufacturer' | 'supplier' | 'attribute' | null = null;
-  activeAttributeIndex: number | null = null;
+  pendingAttribute: ProductAttributeOption | null = null;
+  pendingAttributeValue = '';
+  editingAttributeIndex: number | null = null;
+  attributeEditorError: string | null = null;
 
   isSaving = signal(false);
   saveSuccess = signal(false);
@@ -159,34 +162,79 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     this.generatedName = `${baseName} ${attrs}`.trim();
   }
 
-  addAttribute(attr: ProductAttributeOption): void {
-    if (this.attributesFormArray.value.some((c: { name: string }) => c.name === attr.name)) {
-      this.activeDropdown = null;
+  selectPendingAttribute(attr: ProductAttributeOption): void {
+    this.pendingAttribute = attr;
+    this.attributeEditorError = null;
+    this.activeDropdown = null;
+    if (this.editingAttributeIndex === null) {
+      this.pendingAttributeValue = '';
+    }
+  }
+
+  confirmAttributeValue(): void {
+    if (!this.pendingAttribute) {
+      this.attributeEditorError = 'اختر سمة أولاً';
+      return;
+    }
+    if (!this.pendingAttributeValue.trim()) {
+      this.attributeEditorError = 'أدخل قيمة السمة';
       return;
     }
 
-    this.attributesFormArray.push(this.fb.group({
-      id: [attr.id],
-      name: [attr.name],
-      value: ['']
-    }));
+    const isDuplicate = this.attributesFormArray.controls.some((ctrl, i) => {
+      if (this.editingAttributeIndex !== null && i === this.editingAttributeIndex) return false;
+      return ctrl.get('name')?.value === this.pendingAttribute!.name;
+    });
 
-    this.activeAttributeIndex = this.attributesFormArray.length - 1;
-    this.activeDropdown = null;
+    if (isDuplicate) {
+      this.attributeEditorError = 'هذه السمة مضافة مسبقاً';
+      return;
+    }
+
+    if (this.editingAttributeIndex !== null) {
+      this.attributesFormArray.at(this.editingAttributeIndex).patchValue({
+        id: this.pendingAttribute.id,
+        name: this.pendingAttribute.name,
+        value: this.pendingAttributeValue.trim()
+      });
+    } else {
+      this.attributesFormArray.push(this.fb.group({
+        id: [this.pendingAttribute.id],
+        name: [this.pendingAttribute.name],
+        value: [this.pendingAttributeValue.trim()]
+      }));
+    }
+
+    this.clearAttributeEditor();
+    this.updateGeneratedName();
+  }
+
+  clearAttributeEditor(): void {
+    this.pendingAttribute = null;
+    this.pendingAttributeValue = '';
+    this.editingAttributeIndex = null;
+    this.attributeEditorError = null;
+  }
+
+  loadAttributeForEdit(index: number): void {
+    const ctrl = this.attributesFormArray.at(index);
+    this.editingAttributeIndex = index;
+    this.pendingAttribute = {
+      id: ctrl.get('id')?.value,
+      name: ctrl.get('name')?.value
+    };
+    this.pendingAttributeValue = ctrl.get('value')?.value || '';
+    this.attributeEditorError = null;
   }
 
   removeAttribute(index: number): void {
     this.attributesFormArray.removeAt(index);
-    if (this.activeAttributeIndex === index) {
-      this.activeAttributeIndex = null;
-    } else if (this.activeAttributeIndex !== null && this.activeAttributeIndex > index) {
-      this.activeAttributeIndex--;
+    if (this.editingAttributeIndex === index) {
+      this.clearAttributeEditor();
+    } else if (this.editingAttributeIndex !== null && this.editingAttributeIndex > index) {
+      this.editingAttributeIndex--;
     }
     this.updateGeneratedName();
-  }
-
-  selectAttribute(index: number): void {
-    this.activeAttributeIndex = index;
   }
 
   addBarcode(): void {
@@ -319,18 +367,24 @@ export class ManageProductComponent implements OnInit, OnDestroy {
   }
 
   getAvailableAttributesForDropdown(): ProductAttributeOption[] {
-    const addedNames = new Set(
-      this.attributesFormArray.value.map((a: { name: string }) => a.name)
+    const confirmedNames = new Set(
+      this.attributesFormArray.controls
+        .map((c, i) => (this.editingAttributeIndex !== null && i === this.editingAttributeIndex)
+          ? null : c.get('name')?.value as string)
+        .filter((name): name is string => !!name)
     );
     const term = this.dropdownSearchTerms.attribute.toLowerCase();
     return this.attributes()
-      .filter(a => !addedNames.has(a.name))
+      .filter(a => !confirmedNames.has(a.name))
       .filter(a => !term || a.name.toLowerCase().includes(term));
   }
 
-  get activeAttributeName(): string {
-    if (this.activeAttributeIndex === null) return '';
-    return this.attributesFormArray.at(this.activeAttributeIndex).get('name')?.value || '';
+  get pendingAttributeLabel(): string {
+    return this.pendingAttribute?.name || 'اختر أو أضف سمة...';
+  }
+
+  get canConfirmAttribute(): boolean {
+    return !!(this.pendingAttribute && this.pendingAttributeValue.trim());
   }
 
   openOverlay(type: 'category' | 'manufacturer' | 'supplier' | 'attribute'): void {
@@ -352,7 +406,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     } else if (type === 'supplier') {
       this.toggleSupplier(this.referenceData.addSupplier(name.trim()));
     } else if (type === 'attribute') {
-      this.addAttribute(this.referenceData.addAttributeOption(name.trim()));
+      this.selectPendingAttribute(this.referenceData.addAttributeOption(name.trim()));
     }
 
     this.closeOverlay();

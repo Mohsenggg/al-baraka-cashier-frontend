@@ -83,11 +83,10 @@
                   <div class="attr-chips-row" *ngIf="attributesFormArray.length">
                     <button type="button" class="attr-chip"
                       *ngFor="let attrCtrl of attributesFormArray.controls; let i = index"
-                      [class.active]="activeAttributeIndex === i"
-                      [class.has-value]="attrCtrl.get('value')?.value"
-                      (click)="selectAttribute(i)">
+                      [class.active]="editingAttributeIndex === i"
+                      (click)="loadAttributeForEdit(i)">
                       <span class="attr-chip-name">{{ attrCtrl.get('name')?.value }}</span>
-                      <span class="attr-chip-value" *ngIf="attrCtrl.get('value')?.value">{{ attrCtrl.get('value')?.value }}</span>
+                      <span class="attr-chip-value">{{ attrCtrl.get('value')?.value }}</span>
                       <span class="chip-remove" (click)="removeAttribute(i); $event.stopPropagation()">
                         <span class="material-icons-outlined">close</span>
                       </span>
@@ -95,12 +94,12 @@
                   </div>
 
                   <div class="attribute-editor-row">
-                    <div class="field-group attr-select-col dropdown-container" (click)="$event.stopPropagation()">
+                    <div class="field-group attr-editor-field dropdown-container" (click)="$event.stopPropagation()">
                       <label>السمة</label>
                       <button type="button" class="form-select-trigger attr-select-trigger"
-                        [class.has-value]="activeAttributeIndex !== null"
+                        [class.has-value]="!!pendingAttribute"
                         (click)="toggleDropdown('attribute')">
-                        <span>{{ activeAttributeIndex !== null ? activeAttributeName : 'اختر أو أضف سمة...' }}</span>
+                        <span>{{ pendingAttributeLabel }}</span>
                         <span class="material-icons-outlined">expand_more</span>
                       </button>
                       <div class="dropdown-menu" *ngIf="activeDropdown === 'attribute'">
@@ -109,7 +108,7 @@
                         <div class="dropdown-list">
                           <button type="button" class="dropdown-item"
                             *ngFor="let attr of getAvailableAttributesForDropdown()"
-                            (click)="addAttribute(attr)">{{ attr.name }}</button>
+                            (click)="selectPendingAttribute(attr)">{{ attr.name }}</button>
                           <p class="dropdown-empty" *ngIf="getAvailableAttributesForDropdown().length === 0">
                             لا توجد سمات متاحة
                           </p>
@@ -121,21 +120,27 @@
                       </div>
                     </div>
 
-                    <div class="field-group attr-value-col"
-                      *ngIf="activeAttributeIndex !== null"
-                      [formGroupName]="activeAttributeIndex">
+                    <div class="field-group attr-editor-field">
                       <label>قيمة السمة</label>
-                      <input type="text" formControlName="value" class="form-input"
-                        [placeholder]="'أدخل ' + activeAttributeName"
-                        (input)="updateGeneratedName()">
+                      <input type="text" class="form-input"
+                        [(ngModel)]="pendingAttributeValue" [ngModelOptions]="{standalone: true}"
+                        [disabled]="!pendingAttribute"
+                        [placeholder]="pendingAttribute ? 'أدخل ' + pendingAttribute.name : 'اختر سمة أولاً'"
+                        (keyup.enter)="confirmAttributeValue()">
                     </div>
 
-                    <div class="field-group attr-value-col is-disabled" *ngIf="activeAttributeIndex === null">
-                      <label>قيمة السمة</label>
-                      <input type="text" class="form-input form-input-disabled" disabled
-                        placeholder="اختر سمة أولاً">
+                    <div class="attr-confirm-field">
+                      <label class="sr-only">تأكيد</label>
+                      <button type="button" class="btn-confirm-attr"
+                        [disabled]="!canConfirmAttribute"
+                        (click)="confirmAttributeValue()">
+                        <span class="material-icons-outlined">check</span>
+                        تأكيد
+                      </button>
                     </div>
                   </div>
+
+                  <p class="attr-editor-error" *ngIf="attributeEditorError">{{ attributeEditorError }}</p>
                 </div>
               </div>
             </section>

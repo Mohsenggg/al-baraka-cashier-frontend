@@ -371,13 +371,74 @@
 
 .attribute-editor-row {
   display: grid;
-  grid-template-columns: 1.35fr 0.65fr;
-  gap: 12px;
-  align-items: start;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
   padding: 12px;
   background: #f8fafc;
   border: 1px solid var(--pos-border);
   border-radius: 8px;
+}
+
+.attr-editor-field {
+  min-width: 0;
+}
+
+.attr-confirm-field {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.btn-confirm-attr {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 14px;
+  background-color: var(--pos-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-confirm-attr:hover:not(:disabled) {
+  background-color: var(--pos-primary-hover);
+}
+
+.btn-confirm-attr:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-confirm-attr .material-icons-outlined {
+  font-size: 1rem;
+}
+
+.attr-editor-error {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--pos-danger-text);
+  font-family: var(--font-family);
 }
 
 .attr-select-col {
@@ -1161,6 +1222,10 @@
 
   .attribute-editor-row {
     grid-template-columns: 1fr;
+  }
+
+  .attr-confirm-field .btn-confirm-attr {
+    width: 100%;
   }
 
   .name-preview {
