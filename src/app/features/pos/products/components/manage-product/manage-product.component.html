@@ -363,7 +363,7 @@
     <div class="attr-floating-list">
       <button type="button" class="attr-floating-item" role="option"
         *ngFor="let attr of getAvailableAttributesForDropdown()"
-        (click)="selectPendingAttribute(attr)">
+        (click)="selectPendingAttribute(attr, $event)">
         <span class="material-icons-outlined">sell</span>
         {{ attr.name }}
       </button>

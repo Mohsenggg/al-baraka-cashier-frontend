@@ -57,6 +57,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
   attrOverlayStyle: Record<string, string> = {};
   attrOverlayArrowLeft = 0;
   attrOverlayPlacement: 'below' | 'above' = 'below';
+  private suppressAttributeTriggerClick = false;
 
   isSaving = signal(false);
   saveSuccess = signal(false);
@@ -169,13 +170,22 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     this.generatedName = `${baseName} ${attrs}`.trim();
   }
 
-  selectPendingAttribute(attr: ProductAttributeOption): void {
+  selectPendingAttribute(attr: ProductAttributeOption, event?: MouseEvent): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
     this.pendingAttribute = attr;
     this.attributeEditorError = null;
-    this.activeDropdown = null;
     if (this.editingAttributeIndex === null) {
       this.pendingAttributeValue = '';
     }
+
+    // Defer closing so the overlay isn't removed mid-click (prevents ghost click on trigger).
+    this.suppressAttributeTriggerClick = true;
+    setTimeout(() => {
+      this.activeDropdown = null;
+      this.suppressAttributeTriggerClick = false;
+    }, 0);
   }
 
   confirmAttributeValue(): void {
@@ -300,6 +310,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
   }
 
   toggleDropdown(type: 'attribute' | 'category' | 'manufacturer' | 'supplier'): void {
+    if (type === 'attribute' && this.suppressAttributeTriggerClick) {
+      return;
+    }
+
     if (this.activeDropdown === type) {
       this.activeDropdown = null;
     } else {
