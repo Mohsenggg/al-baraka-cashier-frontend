@@ -29,7 +29,7 @@
     </header>
 
     <!-- FORM BODY -->
-    <div class="form-body">
+    <div class="form-body" (scroll)="onFormBodyScroll()">
       <form [formGroup]="productForm" (ngSubmit)="onSave()" (click)="$event.stopPropagation()">
 
         <!-- BASIC TAB -->
@@ -93,50 +93,37 @@
                     </button>
                   </div>
 
-                  <div class="attribute-editor-row">
-                    <div class="field-group attr-editor-field dropdown-container" (click)="$event.stopPropagation()">
-                      <label>السمة</label>
-                      <button type="button" class="form-select-trigger attr-select-trigger"
-                        [class.has-value]="!!pendingAttribute"
-                        (click)="toggleDropdown('attribute')">
-                        <span>{{ pendingAttributeLabel }}</span>
-                        <span class="material-icons-outlined">expand_more</span>
-                      </button>
-                      <div class="dropdown-menu" *ngIf="activeDropdown === 'attribute'">
-                        <input type="text" class="form-input dropdown-search" placeholder="بحث بالاسم"
-                          [(ngModel)]="dropdownSearchTerms.attribute" [ngModelOptions]="{standalone: true}">
-                        <div class="dropdown-list">
-                          <button type="button" class="dropdown-item"
-                            *ngFor="let attr of getAvailableAttributesForDropdown()"
-                            (click)="selectPendingAttribute(attr)">{{ attr.name }}</button>
-                          <p class="dropdown-empty" *ngIf="getAvailableAttributesForDropdown().length === 0">
-                            لا توجد سمات متاحة
-                          </p>
-                        </div>
-                        <button type="button" class="dropdown-add-btn" (click)="openOverlay('attribute')">
-                          <span class="material-icons-outlined">add</span>
-                          اضافة سمة جديدة
+                  <div class="attribute-editor">
+                    <div class="attribute-editor-row">
+                      <div class="field-group attr-editor-field" (click)="$event.stopPropagation()">
+                        <label>السمة</label>
+                        <button #attributeTrigger type="button" class="form-select-trigger attr-select-trigger"
+                          [class.has-value]="!!pendingAttribute"
+                          [class.is-open]="activeDropdown === 'attribute'"
+                          (click)="toggleDropdown('attribute')">
+                          <span>{{ pendingAttributeLabel }}</span>
+                          <span class="material-icons-outlined">{{ activeDropdown === 'attribute' ? 'expand_less' : 'expand_more' }}</span>
                         </button>
                       </div>
-                    </div>
 
-                    <div class="field-group attr-editor-field">
-                      <label>قيمة السمة</label>
-                      <input type="text" class="form-input"
-                        [(ngModel)]="pendingAttributeValue" [ngModelOptions]="{standalone: true}"
-                        [disabled]="!pendingAttribute"
-                        [placeholder]="pendingAttribute ? 'أدخل ' + pendingAttribute.name : 'اختر سمة أولاً'"
-                        (keyup.enter)="confirmAttributeValue()">
-                    </div>
+                      <div class="field-group attr-editor-field">
+                        <label>قيمة السمة</label>
+                        <input type="text" class="form-input"
+                          [(ngModel)]="pendingAttributeValue" [ngModelOptions]="{standalone: true}"
+                          [disabled]="!pendingAttribute"
+                          [placeholder]="pendingAttribute ? 'أدخل ' + pendingAttribute.name : 'اختر سمة أولاً'"
+                          (keyup.enter)="confirmAttributeValue()">
+                      </div>
 
-                    <div class="attr-confirm-field">
-                      <label class="sr-only">تأكيد</label>
-                      <button type="button" class="btn-confirm-attr"
-                        [disabled]="!canConfirmAttribute"
-                        (click)="confirmAttributeValue()">
-                        <span class="material-icons-outlined">check</span>
-                        تأكيد
-                      </button>
+                      <div class="attr-confirm-field">
+                        <label class="sr-only">تأكيد</label>
+                        <button type="button" class="btn-confirm-attr"
+                          [disabled]="!canConfirmAttribute"
+                          (click)="confirmAttributeValue()">
+                          <span class="material-icons-outlined">check</span>
+                          تأكيد
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -358,6 +345,38 @@
 
   <app-sidebar [expanded]="sidebarVisible()" (toggle)="onToggleSidebar()"></app-sidebar>
 </div>
+
+<!-- Attribute floating picker (fixed overlay with pointer) -->
+<ng-container *ngIf="activeDropdown === 'attribute'">
+  <div class="attr-floating-backdrop" (click)="closeDropdowns()" aria-hidden="true"></div>
+  <div class="attr-floating-panel" [class]="'placement-' + attrOverlayPlacement"
+    [ngStyle]="attrOverlayStyle" (click)="$event.stopPropagation()" dir="rtl"
+    role="listbox" aria-label="اختيار سمة المنتج">
+    <div class="attr-floating-arrow" [style.left.px]="attrOverlayArrowLeft"></div>
+    <div class="attr-floating-header">
+      <span class="material-icons-outlined">label</span>
+      <span>اختر سمة المنتج</span>
+    </div>
+    <input #attributeSearchInput type="text" class="form-input attr-floating-search"
+      placeholder="بحث بالاسم..." [(ngModel)]="dropdownSearchTerms.attribute"
+      [ngModelOptions]="{standalone: true}">
+    <div class="attr-floating-list">
+      <button type="button" class="attr-floating-item" role="option"
+        *ngFor="let attr of getAvailableAttributesForDropdown()"
+        (click)="selectPendingAttribute(attr)">
+        <span class="material-icons-outlined">sell</span>
+        {{ attr.name }}
+      </button>
+      <p class="attr-floating-empty" *ngIf="getAvailableAttributesForDropdown().length === 0">
+        لا توجد سمات متاحة
+      </p>
+    </div>
+    <button type="button" class="attr-floating-add-btn" (click)="openOverlay('attribute')">
+      <span class="material-icons-outlined">add</span>
+      اضافة سمة جديدة
+    </button>
+  </div>
+</ng-container>
 
 <!-- OVERLAY: Add Category / Manufacturer / Supplier -->
 <div class="overlay" *ngIf="showOverlay" (click)="closeOverlay()" dir="rtl">

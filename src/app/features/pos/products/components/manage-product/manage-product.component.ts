@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -50,6 +50,13 @@ export class ManageProductComponent implements OnInit, OnDestroy {
   pendingAttributeValue = '';
   editingAttributeIndex: number | null = null;
   attributeEditorError: string | null = null;
+
+  @ViewChild('attributeTrigger') attributeTrigger?: ElementRef<HTMLButtonElement>;
+  @ViewChild('attributeSearchInput') attributeSearchInput?: ElementRef<HTMLInputElement>;
+
+  attrOverlayStyle: Record<string, string> = {};
+  attrOverlayArrowLeft = 0;
+  attrOverlayPlacement: 'below' | 'above' = 'below';
 
   isSaving = signal(false);
   saveSuccess = signal(false);
@@ -298,7 +305,76 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     } else {
       this.activeDropdown = type;
       this.dropdownSearchTerms[type] = '';
+
+      if (type === 'attribute') {
+        setTimeout(() => this.openAttributePicker(), 0);
+      }
     }
+  }
+
+  private openAttributePicker(): void {
+    this.positionAttributeOverlay();
+    setTimeout(() => this.attributeSearchInput?.nativeElement.focus(), 50);
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.activeDropdown === 'attribute') {
+      this.positionAttributeOverlay();
+    }
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    if (this.activeDropdown === 'attribute') {
+      this.positionAttributeOverlay();
+    }
+  }
+
+  onFormBodyScroll(): void {
+    if (this.activeDropdown === 'attribute') {
+      this.positionAttributeOverlay();
+    }
+  }
+
+  private positionAttributeOverlay(): void {
+    const trigger = this.attributeTrigger?.nativeElement;
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const viewportPad = 16;
+    const gap = 10;
+    const overlayWidth = Math.max(Math.min(rect.width + 80, 340), 280);
+    const overlayHeightEstimate = 300;
+    const centerBias = Math.min(64, window.innerWidth * 0.06);
+
+    // Shift toward screen center (leftward in RTL layout)
+    let left = rect.left - centerBias;
+    left = Math.max(viewportPad, Math.min(left, window.innerWidth - overlayWidth - viewportPad));
+
+    const spaceBelow = window.innerHeight - rect.bottom - gap;
+    const spaceAbove = rect.top - gap;
+    let top: number;
+    let placement: 'below' | 'above' = 'below';
+
+    if (spaceBelow >= overlayHeightEstimate || spaceBelow >= spaceAbove) {
+      top = rect.bottom + gap;
+      placement = 'below';
+    } else {
+      top = Math.max(viewportPad, rect.top - overlayHeightEstimate - gap);
+      placement = 'above';
+    }
+
+    const triggerCenterX = rect.left + rect.width / 2;
+    const arrowLeft = Math.max(24, Math.min(triggerCenterX - left - 7, overlayWidth - 28));
+
+    this.attrOverlayStyle = {
+      top: `${top}px`,
+      left: `${left}px`,
+      width: `${overlayWidth}px`
+    };
+    this.attrOverlayArrowLeft = arrowLeft;
+    this.attrOverlayPlacement = placement;
   }
 
   closeDropdowns(): void {
