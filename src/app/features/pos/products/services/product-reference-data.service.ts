@@ -61,6 +61,12 @@ export class ProductReferenceDataService {
     return newItem;
   }
 
+  addAttributeOption(name: string): ProductAttributeOption {
+    const newItem = { id: this.generateId(), name };
+    this.attributesSignal.update(list => [...list, newItem]);
+    return newItem;
+  }
+
   private generateId(): number {
     return Math.floor(Math.random() * 1000) + 10;
   }

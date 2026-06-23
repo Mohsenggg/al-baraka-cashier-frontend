@@ -237,27 +237,170 @@
   gap: 10px;
 }
 
-.name-preview-badge {
-  font-size: 0.72rem;
+/* ============================= */
+/* PRODUCT IDENTITY SECTION */
+/* ============================= */
+
+.identity-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 16px 18px;
+}
+
+.identity-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.identity-divider {
+  height: 1px;
+  background: var(--pos-border);
+  margin: 14px 0;
+}
+
+.field-group-full {
+  width: 100%;
+}
+
+.name-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: min(320px, 42%);
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--pos-border);
+  border-radius: 8px;
+  font-family: var(--font-family);
+  min-width: 0;
+}
+
+.name-preview.is-ready {
+  background: var(--pos-success-bg);
+  border-color: #a7f3d0;
+}
+
+.name-preview-icon {
+  font-size: 1rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.name-preview.is-ready .name-preview-icon {
+  color: var(--pos-success-text);
+}
+
+.name-preview-text {
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--pos-success-text);
-  background: var(--pos-success-bg);
-  padding: 4px 10px;
-  border-radius: 6px;
-  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.name-preview-hint {
+  font-size: 0.72rem;
+  color: var(--pos-text-secondary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identity-attrs-group {
+  gap: 10px;
+}
+
+.attrs-group-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attrs-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attrs-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #dbeafe;
+  color: var(--pos-primary);
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
   font-family: var(--font-family);
 }
 
-.card-body {
-  padding: 14px 16px;
+.attrs-hint {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-family: var(--font-family);
+}
+
+.attr-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.attribute-editor-row {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--pos-border);
+  border-radius: 8px;
+}
+
+.attr-select-col {
+  min-width: 0;
+}
+
+.attr-value-col {
+  min-width: 0;
+}
+
+.attr-value-col.is-disabled .form-input-disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+.attr-select-trigger {
+  min-height: 36px;
+}
+
+.dropdown-empty {
+  margin: 0;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--pos-text-secondary);
+  font-family: var(--font-family);
 }
 
 /* ============================= */
 /* FORM FIELDS */
 /* ============================= */
+
+.card-body {
+  padding: 14px 16px;
+}
 
 .field-row {
   display: grid;
@@ -335,86 +478,17 @@
   font-family: var(--font-family);
 }
 
-/* Generated Name */
-.generated-name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.generated-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #cbd5e1;
-  flex-shrink: 0;
-}
-
-.generated-status.ready {
-  color: #059669;
-}
-
-.generated-status .material-icons-outlined {
-  font-size: 1.1rem;
-}
-
-/* ============================= */
-/* ATTRIBUTES */
-/* ============================= */
-
-.attributes-section {
-  margin-top: 4px;
-}
-
-.attributes-toolbar {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
-.btn-add-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 30px;
-  padding: 0 10px;
-  background-color: #dbeafe;
-  color: var(--pos-primary);
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.btn-add-chip:hover {
-  background-color: #bfdbfe;
-}
-
-.btn-add-chip .material-icons-outlined {
-  font-size: 0.9rem;
-}
-
-.attr-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+/* Attribute chips (identity section) */
 
 .attr-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 30px;
-  padding: 0 10px;
-  background: #f3f4f6;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px 0 6px;
+  background: #ffffff;
   border: 1px solid var(--pos-border);
-  border-radius: 16px;
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--pos-text-primary);
@@ -423,16 +497,35 @@
   transition: all 0.15s ease;
 }
 
+.attr-chip-name {
+  color: var(--pos-text-secondary);
+  font-weight: 600;
+}
+
+.attr-chip-value {
+  color: var(--pos-text-primary);
+  font-weight: 500;
+  padding-inline-start: 6px;
+  border-inline-start: 1px solid var(--pos-border);
+}
+
+.attr-chip.has-value .attr-chip-name {
+  color: var(--pos-primary);
+}
+
 .attr-chip:hover {
   border-color: #cbd5e1;
   background: #f9fafb;
 }
 
 .attr-chip.active {
-  background: white;
+  background: #eff6ff;
   border-color: var(--pos-primary);
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.attr-chip.active .attr-chip-name {
   color: var(--pos-primary);
-  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.08);
 }
 
 .chip-remove {
@@ -449,23 +542,6 @@
 
 .chip-remove .material-icons-outlined {
   font-size: 0.85rem;
-}
-
-.active-attr-panel {
-  margin-top: 10px;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px dashed var(--pos-border);
-  border-radius: 8px;
-}
-
-.active-attr-panel label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--pos-primary);
-  margin-bottom: 4px;
-  display: block;
-  font-family: var(--font-family);
 }
 
 /* ============================= */
@@ -1067,6 +1143,14 @@
 @media (max-width: 1024px) {
   .form-row-split {
     grid-template-columns: 1fr;
+  }
+
+  .attribute-editor-row {
+    grid-template-columns: 1fr;
+  }
+
+  .name-preview {
+    max-width: 100%;
   }
 
   .field-row {

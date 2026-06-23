@@ -47,63 +47,93 @@
                     <p class="card-desc">الاسم والسمات التي تُنشئ الاسم الكامل</p>
                   </div>
                 </div>
-                <span class="name-preview-badge" *ngIf="generatedName">{{ generatedName }}</span>
+                <div class="name-preview" [class.is-ready]="generatedName">
+                  <span class="material-icons-outlined name-preview-icon">
+                    {{ generatedName ? 'auto_awesome' : 'edit_note' }}
+                  </span>
+                  <span class="name-preview-text" *ngIf="generatedName">{{ generatedName }}</span>
+                  <span class="name-preview-hint" *ngIf="!generatedName">يُنشأ تلقائياً من اسم المنتج والسمات</span>
+                </div>
               </div>
 
-              <div class="card-body">
-                <div class="field-row">
-                  <div class="field-group" [class.has-error]="isBaseNameInvalid">
+              <div class="card-body identity-body">
+                <!-- Base Name -->
+                <div class="identity-group">
+                  <div class="field-group field-group-full" [class.has-error]="isBaseNameInvalid">
                     <label for="baseName">اسم المنتج <span class="required">*</span></label>
                     <input id="baseName" type="text" formControlName="baseName" class="form-input"
                       placeholder="مثال: صابون سائل" autocomplete="off">
                     <span class="field-error" *ngIf="isBaseNameInvalid">اسم المنتج مطلوب</span>
                   </div>
-                  <div class="field-group">
-                    <label>الاسم المُولَّد</label>
-                    <div class="generated-name-row">
-                      <span class="generated-status" [class.ready]="generatedName">
-                        <span class="material-icons-outlined">{{ generatedName ? 'check_circle' : 'radio_button_unchecked' }}</span>
-                      </span>
-                      <input type="text" [value]="generatedName" readonly class="form-input form-input-readonly"
-                        placeholder="يُنشأ تلقائياً من الاسم والسمات">
-                    </div>
-                  </div>
                 </div>
 
+                <div class="identity-divider" aria-hidden="true"></div>
+
                 <!-- Attributes -->
-                <div class="attributes-section" formArrayName="attributes">
-                  <label class="section-label">سمات المنتج</label>
-                  <div class="attributes-toolbar">
-                    <div class="dropdown-container" (click)="$event.stopPropagation()">
-                      <button type="button" class="btn-add-chip" (click)="toggleDropdown('attribute')">
-                        <span class="material-icons-outlined">add</span>
-                        اضافة سمة
+                <div class="identity-group identity-attrs-group" formArrayName="attributes">
+                  <div class="attrs-group-header">
+                    <div class="attrs-group-title">
+                      <span class="section-label">سمات المنتج</span>
+                      <span class="attrs-count" *ngIf="attributesFormArray.length">{{ attributesFormArray.length }}</span>
+                    </div>
+                    <p class="attrs-hint">أضف سمات مثل اللون أو الحجم لتكوين اسم المنتج</p>
+                  </div>
+
+                  <div class="attr-chips-row" *ngIf="attributesFormArray.length">
+                    <button type="button" class="attr-chip"
+                      *ngFor="let attrCtrl of attributesFormArray.controls; let i = index"
+                      [class.active]="activeAttributeIndex === i"
+                      [class.has-value]="attrCtrl.get('value')?.value"
+                      (click)="selectAttribute(i)">
+                      <span class="attr-chip-name">{{ attrCtrl.get('name')?.value }}</span>
+                      <span class="attr-chip-value" *ngIf="attrCtrl.get('value')?.value">{{ attrCtrl.get('value')?.value }}</span>
+                      <span class="chip-remove" (click)="removeAttribute(i); $event.stopPropagation()">
+                        <span class="material-icons-outlined">close</span>
+                      </span>
+                    </button>
+                  </div>
+
+                  <div class="attribute-editor-row">
+                    <div class="field-group attr-select-col dropdown-container" (click)="$event.stopPropagation()">
+                      <label>السمة</label>
+                      <button type="button" class="form-select-trigger attr-select-trigger"
+                        [class.has-value]="activeAttributeIndex !== null"
+                        (click)="toggleDropdown('attribute')">
+                        <span>{{ activeAttributeIndex !== null ? activeAttributeName : 'اختر أو أضف سمة...' }}</span>
+                        <span class="material-icons-outlined">expand_more</span>
                       </button>
                       <div class="dropdown-menu" *ngIf="activeDropdown === 'attribute'">
                         <input type="text" class="form-input dropdown-search" placeholder="بحث بالاسم"
                           [(ngModel)]="dropdownSearchTerms.attribute" [ngModelOptions]="{standalone: true}">
                         <div class="dropdown-list">
-                          <button type="button" class="dropdown-item" *ngFor="let attr of getFilteredList('attribute')"
+                          <button type="button" class="dropdown-item"
+                            *ngFor="let attr of getAvailableAttributesForDropdown()"
                             (click)="addAttribute(attr)">{{ attr.name }}</button>
+                          <p class="dropdown-empty" *ngIf="getAvailableAttributesForDropdown().length === 0">
+                            لا توجد سمات متاحة
+                          </p>
                         </div>
+                        <button type="button" class="dropdown-add-btn" (click)="openOverlay('attribute')">
+                          <span class="material-icons-outlined">add</span>
+                          اضافة سمة جديدة
+                        </button>
                       </div>
                     </div>
 
-                    <div class="attr-chips">
-                      <button type="button" class="attr-chip" *ngFor="let attrCtrl of attributesFormArray.controls; let i = index"
-                        [class.active]="activeAttributeIndex === i" (click)="selectAttribute(i)">
-                        {{ attrCtrl.get('name')?.value }}
-                        <span class="chip-remove" (click)="removeAttribute(i); $event.stopPropagation()">
-                          <span class="material-icons-outlined">close</span>
-                        </span>
-                      </button>
+                    <div class="field-group attr-value-col"
+                      *ngIf="activeAttributeIndex !== null"
+                      [formGroupName]="activeAttributeIndex">
+                      <label>قيمة السمة</label>
+                      <input type="text" formControlName="value" class="form-input"
+                        [placeholder]="'أدخل ' + activeAttributeName"
+                        (input)="updateGeneratedName()">
                     </div>
-                  </div>
 
-                  <div class="active-attr-panel" *ngIf="activeAttributeIndex !== null" [formGroupName]="activeAttributeIndex">
-                    <label>{{ attributesFormArray.at(activeAttributeIndex).get('name')?.value }}</label>
-                    <input type="text" formControlName="value" class="form-input" placeholder="أدخل قيمة السمة"
-                      (input)="updateGeneratedName()" autofocus>
+                    <div class="field-group attr-value-col is-disabled" *ngIf="activeAttributeIndex === null">
+                      <label>قيمة السمة</label>
+                      <input type="text" class="form-input form-input-disabled" disabled
+                        placeholder="اختر سمة أولاً">
+                    </div>
                   </div>
                 </div>
               </div>
@@ -324,7 +354,7 @@
 <div class="overlay" *ngIf="showOverlay" (click)="closeOverlay()" dir="rtl">
   <div class="overlay-panel modern-panel" (click)="$event.stopPropagation()">
     <div class="panel-header">
-      <h3>اضافة {{ showOverlay === 'category' ? 'قسم' : (showOverlay === 'manufacturer' ? 'شركة مصنعة' : 'مورد') }} جديد</h3>
+      <h3>اضافة {{ getOverlayLabel() }} جديد</h3>
       <button type="button" class="panel-close" (click)="closeOverlay()">
         <span class="material-icons-outlined">close</span>
       </button>

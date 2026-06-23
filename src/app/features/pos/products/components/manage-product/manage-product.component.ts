@@ -36,7 +36,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     supplier: ''
   };
 
-  showOverlay: 'category' | 'manufacturer' | 'supplier' | null = null;
+  showOverlay: 'category' | 'manufacturer' | 'supplier' | 'attribute' | null = null;
   activeAttributeIndex: number | null = null;
 
   isSaving = signal(false);
@@ -263,7 +263,22 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     control?.setValue(currentValues.filter(v => v !== id));
   }
 
-  openOverlay(type: 'category' | 'manufacturer' | 'supplier'): void {
+  getAvailableAttributesForDropdown(): ProductAttributeOption[] {
+    const addedNames = new Set(
+      this.attributesFormArray.value.map((a: { name: string }) => a.name)
+    );
+    const term = this.dropdownSearchTerms.attribute.toLowerCase();
+    return this.attributes()
+      .filter(a => !addedNames.has(a.name))
+      .filter(a => !term || a.name.toLowerCase().includes(term));
+  }
+
+  get activeAttributeName(): string {
+    if (this.activeAttributeIndex === null) return '';
+    return this.attributesFormArray.at(this.activeAttributeIndex).get('name')?.value || '';
+  }
+
+  openOverlay(type: 'category' | 'manufacturer' | 'supplier' | 'attribute'): void {
     this.showOverlay = type;
     this.activeDropdown = null;
   }
@@ -272,7 +287,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     this.showOverlay = null;
   }
 
-  addNewItem(type: 'category' | 'manufacturer' | 'supplier', name: string): void {
+  addNewItem(type: 'category' | 'manufacturer' | 'supplier' | 'attribute', name: string): void {
     if (!name.trim()) return;
 
     if (type === 'category') {
@@ -281,9 +296,21 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       this.selectManufacturer(this.referenceData.addManufacturer(name.trim()));
     } else if (type === 'supplier') {
       this.toggleSupplier(this.referenceData.addSupplier(name.trim()));
+    } else if (type === 'attribute') {
+      this.addAttribute(this.referenceData.addAttributeOption(name.trim()));
     }
 
     this.closeOverlay();
+  }
+
+  getOverlayLabel(): string {
+    switch (this.showOverlay) {
+      case 'category': return 'قسم';
+      case 'manufacturer': return 'شركة مصنعة';
+      case 'supplier': return 'مورد';
+      case 'attribute': return 'سمة';
+      default: return '';
+    }
   }
 
   onCancel(): void {
