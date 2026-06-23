@@ -53,11 +53,14 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
   @ViewChild('attributeTrigger') attributeTrigger?: ElementRef<HTMLButtonElement>;
   @ViewChild('attributeSearchInput') attributeSearchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('attrFloatingPanel') attrFloatingPanel?: ElementRef<HTMLElement>;
 
   attrOverlayStyle: Record<string, string> = {};
-  attrOverlayArrowLeft = 0;
   attrOverlayPlacement: 'below' | 'above' = 'below';
   private suppressAttributeTriggerClick = false;
+
+  private readonly arrowSize = 14;
+  private readonly arrowHalf = 7;
 
   isSaving = signal(false);
   saveSuccess = signal(false);
@@ -328,7 +331,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
   private openAttributePicker(): void {
     this.positionAttributeOverlay();
-    setTimeout(() => this.attributeSearchInput?.nativeElement.focus(), 50);
+    setTimeout(() => {
+      this.positionAttributeOverlay();
+      this.attributeSearchInput?.nativeElement.focus();
+    }, 0);
   }
 
   @HostListener('window:resize')
@@ -356,39 +362,101 @@ export class ManageProductComponent implements OnInit, OnDestroy {
     if (!trigger) return;
 
     const rect = trigger.getBoundingClientRect();
-    const viewportPad = 16;
-    const gap = 10;
-    const overlayWidth = Math.max(Math.min(rect.width + 80, 340), 280);
-    const overlayHeightEstimate = 300;
-    const centerBias = Math.min(64, window.innerWidth * 0.06);
+    const panelEl = this.attrFloatingPanel?.nativeElement;
+    const pad = 16;
+    const gap = 11;
+    const width = Math.min(340, Math.max(300, rect.width + 100));
+    const height = panelEl?.offsetHeight ?? 300;
+    const arrowInset = 24;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const centerX = vw / 2;
+    const anchorX = rect.left + rect.width / 2;
+    const triggerBox = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
 
-    // Shift toward screen center (leftward in RTL layout)
-    let left = rect.left - centerBias;
-    left = Math.max(viewportPad, Math.min(left, window.innerWidth - overlayWidth - viewportPad));
+    const belowTop = rect.bottom + gap;
+    const aboveTop = rect.top - height - gap;
+    const spaceBelow = vh - belowTop - pad;
+    const spaceAbove = rect.top - gap - pad;
+    const placement: 'below' | 'above' =
+      spaceBelow >= Math.min(height, 220) || spaceBelow >= spaceAbove ? 'below' : 'above';
 
-    const spaceBelow = window.innerHeight - rect.bottom - gap;
-    const spaceAbove = rect.top - gap;
-    let top: number;
-    let placement: 'below' | 'above' = 'below';
+    let top = placement === 'below' ? belowTop : aboveTop;
+    top = Math.max(pad, Math.min(top, vh - height - pad));
 
-    if (spaceBelow >= overlayHeightEstimate || spaceBelow >= spaceAbove) {
-      top = rect.bottom + gap;
-      placement = 'below';
-    } else {
-      top = Math.max(viewportPad, rect.top - overlayHeightEstimate - gap);
-      placement = 'above';
+    const candidates = this.buildOverlayLeftCandidates(anchorX, width, centerX, rect, gap, pad, vw);
+    let bestLeft = candidates[0] ?? centerX - width / 2;
+    let bestArrowLeft = this.computeArrowLeft(anchorX, bestLeft, width, arrowInset);
+    let bestScore = -Infinity;
+
+    for (const candidateLeft of candidates) {
+      const box = { left: candidateLeft, top, right: candidateLeft + width, bottom: top + height };
+      if (this.rectsOverlap(box, triggerBox, 10)) continue;
+
+      const arrowLeft = this.computeArrowLeft(anchorX, candidateLeft, width, arrowInset);
+      const arrowTipX = candidateLeft + arrowLeft + this.arrowHalf;
+      const alignError = Math.abs(arrowTipX - anchorX);
+      const centerDist = Math.abs(candidateLeft + width / 2 - centerX);
+      const score = -centerDist * 1.4 - alignError * 10;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestLeft = candidateLeft;
+        bestArrowLeft = arrowLeft;
+      }
     }
 
-    const triggerCenterX = rect.left + rect.width / 2;
-    const arrowLeft = Math.max(24, Math.min(triggerCenterX - left - 7, overlayWidth - 28));
+    const arrowCenterX = bestLeft + bestArrowLeft + this.arrowHalf;
 
     this.attrOverlayStyle = {
       top: `${top}px`,
-      left: `${left}px`,
-      width: `${overlayWidth}px`
+      left: `${bestLeft}px`,
+      width: `${width}px`,
+      '--attr-arrow-x': `${arrowCenterX - bestLeft}px`
     };
-    this.attrOverlayArrowLeft = arrowLeft;
     this.attrOverlayPlacement = placement;
+  }
+
+  private buildOverlayLeftCandidates(
+    anchorX: number,
+    width: number,
+    centerX: number,
+    triggerRect: DOMRect,
+    gap: number,
+    pad: number,
+    viewportWidth: number
+  ): number[] {
+    const clamp = (left: number) => Math.max(pad, Math.min(left, viewportWidth - width - pad));
+    const unique = new Set<number>();
+
+    // Arrow-anchored positions: panel shifts left while tip stays on the trigger (RTL-friendly).
+    for (const ratio of [0.84, 0.76, 0.68, 0.6]) {
+      unique.add(clamp(anchorX - width * ratio - this.arrowHalf));
+    }
+
+    // Fully clear of trigger, biased toward screen center.
+    unique.add(clamp(triggerRect.left - width - gap));
+    unique.add(clamp(centerX - width / 2));
+    unique.add(clamp(anchorX - width / 2));
+
+    return [...unique].sort(
+      (a, b) => Math.abs(a + width / 2 - centerX) - Math.abs(b + width / 2 - centerX)
+    );
+  }
+
+  private computeArrowLeft(anchorX: number, panelLeft: number, panelWidth: number, inset: number): number {
+    return Math.max(inset, Math.min(anchorX - panelLeft - this.arrowHalf, panelWidth - inset));
+  }
+
+  private rectsOverlap(
+    a: { left: number; top: number; right: number; bottom: number },
+    b: { left: number; top: number; right: number; bottom: number },
+    gap = 0
+  ): boolean {
+    return a.left < b.right + gap
+      && a.right > b.left - gap
+      && a.top < b.bottom + gap
+      && a.bottom > b.top - gap;
   }
 
   closeDropdowns(): void {

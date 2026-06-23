@@ -349,10 +349,10 @@
 <!-- Attribute floating picker (fixed overlay with pointer) -->
 <ng-container *ngIf="activeDropdown === 'attribute'">
   <div class="attr-floating-backdrop" (click)="closeDropdowns()" aria-hidden="true"></div>
-  <div class="attr-floating-panel" [class]="'placement-' + attrOverlayPlacement"
+  <div #attrFloatingPanel class="attr-floating-panel" [class]="'placement-' + attrOverlayPlacement"
     [ngStyle]="attrOverlayStyle" (click)="$event.stopPropagation()" dir="rtl"
     role="listbox" aria-label="اختيار سمة المنتج">
-    <div class="attr-floating-arrow" [style.left.px]="attrOverlayArrowLeft"></div>
+    <div class="attr-floating-arrow"></div>
     <div class="attr-floating-header">
       <span class="material-icons-outlined">label</span>
       <span>اختر سمة المنتج</span>

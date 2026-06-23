@@ -419,6 +419,31 @@
   font-family: var(--font-family);
   animation: attr-panel-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: min(320px, calc(100vh - 32px));
+  --attr-arrow-x: 50%;
+}
+
+/* Stem bridging panel edge to trigger when panel is offset toward center */
+.attr-floating-panel.placement-below::before,
+.attr-floating-panel.placement-above::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--attr-arrow-x) - 1px);
+  width: 2px;
+  background: #ffffff;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.attr-floating-panel.placement-below::before {
+  top: -11px;
+  height: 11px;
+  border-left: 1px solid var(--pos-border);
+}
+
+.attr-floating-panel.placement-above::after {
+  bottom: -11px;
+  height: 11px;
+  border-left: 1px solid var(--pos-border);
 }
 
 @keyframes attr-panel-in {
@@ -447,11 +472,12 @@
   }
 }
 
-/* Pointer arrow connecting panel to trigger */
+/* Pointer arrow — tip locked to trigger anchor via --attr-arrow-x */
 .attr-floating-arrow {
   position: absolute;
   width: 14px;
   height: 14px;
+  left: calc(var(--attr-arrow-x) - 7px);
   background: #ffffff;
   border: 1px solid var(--pos-border);
   transform: rotate(45deg);
@@ -459,14 +485,14 @@
 }
 
 .attr-floating-panel.placement-below .attr-floating-arrow {
-  top: -8px;
+  top: -7px;
   border-right: none;
   border-bottom: none;
   box-shadow: -2px -2px 4px rgba(12, 34, 63, 0.04);
 }
 
 .attr-floating-panel.placement-above .attr-floating-arrow {
-  bottom: -8px;
+  bottom: -7px;
   border-left: none;
   border-top: none;
   box-shadow: 2px 2px 4px rgba(12, 34, 63, 0.04);
