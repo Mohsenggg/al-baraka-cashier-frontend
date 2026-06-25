@@ -309,6 +309,12 @@ export class ManageProductComponent implements OnInit, OnDestroy {
             this.activeDropdown = null;
       }
 
+      onFormBodyScroll(): void {
+            if (this.activeDropdown) {
+                  this.activeDropdown = null;
+            }
+      }
+
       selectCategory(cat: NamedEntity): void {
             this.productForm.get('categoryId')?.setValue(cat.id);
             this.activeDropdown = null;
@@ -362,10 +368,8 @@ export class ManageProductComponent implements OnInit, OnDestroy {
                               ? null : c.get('name')?.value as string)
                         .filter((name): name is string => !!name)
             );
-            const term = this.dropdownSearchTerms.attribute.toLowerCase();
             return this.attributes()
-                  .filter(a => !confirmedNames.has(a.name))
-                  .filter(a => !term || a.name.toLowerCase().includes(term));
+                  .filter(a => !confirmedNames.has(a.name));
       }
 
       get pendingAttributeLabel(): string {

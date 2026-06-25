@@ -3,13 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LoginRequest } from '../../../../core/model/interface/LoginReques';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/services/auth.service';
 
 @Component({
       selector: 'app-login',
       standalone: true,
-      imports: [FormsModule, CommonModule, ReactiveFormsModule],
+      imports: [FormsModule, CommonModule, ReactiveFormsModule, RouterLink],
       templateUrl: './login.component.html',
       styleUrl: './login.component.css'
 })
@@ -17,6 +17,8 @@ export class LoginComponent implements OnInit {
       loginForm: FormGroup;
       isLoading = false;
       errorMessage = '';
+      showPassword = false;
+      readonly currentYear = new Date().getFullYear();
 
       constructor(private fb: FormBuilder, private authService: AuthService, private router: Router, private http: HttpClient) {
 
@@ -80,6 +82,10 @@ export class LoginComponent implements OnInit {
             });
       }
 
+
+      togglePassword(): void {
+            this.showPassword = !this.showPassword;
+      }
 
       private markFormGroupTouched(): void {
             Object.keys(this.loginForm.controls).forEach(key => {

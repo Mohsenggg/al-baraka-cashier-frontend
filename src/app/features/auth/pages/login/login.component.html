@@ -1,52 +1,147 @@
-<div class="login-container" dir="rtl">
-      <div class="login-card">
-            <div class="login-header">
-                  <h2>مرحباً بعودتك</h2>
-                  <p>الرجاء تسجيل الدخول إلى حسابك</p>
-            </div>
+<div class="login-page" dir="rtl">
+      <div class="login-shell">
 
-            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-                  <div class="form-group">
-                        <label for="username">اسم المستخدم</label>
-                        <input type="text" id="username" formControlName="username" placeholder="أدخل اسم المستخدم"
-                              [class.error]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" />
-                        <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
-                              class="error-message">
-                              <span *ngIf="loginForm.get('username')?.errors?.['required']">اسم المستخدم مطلوب</span>
+            <!-- ============================= -->
+            <!-- BRAND PANEL -->
+            <!-- ============================= -->
+            <aside class="brand-panel">
+                  <div class="brand-decor brand-decor--1"></div>
+                  <div class="brand-decor brand-decor--2"></div>
+                  <div class="brand-decor brand-decor--3"></div>
+
+                  <div class="brand-top">
+                        <div class="brand-logo">
+                              <span class="material-icons-outlined">spa</span>
+                        </div>
+                        <div class="brand-identity">
+                              <h1 class="brand-name">البركة</h1>
+                              <span class="brand-name-en">AL-BARAKA</span>
                         </div>
                   </div>
 
-                  <div class="form-group">
-                        <label for="password">كلمة المرور</label>
-                        <input type="password" id="password" formControlName="password" placeholder="أدخل كلمة المرور"
-                              [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
-                        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-                              class="error-message">
-                              <span *ngIf="loginForm.get('password')?.errors?.['required']">كلمة المرور مطلوبة</span>
+                  <div class="brand-body">
+                        <h2 class="brand-tagline">نظافة تلمسها، أناقة تثق بها</h2>
+                        <p class="brand-subtitle">
+                              نظام نقاط البيع لإدارة متاجر المنظفات ومستحضرات التجميل
+                              بكل احترافية وسهولة.
+                        </p>
+
+                        <ul class="brand-features">
+                              <li class="brand-feature">
+                                    <span class="material-icons-outlined">cleaning_services</span>
+                                    <span>نظافة وانتعاش</span>
+                              </li>
+                              <li class="brand-feature">
+                                    <span class="material-icons-outlined">diamond</span>
+                                    <span>جودة وأناقة</span>
+                              </li>
+                              <li class="brand-feature">
+                                    <span class="material-icons-outlined">verified_user</span>
+                                    <span>ثقة وأمان</span>
+                              </li>
+                              <li class="brand-feature">
+                                    <span class="material-icons-outlined">storefront</span>
+                                    <span>إدارة متكاملة للمتجر</span>
+                              </li>
+                        </ul>
+                  </div>
+
+                  <div class="brand-footer">
+                        © {{ currentYear }} البركة — جميع الحقوق محفوظة
+                  </div>
+            </aside>
+
+            <!-- ============================= -->
+            <!-- FORM PANEL -->
+            <!-- ============================= -->
+            <section class="form-panel">
+                  <div class="form-wrapper">
+
+                        <div class="form-logo-mobile">
+                              <span class="material-icons-outlined">spa</span>
+                              <span class="form-logo-mobile-text">البركة</span>
                         </div>
+
+                        <header class="form-header">
+                              <h2 class="form-title">مرحباً بعودتك</h2>
+                              <p class="form-subtitle">سجّل الدخول للمتابعة إلى لوحة التحكم</p>
+                        </header>
+
+                        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+
+                              <!-- Username -->
+                              <div class="field">
+                                    <label for="username" class="field-label">اسم المستخدم</label>
+                                    <div class="field-control"
+                                          [class.has-error]="username?.invalid && username?.touched">
+                                          <span class="material-icons-outlined field-icon">person</span>
+                                          <input type="text" id="username" formControlName="username"
+                                                class="field-input" placeholder="أدخل اسم المستخدم"
+                                                autocomplete="username" />
+                                    </div>
+                                    <div class="field-error" *ngIf="username?.invalid && username?.touched">
+                                          <span class="material-icons-outlined">error_outline</span>
+                                          <span *ngIf="username?.errors?.['required']">اسم المستخدم مطلوب</span>
+                                    </div>
+                              </div>
+
+                              <!-- Password -->
+                              <div class="field">
+                                    <label for="password" class="field-label">كلمة المرور</label>
+                                    <div class="field-control"
+                                          [class.has-error]="password?.invalid && password?.touched">
+                                          <span class="material-icons-outlined field-icon">lock</span>
+                                          <input [type]="showPassword ? 'text' : 'password'" id="password"
+                                                formControlName="password" class="field-input"
+                                                placeholder="أدخل كلمة المرور" autocomplete="current-password" />
+                                          <button type="button" class="field-toggle"
+                                                (click)="togglePassword()"
+                                                [attr.aria-label]="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
+                                                <span class="material-icons-outlined">{{ showPassword ?
+                                                      'visibility_off' : 'visibility' }}</span>
+                                          </button>
+                                    </div>
+                                    <div class="field-error" *ngIf="password?.invalid && password?.touched">
+                                          <span class="material-icons-outlined">error_outline</span>
+                                          <span *ngIf="password?.errors?.['required']">كلمة المرور مطلوبة</span>
+                                    </div>
+                              </div>
+
+                              <!-- Options -->
+                              <div class="form-options">
+                                    <label class="remember-me">
+                                          <input type="checkbox" formControlName="rememberMe" />
+                                          <span class="checkbox-box">
+                                                <span class="material-icons-outlined">check</span>
+                                          </span>
+                                          <span class="checkbox-label">تذكرني</span>
+                                    </label>
+                                    <a routerLink="/forgot-password" class="forgot-password">نسيت كلمة المرور؟</a>
+                              </div>
+
+                              <!-- Server error -->
+                              <div class="server-error" *ngIf="errorMessage">
+                                    <span class="material-icons-outlined">warning_amber</span>
+                                    <span>{{ errorMessage }}</span>
+                              </div>
+
+                              <!-- Submit -->
+                              <button type="submit" class="submit-btn"
+                                    [disabled]="loginForm.invalid || isLoading">
+                                    <span class="btn-spinner" *ngIf="isLoading"></span>
+                                    <span *ngIf="!isLoading">تسجيل الدخول</span>
+                                    <span *ngIf="isLoading">جارٍ تسجيل الدخول...</span>
+                              </button>
+                        </form>
+
+                        <footer class="form-footer">
+                              <p>
+                                    ليس لديك حساب؟
+                                    <a routerLink="/register" class="register-link">إنشاء حساب جديد</a>
+                              </p>
+                        </footer>
                   </div>
+            </section>
 
-                  <div class="remember-me">
-                        <input type="checkbox" id="rememberMe" formControlName="rememberMe" />
-                        <label for="rememberMe">تذكرني</label>
-                  </div>
-
-                  <button type="submit" class="login-btn" [disabled]="loginForm.invalid || isLoading">
-                        <span *ngIf="!isLoading">تسجيل الدخول</span>
-                        <span *ngIf="isLoading">جاري تسجيل الدخول...</span>
-                  </button>
-
-                  <div *ngIf="errorMessage" class="error-message server-error">
-                        {{ errorMessage }}
-                  </div>
-            </form>
-
-            <div class="login-footer">
-                  <p>
-                        ليس لديك حساب؟
-                        <a routerLink="/register" class="register-link">إنشاء حساب</a>
-                  </p>
-                  <a routerLink="/forgot-password" class="forgot-password">نسيت كلمة المرور؟</a>
-            </div>
       </div>
 </div>

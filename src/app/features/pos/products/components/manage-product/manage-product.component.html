@@ -357,7 +357,7 @@
 <!-- Attribute floating picker (shared component) -->
 <app-floating-dropdown
   [isOpen]="activeDropdown === 'attribute'"
-  [trigger]="attributeTrigger"
+  [trigger]="attributeTrigger?.nativeElement"
   [options]="getAvailableAttributesForDropdown()"
   displayKey="name"
   searchPlaceholder="بحث بالاسم..."
