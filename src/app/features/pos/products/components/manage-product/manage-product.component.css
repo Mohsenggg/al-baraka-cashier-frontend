@@ -17,9 +17,6 @@
       direction: rtl;
 }
 
-.manage-layout>app-sidebar {
-      direction: ltr;
-}
 
 .manage-container {
       flex: 1;

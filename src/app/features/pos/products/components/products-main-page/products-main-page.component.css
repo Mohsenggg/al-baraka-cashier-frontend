@@ -17,9 +17,6 @@
       direction: rtl;
 }
 
-.products-layout > app-sidebar {
-      direction: ltr;
-}
 
 .products-container {
       flex: 1;
