@@ -552,20 +552,23 @@
 .products-table thead {
       position: sticky;
       top: 0;
-      background-color: #f8fafc;
-      border-bottom: 2px solid var(--pos-border);
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+      border-bottom: 2px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
       z-index: 10;
 }
 
 .products-table th {
-      padding: 2px 16px;
+      padding: 12px 16px;
       text-align: right;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--pos-text-secondary);
-      letter-spacing: 0.3px;
+      color: #475569;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       white-space: nowrap;
 }
+
 
 .products-table tbody tr {
       border-bottom: 1px solid var(--pos-border);
@@ -689,17 +692,19 @@
 }
 
 .col-title {
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--pos-text-secondary);
-      letter-spacing: 0.3px;
+      color: #475569;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
 }
 
 .col-subtitles {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 500;
       color: #94a3b8;
       letter-spacing: 0;
+      text-transform: none;
 }
 
 .subtitle-sep {
@@ -1865,18 +1870,20 @@
 .products-table thead {
       position: sticky;
       top: 0;
-      background-color: #f8fafc;
-      border-bottom: 2px solid var(--pos-border);
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+      border-bottom: 2px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
       z-index: 10;
 }
 
 .products-table th {
-      padding: 2px 16px;
+      padding: 12px 16px;
       text-align: right;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--pos-text-secondary);
-      letter-spacing: 0.3px;
+      color: #475569;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       white-space: nowrap;
 }
 
