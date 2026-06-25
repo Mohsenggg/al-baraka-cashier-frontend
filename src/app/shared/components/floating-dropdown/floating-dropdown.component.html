@@ -1,0 +1,42 @@
+<ng-container *ngIf="isOpen">
+  <div class="floating-backdrop" (click)="close()" aria-hidden="true"></div>
+  <div #floatingPanel class="floating-panel" [class]="'placement-' + placement"
+    [ngStyle]="overlayStyle" (click)="$event.stopPropagation()" dir="rtl"
+    role="listbox">
+    
+    <div class="floating-arrow"></div>
+    
+    <div class="floating-header" *ngIf="title">
+      <span class="material-icons-outlined" *ngIf="titleIcon">{{ titleIcon }}</span>
+      <span>{{ title }}</span>
+    </div>
+    
+    <input *ngIf="searchable" type="text" class="floating-search"
+      [placeholder]="searchPlaceholder" [(ngModel)]="searchTerm"
+      (ngModelChange)="filterOptions()">
+      
+    <div class="floating-list">
+      <ng-container *ngIf="filteredOptions.length > 0; else emptyTemplate">
+        <button type="button" class="floating-item" role="option"
+          *ngFor="let item of filteredOptions"
+          (click)="onSelect(item, $event)">
+          <ng-container *ngIf="itemTemplate; else defaultItem">
+            <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"></ng-container>
+          </ng-container>
+          <ng-template #defaultItem>
+            <span class="material-icons-outlined" *ngIf="itemIcon">{{ itemIcon }}</span>
+            {{ item[displayKey] }}
+          </ng-template>
+        </button>
+      </ng-container>
+      <ng-template #emptyTemplate>
+        <p class="floating-empty">{{ emptyMessage }}</p>
+      </ng-template>
+    </div>
+    
+    <button type="button" class="floating-add-btn" *ngIf="addActionText" (click)="onAdd($event)">
+      <span class="material-icons-outlined">add</span>
+      {{ addActionText }}
+    </button>
+  </div>
+</ng-container>

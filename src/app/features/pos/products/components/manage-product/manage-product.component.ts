@@ -14,10 +14,12 @@ import { ProductMaterialsTabComponent } from '../product-materials-tab/product-m
 import { duplicateMaterialValidator } from '../../validators/product-material.validators';
 import { ProductMaterialDto } from '../../models/product-material.models';
 
+import { FloatingDropdownComponent } from '../../../../../shared/components/floating-dropdown/floating-dropdown.component';
+
 @Component({
       selector: 'app-manage-product',
       standalone: true,
-      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, ProductMaterialsTabComponent],
+      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, ProductMaterialsTabComponent, FloatingDropdownComponent],
       templateUrl: './manage-product.component.html',
       styleUrl: './manage-product.component.css'
 })
@@ -38,12 +40,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       isPageLoading = signal(false);
 
       activeDropdown: 'attribute' | 'category' | 'manufacturer' | 'supplier' | null = null;
-      dropdownSearchTerms = {
-            attribute: '',
-            category: '',
-            manufacturer: '',
-            supplier: ''
-      };
+
 
       showOverlay: 'category' | 'manufacturer' | 'supplier' | 'attribute' | null = null;
       pendingAttribute: ProductAttributeOption | null = null;
@@ -52,15 +49,6 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       attributeEditorError: string | null = null;
 
       @ViewChild('attributeTrigger') attributeTrigger?: ElementRef<HTMLButtonElement>;
-      @ViewChild('attributeSearchInput') attributeSearchInput?: ElementRef<HTMLInputElement>;
-      @ViewChild('attrFloatingPanel') attrFloatingPanel?: ElementRef<HTMLElement>;
-
-      attrOverlayStyle: Record<string, string> = {};
-      attrOverlayPlacement: 'left' | 'right' = 'left';
-      private suppressAttributeTriggerClick = false;
-
-      private readonly arrowSize = 14;
-      private readonly arrowHalf = 7;
 
       isSaving = signal(false);
       saveSuccess = signal(false);
@@ -174,8 +162,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       }
 
       selectPendingAttribute(attr: ProductAttributeOption, event?: MouseEvent): void {
-            event?.preventDefault();
-            event?.stopPropagation();
+            if (event) {
+                  event.preventDefault();
+                  event.stopPropagation();
+            }
 
             this.pendingAttribute = attr;
             this.attributeEditorError = null;
@@ -183,12 +173,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
                   this.pendingAttributeValue = '';
             }
 
-            // Defer closing so the overlay isn't removed mid-click (prevents ghost click on trigger).
-            this.suppressAttributeTriggerClick = true;
-            setTimeout(() => {
-                  this.activeDropdown = null;
-                  this.suppressAttributeTriggerClick = false;
-            }, 0);
+            this.activeDropdown = null;
       }
 
       confirmAttributeValue(): void {
@@ -313,112 +298,15 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       }
 
       toggleDropdown(type: 'attribute' | 'category' | 'manufacturer' | 'supplier'): void {
-            if (type === 'attribute' && this.suppressAttributeTriggerClick) {
-                  return;
-            }
-
             if (this.activeDropdown === type) {
                   this.activeDropdown = null;
             } else {
                   this.activeDropdown = type;
-                  this.dropdownSearchTerms[type] = '';
-
-                  if (type === 'attribute') {
-                        setTimeout(() => this.openAttributePicker(), 0);
-                  }
             }
-      }
-
-      private openAttributePicker(): void {
-            this.positionAttributeOverlay();
-            setTimeout(() => {
-                  this.positionAttributeOverlay();
-                  this.attributeSearchInput?.nativeElement.focus();
-            }, 0);
-      }
-
-      @HostListener('window:resize')
-      onWindowResize(): void {
-            if (this.activeDropdown === 'attribute') {
-                  this.positionAttributeOverlay();
-            }
-      }
-
-      @HostListener('window:scroll')
-      onWindowScroll(): void {
-            if (this.activeDropdown === 'attribute') {
-                  this.positionAttributeOverlay();
-            }
-      }
-
-      onFormBodyScroll(): void {
-            if (this.activeDropdown === 'attribute') {
-                  this.positionAttributeOverlay();
-            }
-      }
-
-      private positionAttributeOverlay(): void {
-            const trigger = this.attributeTrigger?.nativeElement;
-            if (!trigger) return;
-
-            const rect = trigger.getBoundingClientRect();
-            const panelEl = this.attrFloatingPanel?.nativeElement;
-            const pad = 16;
-            const gap = 40;
-            const width = 320;
-            const height = panelEl?.offsetHeight || 300;
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-
-            let placement: 'left' | 'right' = 'left';
-            const spaceLeft = rect.left - pad;
-            const spaceRight = vw - rect.right - pad;
-
-            if (spaceLeft >= width + gap) {
-                  placement = 'left';
-            } else if (spaceRight >= width + gap) {
-                  placement = 'right';
-            } else if (spaceLeft > spaceRight) {
-                  placement = 'left';
-            } else {
-                  placement = 'right';
-            }
-
-            let left = placement === 'left' ? rect.left - width - gap : rect.right + gap;
-            left = Math.max(pad, Math.min(left, vw - width - pad));
-
-            let top = rect.top + (rect.height / 2) - (height / 2);
-            top = Math.max(pad, Math.min(top, vh - height - pad));
-
-            let arrowY = rect.top + (rect.height / 2) - top;
-            arrowY = Math.max(20, Math.min(arrowY, height - 20));
-
-            this.attrOverlayStyle = {
-                  top: `${top}px`,
-                  left: `${left}px`,
-                  width: `${width}px`,
-                  '--attr-arrow-y': `${arrowY}px`
-            };
-            this.attrOverlayPlacement = placement;
       }
 
       closeDropdowns(): void {
             this.activeDropdown = null;
-      }
-
-      getFilteredList(type: 'attribute' | 'category' | 'manufacturer' | 'supplier'): (ProductAttributeOption | NamedEntity)[] {
-            const term = this.dropdownSearchTerms[type].toLowerCase();
-            let list: (ProductAttributeOption | NamedEntity)[] = [];
-
-            switch (type) {
-                  case 'attribute': list = this.attributes(); break;
-                  case 'category': list = this.categories(); break;
-                  case 'manufacturer': list = this.manufacturers(); break;
-                  case 'supplier': list = this.suppliers(); break;
-            }
-
-            if (!term) return list;
-            return list.filter(item => item.name.toLowerCase().includes(term));
       }
 
       selectCategory(cat: NamedEntity): void {
