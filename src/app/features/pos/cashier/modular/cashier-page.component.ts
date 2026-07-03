@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CashierPageComponentsComponent } from './cashier-page-components/cashier-page-components.component';
-import { ReceiptService } from '../core/services/receipt.service';
-import { ProductService } from '../core/services/product.service';
+import { CashierPageComponentsComponent } from '../composed/cashier-page-components.component';
+import { ReceiptService } from '../../core/services/receipt.service';
+import { ProductService } from '../../core/services/product.service';
 
-import { CreateReceiptInput } from '../core/models/pos.models';
+import { CreateReceiptInput } from '../../core/models/pos.models';
 
 @Component({
       selector: 'app-cashier-page',

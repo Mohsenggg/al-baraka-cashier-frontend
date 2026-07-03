@@ -33,7 +33,7 @@ export class LoginComponent implements OnInit {
       ngOnInit(): void {
             // Check if user is already logged in
             if (this.authService.isLoggedIn()) {
-                  this.router.navigate(['/home']);
+                  this.router.navigate(['/pos/cashier']);
             }
       }
 
@@ -95,7 +95,7 @@ export class LoginComponent implements OnInit {
 
       private redirectAfterLogin(user: any): void {
             // Redirect based on user role or to default page
-            const defaultRoute = '/home';
+            const defaultRoute = '/pos/cashier';
             this.router.navigate([defaultRoute]);
       }
 
