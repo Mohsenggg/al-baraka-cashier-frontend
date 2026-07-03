@@ -1,28 +1,63 @@
-<app-cashier-page-components
-  [items]="cartItems()"
-  [receipt]="currentReceipt()"
-  [finalTotal]="finalTotal()"
-  [totalQuantity]="totalQuantity()"
-  [distinctItemsCount]="distinctItemsCount()"
-  [totalDiscount]="totalDiscount()"
-  [tax]="tax()"
-  [subtotal]="subtotal()"
-  [draftsCount]="5"
-  [sidebarVisible]="sidebarVisible"
-  [rightSidebarVisible]="rightSidebarVisible"
-  (toggleSidebar)="onToggleSidebar()"
-  (toggleRightSidebar)="onToggleRightSidebar()"
-  (save)="onSave()"
-  (saveAndPrint)="onSaveAndPrint()"
-  (print)="onPrint()"
-  (new)="onNew()"
-  (edit)="onEdit()"
-  (delete)="onDelete()"
-  (return)="onReturn()"
-  (drafts)="onDrafts()"
-  (removeItem)="onRemoveItem($event)"
-  (viewItem)="onViewItem($event)"
-  (updateQuantity)="onUpdateQuantity($event)"
-  (addItem)="onAddItem($event)">
-</app-cashier-page-components>
+<div class="cashier-layout" [class.right-sidebar-visible]="rightSidebarVisible()">
 
+      <!-- ============================= -->
+      <!-- RIGHT SIDEBAR: RECEIPT HISTORY -->
+      <!-- ============================= -->
+      <app-cashier-sidebar
+            [filteredReceipts]="filteredReceipts$ | async"
+            [loading]="(loading$ | async) ?? false"
+            [selectedReceiptId]="currentReceipt()?.id"
+            (closeSidebar)="onToggleRightSidebar()"
+            (selectReceipt)="onSelectReceipt($event)"
+            (applyFilters)="onApplyFilters($event)"
+            (clearFilters)="onClearFilters()">
+      </app-cashier-sidebar>
+
+      <!-- ============================= -->
+      <!-- MAIN CONTENT AREA -->
+      <!-- ============================= -->
+      <main class="main-content">
+
+            <!-- ============================= -->
+            <!-- ACTION BAR -->
+            <!-- ============================= -->
+            <app-cashier-actions
+                  [receipt]="currentReceipt()"
+                  [draftsCount]="5"
+                  (toggleRightSidebar)="onToggleRightSidebar()"
+                  (saveAndPrint)="onSaveAndPrint()"
+                  (save)="onSave()"
+                  (edit)="onEdit()"
+                  (newReceipt)="onNew()"
+                  (returnReceipt)="onReturn()"
+                  (drafts)="onDrafts()"
+                  (deleteReceipt)="onDelete()">
+            </app-cashier-actions>
+
+            <!-- ============================= -->
+            <!-- RECEIPT WORKSPACE -->
+            <!-- ============================= -->
+            <app-cashier-receipt
+                  [items]="cartItems()"
+                  [receipt]="currentReceipt()"
+                  [finalTotal]="finalTotal()"
+                  [totalQuantity]="totalQuantity()"
+                  [distinctItemsCount]="distinctItemsCount()"
+                  [searchResults]="searchResults()"
+                  (previousReceipt)="onReturn()" 
+                  (nextReceipt)="onReturn()"
+                  (removeItem)="onRemoveItem($event)"
+                  (viewItem)="onViewItem($event)"
+                  (updateQuantity)="onUpdateQuantity($event)"
+                  (addItem)="onAddItem($event)"
+                  (search)="onSearch($event)">
+            </app-cashier-receipt>
+
+      </main>
+
+      <!-- ============================= -->
+      <!-- LEFT SIDEBAR: NAVIGATION -->
+      <!-- ============================= -->
+      <app-sidebar [expanded]="sidebarVisible()" (toggle)="onToggleSidebar()"></app-sidebar>
+
+</div>

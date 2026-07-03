@@ -1,0 +1,68 @@
+<div class="action-bar-container">
+      <div class="side-toggle right-toggle">
+            <button class="toggle-btn" (click)="toggleRightSidebar.emit()">
+                  <span class="material-icons-outlined">receipt_long</span>
+                  <span class="text">الفواتير</span>
+            </button>
+      </div>
+
+      <div class="main-actions-bar">
+            <button class="btn-main-action" (click)="saveAndPrint.emit()">
+                  <div class="btn-content">
+                        <span class="material-icons-outlined">print</span>
+                        <span class="text">حفظ وطباعة <span class="shortcut">(F12)</span></span>
+                  </div>
+            </button>
+
+            <div class="middle-group">
+                  <button class="btn-outline" (click)="save.emit()">
+                        <span class="text">حفظ</span>
+                        <span class="material-icons-outlined">save</span>
+                        <span class="shortcut">(F11)</span>
+                  </button>
+
+                  <button class="btn-outline" (click)="edit.emit()">
+                        <span class="text">تعديل</span>
+                        <span class="material-icons-outlined">edit</span>
+                        <span class="shortcut">(F2)</span>
+                  </button>
+
+                  <button class="btn-outline" (click)="newReceipt.emit()">
+                        <span class="text">جديد</span>
+                        <span class="material-icons-outlined">add_circle_outline</span>
+                        <span class="shortcut">(F1)</span>
+                  </button>
+
+                  <button class="btn-outline" (click)="returnReceipt.emit()">
+                        <span class="text">مرتد كاشير</span>
+                        <span class="material-icons-outlined">keyboard_return</span>
+                        <span class="shortcut">(F8)</span>
+                  </button>
+            </div>
+
+            <div class="drafts-section" (click)="drafts.emit()">
+                  <div class="drafts-card">
+                        <div class="badge" *ngIf="draftsCount > 0">{{ draftsCount }}</div>
+                        <div class="drafts-info">
+                              <span class="title">مسودة</span>
+                              <span class="subtitle">{{ draftsCount }} فواتير لم تحفظ</span>
+                        </div>
+                  </div>
+            </div>
+
+            <button class="btn-delete" (click)="deleteReceipt.emit()">
+                  <span class="material-icons-outlined">delete_outline</span>
+                  <span class="text">حذف</span>
+            </button>
+      </div>
+
+      <div class="compact-cashier-info">
+            <div class="cashier-avatar">
+                  <span class="material-icons-outlined">account_circle</span>
+            </div>
+            <div class="cashier-details">
+                  <span class="cashier-name">{{ receipt?.cashierName || receipt?.cashier?.name || 'أحمد محمود' }}</span>
+                  <span class="cashier-role">كاشير #{{ receipt?.cashierId || receipt?.cashier?.id || '1' }}</span>
+            </div>
+      </div>
+</div>

@@ -1,0 +1,225 @@
+<div class="receipt-workspace">
+
+      <!-- ============================= -->
+      <!-- RECEIPT NAVIGATION ROW -->
+      <!-- ============================= -->
+      <div class="receipt-navigation-row">
+            <!-- Previous Receipt Button (Right arrow in RTL) -->
+            <button class="nav-btn prev-btn" (click)="previousReceipt.emit()" title="الفاتورة السابقة">
+                  <span class="material-icons-outlined">keyboard_arrow_right</span>
+                  <span class="nav-label">السابقة</span>
+            </button>
+
+            <!-- Receipt Cards Area -->
+            <div class="receipt-cards-area">
+                  <!-- Primary Card: Invoice Info -->
+                  <div class="compact-card primary-card">
+                        <div class="compact-header">
+                              <span class="material-icons-outlined icon">receipt_long</span>
+                              <span class="title">الفاتورة</span>
+                        </div>
+                        <div class="inline-fields">
+                              <div class="inline-field">
+                                    <span class="label">رقم:</span>
+                                    <span class="value fw-bold">{{ receipt?.receiptNumber || '-' }}</span>
+                              </div>
+                              <div class="inline-field">
+                                    <span class="label">تاريخ:</span>
+                                    <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) | date:'yyyy/MM/dd HH:mm' }}</span>
+                              </div>
+                              <div class="inline-field">
+                                    <span class="label">دفع:</span>
+                                    <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+                              </div>
+                        </div>
+                  </div>
+
+                  <!-- Secondary Card: Customer Info -->
+                  <div class="compact-card secondary-card">
+                        <div class="compact-header">
+                              <span class="material-icons-outlined icon">person</span>
+                              <span class="title">العميل</span>
+                        </div>
+                        <div class="inline-fields">
+                              <div class="inline-field">
+                                    <span class="label">الاسم:</span>
+                                    <span class="value">{{ receipt?.customerName || 'عميل نقدي' }}</span>
+                              </div>
+                              <div class="inline-field">
+                                    <span class="label">هاتف:</span>
+                                    <span class="value">{{ receipt?.customer?.phone || '-------' }}</span>
+                              </div>
+                        </div>
+                  </div>
+            </div>
+
+            <!-- Next Receipt Button (Left arrow in RTL) -->
+            <button class="nav-btn next-btn" (click)="nextReceipt.emit()" title="الفاتورة التالية">
+                  <span class="material-icons-outlined">keyboard_arrow_left</span>
+                  <span class="nav-label">التالية</span>
+            </button>
+      </div>
+
+      <!-- ============================= -->
+      <!-- RECEIPT TABLE -->
+      <!-- ============================= -->
+      <div class="table-section">
+            <div class="table-container pos-card">
+                  <div class="table-header">
+                        <div class="th-cell num-col">#</div>
+                        <div class="th-cell code-col">كود الصنف</div>
+                        <div class="th-cell name-col">اسم الصنف</div>
+                        <div class="th-cell price-col">السعر</div>
+                        <div class="th-cell qty-col">الكمية</div>
+                        <div class="th-cell total-col">الإجمالي</div>
+                        <div class="th-cell balance-col">الرصيد المتبقي</div>
+                        <div class="th-cell actions-col">الإجراءات</div>
+                  </div>
+
+                  <div class="table-body">
+                        <div class="table-row" *ngFor="let item of items; let i = index">
+                              <div class="td-cell num-col">{{ i + 1 }}</div>
+                              <div class="td-cell code-col">{{ item.product?.barcode || '-' }}</div>
+                              <div class="td-cell name-col">{{ item.productName }}</div>
+                              <div class="td-cell price-col">{{ item.price | number:'1.2-2' }}</div>
+
+                              <div class="td-cell qty-col">
+                                    <div class="qty-stepper">
+                                          <button class="stepper-btn" (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
+                                          <div class="qty-value">{{ item.quantity }}</div>
+                                          <button class="stepper-btn" (click)="updateQuantity.emit({item: item, delta: 1})">+</button>
+                                    </div>
+                              </div>
+
+                              <div class="td-cell total-col fw-bold">{{ item.total | number:'1.2-2' }}</div>
+                              <div class="td-cell balance-col">{{ item.remainingStock || 0 }}</div>
+
+                              <div class="td-cell actions-col">
+                                    <button class="pos-btn-icon-only danger" (click)="removeItem.emit(item.productId)">
+                                          <span class="material-icons-outlined">delete</span>
+                                    </button>
+                                    <button class="pos-btn-icon-only" (click)="viewItem.emit(item)">
+                                          <span class="material-icons-outlined">visibility</span>
+                                    </button>
+                              </div>
+                        </div>
+
+                        <div class="empty-state" *ngIf="items.length === 0">
+                              <p>لا توجد أصناف في الفاتورة الحالية</p>
+                        </div>
+                  </div>
+            </div>
+
+            <!-- ============================= -->
+            <!-- RECEIPT INPUT ROW -->
+            <!-- ============================= -->
+            <form [formGroup]="inputForm" (ngSubmit)="submitInputRow()" class="input-row">
+
+                  <!-- Empty cell for # column -->
+                  <div class="input-cell num-placeholder"></div>
+
+                  <!-- Code Search Column -->
+                  <div class="input-cell code-cell">
+                        <div class="search-wrapper">
+                              <input #searchInput type="text" formControlName="barcode"
+                                    class="pos-input text-center barcode-input"
+                                    placeholder="كود الصنف أو الاسم..." autofocus
+                                    (keydown)="onSearchKeyDown($event)" autocomplete="off">
+                              <span class="material-icons-outlined search-icon">qr_code_scanner</span>
+
+                              <!-- Search Dropdown -->
+                              <div class="search-results-dropdown" *ngIf="searchResults.length > 0">
+                                    <div class="search-item" *ngFor="let result of searchResults; let idx = index"
+                                          [class.selected]="idx === selectedSearchIndex"
+                                          (click)="onSelectProduct(result)">
+                                          <div class="item-main">
+                                                <span class="item-name">{{ result.name }}</span>
+                                                <span class="item-code">{{ result.barcode }}</span>
+                                          </div>
+                                          <div class="item-details">
+                                                <span class="item-price">{{ result.sellingPrice | number:'1.2-2' }} ر.س</span>
+                                                <span class="item-stock" [class.low-stock]="result.stockQuantity < 5">
+                                                      {{ result.stockQuantity }} متاح
+                                                </span>
+                                          </div>
+                                    </div>
+                              </div>
+                        </div>
+                  </div>
+
+                  <!-- Name Display Column -->
+                  <div class="input-cell name-cell">
+                        <input type="text" class="pos-input text-center readonly-input" placeholder="اسم الصنف" readonly>
+                  </div>
+
+                  <!-- Price Column -->
+                  <div class="input-cell price-cell">
+                        <input type="number" formControlName="price" class="pos-input text-center no-spinner readonly-input" readonly placeholder="0.00">
+                  </div>
+
+                  <!-- Quantity Column -->
+                  <div class="input-cell qty-cell">
+                        <div class="qty-stepper active-stepper">
+                              <button type="button" class="stepper-btn" (click)="decrementQty()">
+                                    <span class="material-icons-outlined">remove</span>
+                              </button>
+                              <input type="number" formControlName="quantity" class="pos-input text-center no-spinner qty-input">
+                              <button type="button" class="stepper-btn" (click)="incrementQty()">
+                                    <span class="material-icons-outlined">add</span>
+                              </button>
+                        </div>
+                  </div>
+
+                  <!-- Total Column -->
+                  <div class="input-cell total-cell">
+                        <div class="readonly-value total-value">0.00</div>
+                  </div>
+
+                  <!-- Empty cell for Balance column -->
+                  <div class="input-cell balance-placeholder"></div>
+
+                  <!-- Actions Column (Add button) -->
+                  <div class="input-actions">
+                        <button type="submit" class="pos-btn pos-btn-primary add-btn" [disabled]="!inputForm.valid">
+                              <span class="material-icons-outlined">keyboard_return</span>
+                              <span class="submit-text">إضافة</span>
+                        </button>
+                  </div>
+
+            </form>
+      </div>
+
+      <!-- ============================= -->
+      <!-- TOTALS BAR -->
+      <!-- ============================= -->
+      <div class="totals-bar-container">
+            <div class="totals-row">
+                  <div class="total-item label-only">
+                        <span class="material-icons-outlined ti-icon">receipt_long</span>
+                        <span class="label">إجمالي الفاتورة</span>
+                  </div>
+
+                  <div class="total-stats">
+                        <div class="total-item">
+                              <span class="label">عدد الأصناف</span>
+                              <span class="value">{{ distinctItemsCount }}</span>
+                        </div>
+
+                        <div class="total-item">
+                              <span class="label">الكمية</span>
+                              <span class="value">{{ totalQuantity }}</span>
+                        </div>
+                  </div>
+
+                  <div class="total-item amount-due">
+                        <span class="material-icons-outlined due-icon">payments</span>
+                        <span class="label">المبلغ المطلوب</span>
+                        <span class="value">
+                              <span class="amount">{{ finalTotal | number:'1.2-2' }}</span>
+                              <span class="currency">ر.س</span>
+                        </span>
+                  </div>
+            </div>
+      </div>
+
+</div>

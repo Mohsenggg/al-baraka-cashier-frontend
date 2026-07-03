@@ -1,0 +1,98 @@
+<aside class="receipt-sidebar">
+      <div class="sidebar-header-new">
+            <div class="header-top">
+                  <h3>سجل الفواتير</h3>
+                  <button class="close-btn" (click)="closeSidebar.emit()">×</button>
+            </div>
+
+            <div class="filter-container" [formGroup]="filterForm">
+                  <div class="quick-search-bar">
+                        <span class="material-icons-outlined search-icon">search</span>
+                        <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..." autocomplete="off" (keyup.enter)="onApplyFilters()">
+                        <button type="button" class="filter-toggle" (click)="toggleFilters()" [class.active]="showFilters">
+                              <span class="material-icons-outlined">tune</span>
+                        </button>
+                  </div>
+
+                  <div class="advanced-filters-panel" [class.expanded]="showFilters">
+                        <div class="filters-grid">
+                              <div class="filter-field full-width">
+                                    <label>التاريخ</label>
+                                    <div class="dual-input">
+                                          <input type="date" formControlName="fromDate" class="pos-compact-input">
+                                          <span class="to-label">إلى</span>
+                                          <input type="date" formControlName="toDate" class="pos-compact-input">
+                                    </div>
+                              </div>
+                              <div class="filter-field">
+                                    <label>المبلغ (من - إلى)</label>
+                                    <div class="dual-input">
+                                          <input type="number" formControlName="totalMin" placeholder="الأدنى" class="pos-compact-input">
+                                          <input type="number" formControlName="totalMax" placeholder="الأعلى" class="pos-compact-input">
+                                    </div>
+                              </div>
+                              <div class="filter-field">
+                                    <label>اسم العميل</label>
+                                    <input type="text" formControlName="customerName" placeholder="الاسم..." class="pos-compact-input">
+                              </div>
+                              <div class="filter-field">
+                                    <label>طريقة الدفع</label>
+                                    <select formControlName="paymentMethod" class="pos-compact-select">
+                                          <option value="">الكل</option>
+                                          <option value="CASH">نقدي</option>
+                                          <option value="TRANSFER">تحويل</option>
+                                    </select>
+                              </div>
+                              <div class="filter-field">
+                                    <label>الترتيب</label>
+                                    <select formControlName="sort" class="pos-compact-select">
+                                          <option value="receiptDate,DESC">الأحدث أولاً</option>
+                                          <option value="receiptDate,ASC">الأقدم أولاً</option>
+                                          <option value="totalAmount,DESC">الأعلى مبلغاً</option>
+                                          <option value="totalAmount,ASC">الأقل مبلغاً</option>
+                                    </select>
+                              </div>
+                        </div>
+
+                        <div class="filter-actions">
+                              <button type="button" class="btn-clear" (click)="onClearFilters()">مسح التصفية</button>
+                              <button type="button" class="btn-apply" (click)="onApplyFilters()">
+                                    <span class="material-icons-outlined">search</span>
+                                    بحث متقدم
+                              </button>
+                        </div>
+                  </div>
+            </div>
+      </div>
+
+      <div class="list-viewport">
+            <div class="receipt-list-modern" *ngIf="!loading; else loader">
+                  <div class="receipt-card" *ngFor="let r of filteredReceipts" (click)="selectReceipt.emit(r.id)" [class.active]="selectedReceiptId === r.id">
+                        <div class="card-main">
+                              <span class="receipt-id">#{{ r.receiptCode }}</span>
+                              <span class="receipt-total">{{ r.totalAmount | number:'1.2-2' }} ر.س</span>
+                        </div>
+                        <div class="card-sub">
+                              <span class="receipt-time">{{ formatDate(r.receiptDate) }}</span>
+                              <span class="pay-method" [class.cash]="r.paymentMethod === 'CASH'">
+                                    {{ getPaymentLabel(r.paymentMethod) }}
+                              </span>
+                        </div>
+                  </div>
+
+                  <div class="empty-results" *ngIf="filteredReceipts?.length === 0">
+                        <span class="material-icons-outlined">receipt_long</span>
+                        <p>لا توجد فواتير مطابقة</p>
+                  </div>
+            </div>
+
+            <ng-template #loader>
+                  <div class="loading-skeleton">
+                        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]">
+                              <div class="skeleton-line full"></div>
+                              <div class="skeleton-line short"></div>
+                        </div>
+                  </div>
+            </ng-template>
+      </div>
+</aside>

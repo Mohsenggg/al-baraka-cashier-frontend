@@ -1,173 +1,160 @@
-import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CashierPageComponentsComponent } from '../composed/cashier-page-components.component';
-import { ReceiptService } from '../../core/services/receipt.service';
-import { ProductService } from '../../core/services/product.service';
 
-import { CreateReceiptInput } from '../../core/models/pos.models';
+// New dumb components
+import { CashierActionsComponent } from './components/cashier-actions/cashier-actions.component';
+import { CashierSidebarComponent } from './components/cashier-sidebar/cashier-sidebar.component';
+import { CashierReceiptComponent } from './components/cashier-receipt/cashier-receipt.component';
+import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
+
+// New state service
+import { CashierStateService } from '../services/cashier-state.service';
+import { CreateReceiptInput, Product, CartItem } from '../../core/models/pos.models';
 
 @Component({
-      selector: 'app-cashier-page',
-      standalone: true,
-      imports: [
-            CommonModule,
-            CashierPageComponentsComponent
-      ],
-      templateUrl: './cashier-page.component.html',
-      styleUrls: ['./cashier-page.component.css'],
-      changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-cashier-page',
+  standalone: true,
+  imports: [
+    CommonModule,
+    CashierActionsComponent,
+    CashierSidebarComponent,
+    CashierReceiptComponent,
+    SidebarComponent
+  ],
+  templateUrl: './cashier-page.component.html',
+  styleUrls: ['./cashier-page.component.css'],
+  encapsulation: ViewEncapsulation.None, // Ensures composed CSS targets dumb component internals perfectly
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CashierPageComponent implements OnInit {
-      private receiptService = inject(ReceiptService);
-      private productService = inject(ProductService);
+  private state = inject(CashierStateService);
 
-      sidebarVisible = signal(false);
-      rightSidebarVisible = signal(false);
+  sidebarVisible = signal(false);
+  rightSidebarVisible = signal(false);
+  searchResults = signal<Product[]>([]);
 
-      // Observable and Signal bindings
-      currentReceipt = this.receiptService.currentReceipt;
-      cartItems = this.receiptService.cartItems;
+  // State bindings
+  receipts$ = this.state.receipts$;
+  filteredReceipts$ = this.state.filteredReceipts$;
+  loading$ = this.state.loading$;
+  
+  currentReceipt = this.state.currentReceipt;
+  cartItems = this.state.cartItems;
+  distinctItemsCount = this.state.distinctItemsCount;
+  totalQuantity = this.state.totalQuantity;
+  subtotal = this.state.subtotal;
+  totalDiscount = this.state.totalDiscount;
+  tax = this.state.tax;
+  finalTotal = this.state.finalTotal;
 
-      distinctItemsCount = this.receiptService.distinctItemsCount;
-      totalQuantity = this.receiptService.totalQuantity;
-      subtotal = this.receiptService.subtotal;
-      totalDiscount = this.receiptService.totalDiscount;
-      tax = this.receiptService.tax;
-      finalTotal = this.receiptService.finalTotal;
+  ngOnInit() {
+    this.state.loadAllProducts();
+    // Initial fetch to populate sidebar
+    this.state.filterReceipts({ page: 0, size: 20 });
+  }
 
-      ngOnInit() {
-            // Load products locally for fast search and insertion
-            this.productService.loadAllProducts();
-      }
+  // Action Bar Events
+  onSave() {
+    const items = this.cartItems();
+    if (items.length === 0) return;
+    const receiptData = this.currentReceipt();
 
-      // Action Bar Events
-      onSave() {
-            const items = this.cartItems();
-            if (items.length === 0) {
-                  console.warn('Cart is empty, cannot save receipt');
-                  return;
-            }
+    const payload: CreateReceiptInput = {
+      customerName: receiptData?.customerName || receiptData?.customer?.name || 'Walk-in Customer',
+      customerId: receiptData?.customerId || null,
+      cashierId: receiptData?.cashierId || 1,
+      paymentMethod: receiptData?.paymentMethod || 'CASH',
+      receiptType: 'SELL',
+      totalQuantity: this.totalQuantity(),
+      items: items.map(item => ({
+        productCode: item.product.barcode,
+        productName: item.product.name,
+        price: item.price,
+        quantity: item.quantity,
+        total: item.total,
+        remainingStock: item.remainingStock
+      }))
+    };
+    
+    this.state.createReceipt(payload).subscribe(() => {
+      this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
+    });
+  }
 
-            const receiptData = this.currentReceipt();
+  onSaveAndPrint() {
+    this.onSave();
+    this.onPrint();
+  }
 
-            const payload: CreateReceiptInput = {
-                  customerName: receiptData?.customerName || receiptData?.customer?.name || 'Walk-in Customer',
-                  customerId: receiptData?.customerId || null,
-                  cashierId: receiptData?.cashierId || 1,
-                  paymentMethod: receiptData?.paymentMethod || 'CASH',
-                  receiptType: 'SELL',
-                  totalQuantity: this.totalQuantity(),
-                  items: items.map(item => ({
-                        productCode: item.product.barcode,
-                        productName: item.product.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        total: item.total,
-                        remainingStock: item.remainingStock
-                  }))
-            };
+  onPrint() {
+    console.log('Print triggered - Printing implementation will be added later.');
+  }
 
-            console.log('Saving receipt:', payload);
+  onNew() {
+    this.state.clearCart();
+  }
 
-            this.receiptService.createReceipt(payload).subscribe({
-                  next: (res) => {
-                        console.log('Receipt saved successfully:', res);
-                        this.receiptService.loadReceipts();
-                  },
-                  error: (err) => {
-                        console.error('Failed to save receipt:', err);
-                  }
-            });
-      }
+  onEdit() {}
+  onDelete() {}
+  onReturn() {}
+  onDrafts() {}
 
-      onSaveAndPrint() {
-            this.onSave();
-            this.onPrint();
-      }
+  onToggleSidebar() {
+    this.sidebarVisible.update(v => !v);
+  }
 
-      onPrint() {
-            console.log('Print triggered - Printing implementation will be added later.');
-      }
+  onToggleRightSidebar() {
+    this.rightSidebarVisible.update(v => !v);
+  }
 
-      onNew() {
-            console.log('New triggered');
-            this.receiptService.clearCart();
-      }
+  // Receipt Table Events
+  onRemoveItem(productId: number) {
+    this.state.removeDraftItem(productId);
+  }
 
-      onEdit() {
-            console.log('Edit triggered');
-            // Implement edit logic
-      }
+  onViewItem(item: any) {
+    console.log('View item', item);
+  }
 
-      onDelete() {
-            console.log('Delete triggered');
-            // Implement delete logic
-      }
+  onUpdateQuantity(event: {item: CartItem, delta: number}) {
+    this.state.updateItemQuantity(event.item.productId, event.delta);
+  }
 
-      onReturn() {
-            console.log('Return triggered');
-            // Implement return logic
-      }
+  onAddItem(event: { product: Product, quantity: number }) {
+    this.state.addCartItem(event.product, event.quantity);
+  }
 
-      onDrafts() {
-            console.log('Drafts triggered');
-            // Implement drafts view
-      }
+  onSearch(query: string) {
+    if (!query) {
+      this.searchResults.set([]);
+      return;
+    }
+    const results = this.state.searchProducts(query);
+    this.searchResults.set(results);
+  }
 
-      onToggleSidebar() {
-            this.sidebarVisible.update(v => !v);
-      }
+  // Sidebar Events
+  onSelectReceipt(id: number) {
+    this.state.getReceipt(id);
+  }
 
-      onToggleRightSidebar() {
-            this.rightSidebarVisible.update(v => !v);
-      }
+  onApplyFilters(filters: any) {
+    this.state.filterReceipts({ ...filters, page: 0, size: 20 });
+  }
 
-      // Receipt Table Events
-      onRemoveItem(productId: number) {
-            this.receiptService.removeDraftItem(productId);
-      }
+  onClearFilters() {
+    this.state.filterReceipts({ sort: 'receiptDate,DESC', page: 0, size: 20 });
+  }
 
-      onViewItem(item: any) {
-            console.log('View item', item);
-      }
-
-      onUpdateQuantity(event: any) {
-            console.log('Update quantity', event);
-            this.receiptService.updateItemQuantity(event.item.productId, event.delta);
-      }
-
-      onAddItem(event: any) {
-            console.log('Add item', event);
-            // Implement add item logic
-      }
-
-      @HostListener('window:keydown', ['$event'])
-      handleKeyboardEvent(event: KeyboardEvent) {
-            switch (event.key) {
-                  case 'F1':
-                        event.preventDefault();
-                        this.onNew();
-                        break;
-                  case 'F2':
-                        event.preventDefault();
-                        this.onEdit();
-                        break;
-                  case 'F8':
-                        event.preventDefault();
-                        this.onReturn();
-                        break;
-                  case 'F11':
-                        event.preventDefault();
-                        this.onSave();
-                        break;
-                  case 'F12':
-                        event.preventDefault();
-                        this.onSaveAndPrint();
-                        break;
-                  case 'F5':
-                        event.preventDefault();
-                        this.onDelete();
-                        break;
-            }
-      }
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    switch (event.key) {
+      case 'F1': event.preventDefault(); this.onNew(); break;
+      case 'F2': event.preventDefault(); this.onEdit(); break;
+      case 'F8': event.preventDefault(); this.onReturn(); break;
+      case 'F11': event.preventDefault(); this.onSave(); break;
+      case 'F12': event.preventDefault(); this.onSaveAndPrint(); break;
+      case 'F5': event.preventDefault(); this.onDelete(); break;
+    }
+  }
 }
