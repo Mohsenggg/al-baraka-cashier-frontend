@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReceiptItemResponse } from '../../../../core/models/pos.models';
+import { ReceiptItemResponse } from '../../../core/models/pos.models';
 
 @Component({
       selector: 'app-cashier-receipt-table',

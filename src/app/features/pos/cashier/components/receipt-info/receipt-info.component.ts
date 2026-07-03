@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReceiptResponse } from '../../../../core/models/pos.models';
+import { ReceiptResponse } from '../../../core/models/pos.models';
 
 @Component({
       selector: 'app-cashier-receipt-info',

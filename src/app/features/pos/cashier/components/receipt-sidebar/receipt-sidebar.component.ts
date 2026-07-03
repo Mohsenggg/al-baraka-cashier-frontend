@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ReceiptService } from '../../../../core/services/receipt.service';
+import { ReceiptService } from '../../../core/services/receipt.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
