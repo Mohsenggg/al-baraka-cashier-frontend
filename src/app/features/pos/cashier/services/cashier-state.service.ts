@@ -4,7 +4,7 @@ import { CashierApiService } from './cashier-api.service';
 import { CashierSeedService } from './cashier-seed.service';
 import type {
   ReceiptResponse, CreateReceiptInput, UpdateReceiptInput,
-  Product, CartItem, ReceiptFilterParams, ReceiptListItemDto
+  Product, CartItem, ReceiptFilterParams, ReceiptListItemDto, ReceiptMode
 } from '../../core/models/pos.models';
 
 @Injectable({
@@ -45,6 +45,13 @@ export class CashierStateService {
 
   private currentSavedReceiptSignal = signal<ReceiptResponse | null>(null);
   public currentReceipt = this.currentSavedReceiptSignal.asReadonly();
+
+  private receiptModeSignal = signal<ReceiptMode>('NEW');
+  public receiptMode = this.receiptModeSignal.asReadonly();
+
+  public setReceiptMode(mode: ReceiptMode): void {
+    this.receiptModeSignal.set(mode);
+  }
 
   // Signal to hold all cached products locally
   private productsSignal = signal<Product[]>([]);
@@ -128,6 +135,7 @@ export class CashierStateService {
   }
 
   private setReceiptAsCurrent(receipt: ReceiptResponse) {
+    this.setReceiptMode('VIEW');
     this.currentSavedReceiptSignal.set(receipt);
     this.draftItemsSignal.set(
       receipt.items.map(i => ({
@@ -369,6 +377,7 @@ export class CashierStateService {
   }
 
   public clearCart() {
+    this.setReceiptMode('NEW');
     this.draftItemsSignal.set([]);
     this.currentSavedReceiptSignal.set(null);
     this.navigationCache = [];

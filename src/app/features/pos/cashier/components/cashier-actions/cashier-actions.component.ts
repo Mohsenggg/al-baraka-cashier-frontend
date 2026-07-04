@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReceiptResponse } from '../../../core/models/pos.models';
+import { ReceiptResponse, ReceiptMode } from '../../../core/models/pos.models';
 
 @Component({
       selector: 'app-cashier-actions',
@@ -12,6 +12,7 @@ import { ReceiptResponse } from '../../../core/models/pos.models';
 })
 export class CashierActionsComponent {
       @Input() receipt: ReceiptResponse | null = null;
+      @Input() receiptMode: ReceiptMode = 'NEW';
       @Input() draftsCount = 0;
 
       @Output() toggleRightSidebar = new EventEmitter<void>();

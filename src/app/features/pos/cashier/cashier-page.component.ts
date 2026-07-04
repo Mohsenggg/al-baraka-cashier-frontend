@@ -46,6 +46,7 @@ export class CashierPageComponent implements OnInit {
       totalDiscount = this.state.totalDiscount;
       tax = this.state.tax;
       finalTotal = this.state.finalTotal;
+      receiptMode = this.state.receiptMode;
 
       ngOnInit() {
             this.state.loadAllProducts();
@@ -94,7 +95,9 @@ export class CashierPageComponent implements OnInit {
             this.state.clearCart();
       }
 
-      onEdit() { }
+      onEdit() {
+            this.state.setReceiptMode('EDIT');
+      }
       onDelete() { }
       onReturn() { }
       onDrafts() { }

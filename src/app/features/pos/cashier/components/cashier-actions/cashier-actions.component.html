@@ -10,18 +10,23 @@
             <button class="btn-main-action" (click)="saveAndPrint.emit()">
                   <div class="btn-content">
                         <span class="material-icons-outlined">print</span>
-                        <span class="text">حفظ وطباعة <span class="shortcut">(F12)</span></span>
+                        <ng-container *ngIf="receiptMode !== 'VIEW'">
+                              <span class="text">حفظ وطباعة <span class="shortcut">(F12)</span></span>
+                        </ng-container>
+                        <ng-container *ngIf="receiptMode === 'VIEW'">
+                              <span class="text">طباعة <span class="shortcut">(F12)</span></span>
+                        </ng-container>
                   </div>
             </button>
 
             <div class="middle-group">
-                  <button class="btn-outline" (click)="save.emit()">
+                  <button class="btn-outline" (click)="save.emit()" [disabled]="receiptMode === 'VIEW'">
                         <span class="text">حفظ</span>
                         <span class="material-icons-outlined">save</span>
                         <span class="shortcut">(F11)</span>
                   </button>
 
-                  <button class="btn-outline" (click)="edit.emit()">
+                  <button class="btn-outline" (click)="edit.emit()" *ngIf="receiptMode === 'VIEW'">
                         <span class="text">تعديل</span>
                         <span class="material-icons-outlined">edit</span>
                         <span class="shortcut">(F2)</span>

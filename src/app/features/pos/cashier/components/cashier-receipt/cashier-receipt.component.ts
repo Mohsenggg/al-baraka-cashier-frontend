@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ReceiptResponse, Product, CartItem } from '../../../core/models/pos.models';
+import { ReceiptResponse, Product, CartItem, ReceiptMode } from '../../../core/models/pos.models';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime } from 'rxjs/operators';
 
@@ -21,6 +21,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
 
       @Input() items: CartItem[] = [];
       @Input() receipt: ReceiptResponse | null = null;
+      @Input() receiptMode: ReceiptMode = 'NEW';
       @Input() finalTotal: number = 0;
       @Input() totalQuantity: number = 0;
       @Input() distinctItemsCount: number = 0;

@@ -23,6 +23,7 @@
             <!-- ============================= -->
             <app-cashier-actions
                   [receipt]="currentReceipt()"
+                  [receiptMode]="receiptMode()"
                   [draftsCount]="5"
                   (toggleRightSidebar)="onToggleRightSidebar()"
                   (saveAndPrint)="onSaveAndPrint()"
@@ -40,6 +41,7 @@
             <app-cashier-receipt
                   [items]="cartItems()"
                   [receipt]="currentReceipt()"
+                  [receiptMode]="receiptMode()"
                   [finalTotal]="finalTotal()"
                   [totalQuantity]="totalQuantity()"
                   [distinctItemsCount]="distinctItemsCount()"

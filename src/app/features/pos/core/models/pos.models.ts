@@ -1,3 +1,4 @@
+export type ReceiptMode = 'NEW' | 'VIEW' | 'EDIT';
 export type PaymentMethod = "CASH" | "TRANSFER";
 
 export interface ReceiptItemInput {
