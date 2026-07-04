@@ -7,6 +7,7 @@ export interface ReceiptItemInput {
   quantity: number;
   total: number;
   remainingStock: number;
+  originalQuantity?: number;
 }
 
 export interface CreateReceiptInput {
@@ -61,6 +62,7 @@ export interface ReceiptItemResponse {
   unitPrice: number;
   totalPrice: number;
   remainingStock: number;
+  currentRemainingStock?: number;
 }
 
 export interface ReceiptResponse {
@@ -132,6 +134,10 @@ export interface CartItem {
   total: number;
   remainingStock: number;
   product: Product;
+  originalQuantity?: number;
+  originalRemainingStock?: number;
+  currentRemainingStock?: number;
+  stockError?: string;
 }
 
 export interface ReceiptFilterParams {

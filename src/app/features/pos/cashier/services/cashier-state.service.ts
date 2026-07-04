@@ -7,6 +7,23 @@ import type {
   Product, CartItem, ReceiptFilterParams, ReceiptListItemDto, ReceiptMode
 } from '../../core/models/pos.models';
 
+export function validateCartItemStock(item: CartItem, mode: ReceiptMode): string | null {
+  if (mode === 'VIEW') return null;
+
+  if (mode === 'EDIT' && item.originalQuantity != null && item.currentRemainingStock != null) {
+    const maxAllowed = item.currentRemainingStock + item.originalQuantity;
+    if (item.quantity > maxAllowed) {
+      return `الكمية المطلوبة (${item.quantity}) تتجاوز الحد الأقصى المسموح (${maxAllowed}). المتبقي الحالي: ${item.currentRemainingStock}، الكمية الأصلية: ${item.originalQuantity}`;
+    }
+  } else {
+    if (item.quantity > item.product.stockQuantity) {
+      return `الكمية المطلوبة (${item.quantity}) تتجاوز الرصيد المتاح (${item.product.stockQuantity})`;
+    }
+  }
+
+  return null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -48,6 +65,10 @@ export class CashierStateService {
 
   private receiptModeSignal = signal<ReceiptMode>('NEW');
   public receiptMode = this.receiptModeSignal.asReadonly();
+
+  public hasStockErrors = computed(() =>
+    this.draftItemsSignal().some(item => !!item.stockError)
+  );
 
   public setReceiptMode(mode: ReceiptMode): void {
     this.receiptModeSignal.set(mode);
@@ -144,6 +165,7 @@ export class CashierStateService {
       receipt.items.map((i, index) => {
         const foundProduct = allProducts.find(p => p.barcode === i.productCode);
         const uniqueId = foundProduct ? foundProduct.id : -(index + 1);
+        const currentLiveStock = i.currentRemainingStock ?? (foundProduct ? foundProduct.stockQuantity : (i.remainingStock ?? 0));
         
         return {
           productId: uniqueId, 
@@ -159,7 +181,10 @@ export class CashierStateService {
             barcode: i.productCode,
             sellingPrice: i.unitPrice,
             stockQuantity: i.remainingStock + i.quantity
-          })
+          }),
+          originalQuantity: i.quantity,
+          originalRemainingStock: i.remainingStock,
+          currentRemainingStock: currentLiveStock
         };
       })
     );
@@ -334,7 +359,7 @@ export class CashierStateService {
     const req = this.api.updateReceipt(id, payload);
     req.subscribe({
       next: (receipt) => {
-        this.currentSavedReceiptSignal.set(receipt);
+        this.setReceiptAsCurrent(receipt);
         this.clearError();
       },
       error: (err) => this.handleError(err),
@@ -361,13 +386,16 @@ export class CashierStateService {
   public addCartItem(product: Product, quantity: number = 1) {
     const items = [...this.draftItemsSignal()];
     const existingIdx = items.findIndex(i => i.productId === product.id);
+    const mode = this.receiptModeSignal();
 
     if (existingIdx > -1) {
+      items[existingIdx] = { ...items[existingIdx] };
       items[existingIdx].quantity += quantity;
       items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
       items[existingIdx].remainingStock = product.stockQuantity - items[existingIdx].quantity;
+      items[existingIdx].stockError = validateCartItemStock(items[existingIdx], mode) ?? undefined;
     } else {
-      items.push({
+      const newItem: CartItem = {
         productId: product.id,
         productName: product.name,
         quantity,
@@ -376,7 +404,9 @@ export class CashierStateService {
         total: product.sellingPrice * quantity,
         remainingStock: product.stockQuantity - quantity,
         product
-      });
+      };
+      newItem.stockError = validateCartItemStock(newItem, mode) ?? undefined;
+      items.push(newItem);
     }
     this.draftItemsSignal.set(items);
   }
@@ -398,13 +428,16 @@ export class CashierStateService {
   public updateItemQuantity(productId: number, delta: number) {
     const items = [...this.draftItemsSignal()];
     const existingIdx = items.findIndex(i => i.productId === productId);
+    const mode = this.receiptModeSignal();
 
     if (existingIdx > -1) {
       const newQty = items[existingIdx].quantity + delta;
       if (newQty > 0) {
+        items[existingIdx] = { ...items[existingIdx] };
         items[existingIdx].quantity = newQty;
         items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
         items[existingIdx].remainingStock = items[existingIdx].product.stockQuantity - newQty;
+        items[existingIdx].stockError = validateCartItemStock(items[existingIdx], mode) ?? undefined;
       } else {
         items.splice(existingIdx, 1);
       }

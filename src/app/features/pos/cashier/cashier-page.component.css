@@ -1388,6 +1388,45 @@
 }
 
 /* ============================= */
+/* STOCK VALIDATION ERRORS */
+/* ============================= */
+
+.stock-error-row {
+      background-color: #fef2f2 !important;
+      border-color: #fecaca !important;
+}
+
+.stock-error-row:hover {
+      background-color: #fee2e2 !important;
+}
+
+.name-cell-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+}
+
+.stock-error-msg {
+      color: #dc2626;
+      font-size: 0.6rem;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: normal;
+      text-align: start;
+}
+
+.qty-stepper.qty-error {
+      border-color: #dc2626;
+      background-color: #fef2f2;
+}
+
+.qty-stepper.qty-error .qty-value {
+      color: #dc2626;
+      font-weight: 800;
+}
+
+/* ============================= */
 /* RECEIPT INFO CARDS */
 /* ============================= */
 

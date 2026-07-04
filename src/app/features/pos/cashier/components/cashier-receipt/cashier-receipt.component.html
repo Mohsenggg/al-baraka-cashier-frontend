@@ -75,18 +75,25 @@
                         <div class="th-cell qty-col">الكمية</div>
                         <div class="th-cell total-col">الإجمالي</div>
                         <div class="th-cell balance-col">الرصيد المتبقي</div>
+                        <div class="th-cell balance-col" *ngIf="receiptMode !== 'NEW'">الرصيد الحالي</div>
                         <div class="th-cell actions-col">الإجراءات</div>
                   </div>
 
                   <div class="table-body">
-                        <div class="table-row" *ngFor="let item of items; let i = index">
+                        <div class="table-row" *ngFor="let item of items; let i = index"
+                              [class.stock-error-row]="!!item.stockError">
                               <div class="td-cell num-col">{{ i + 1 }}</div>
                               <div class="td-cell code-col">{{ item.product.barcode || '-' }}</div>
-                              <div class="td-cell name-col">{{ item.productName }}</div>
+                              <div class="td-cell name-col">
+                                    <div class="name-cell-content">
+                                          <span>{{ item.productName }}</span>
+                                          <span class="stock-error-msg" *ngIf="item.stockError">{{ item.stockError }}</span>
+                                    </div>
+                              </div>
                               <div class="td-cell price-col">{{ item.price | number:'1.2-2' }}</div>
 
                               <div class="td-cell qty-col">
-                                    <div class="qty-stepper">
+                                    <div class="qty-stepper" [class.qty-error]="!!item.stockError">
                                           <button class="stepper-btn" *ngIf="receiptMode !== 'VIEW'"
                                                 (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
                                           <div class="qty-value">{{ item.quantity }}</div>
@@ -96,7 +103,8 @@
                               </div>
 
                               <div class="td-cell total-col fw-bold">{{ item.total | number:'1.2-2' }}</div>
-                              <div class="td-cell balance-col">{{ item.remainingStock || 0 }}</div>
+                              <div class="td-cell balance-col">{{ item.originalRemainingStock ?? item.remainingStock ?? 0 }}</div>
+                              <div class="td-cell balance-col" *ngIf="receiptMode !== 'NEW'">{{ item.currentRemainingStock ?? '-' }}</div>
 
                               <div class="td-cell actions-col">
                                     <button class="pos-btn-icon-only danger" (click)="removeItem.emit(item.productId)" *ngIf="receiptMode !== 'VIEW'">
@@ -184,6 +192,7 @@
 
                   <!-- Empty cell for Balance column -->
                   <div class="input-cell balance-placeholder"></div>
+                  <div class="input-cell balance-placeholder" *ngIf="receiptMode !== 'NEW'"></div>
 
                   <!-- Actions Column (Add button) -->
                   <div class="input-actions">

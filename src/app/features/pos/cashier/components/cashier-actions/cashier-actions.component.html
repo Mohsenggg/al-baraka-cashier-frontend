@@ -20,7 +20,7 @@
             </button>
 
             <div class="middle-group">
-                  <button class="btn-outline" (click)="save.emit()" [disabled]="receiptMode === 'VIEW'">
+                  <button class="btn-outline" (click)="save.emit()" [disabled]="receiptMode === 'VIEW' || hasStockErrors">
                         <span class="text">حفظ</span>
                         <span class="material-icons-outlined">save</span>
                         <span class="shortcut">(F11)</span>

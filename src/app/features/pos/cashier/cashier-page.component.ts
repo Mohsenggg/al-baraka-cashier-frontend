@@ -47,6 +47,7 @@ export class CashierPageComponent implements OnInit {
       tax = this.state.tax;
       finalTotal = this.state.finalTotal;
       receiptMode = this.state.receiptMode;
+      hasStockErrors = this.state.hasStockErrors;
 
       ngOnInit() {
             this.state.loadAllProducts();
@@ -58,8 +59,10 @@ export class CashierPageComponent implements OnInit {
       onSave() {
             const items = this.cartItems();
             if (items.length === 0) return;
+            if (this.hasStockErrors()) return;
             const receiptData = this.currentReceipt();
 
+            const isEdit = this.receiptMode() === 'EDIT';
             const payload: CreateReceiptInput = {
                   customerName: receiptData?.customerName || receiptData?.customer?.name || 'Walk-in Customer',
                   customerId: receiptData?.customerId || null,
@@ -73,13 +76,20 @@ export class CashierPageComponent implements OnInit {
                         price: item.price,
                         quantity: item.quantity,
                         total: item.total,
-                        remainingStock: item.remainingStock
+                        remainingStock: item.remainingStock,
+                        ...(isEdit && item.originalQuantity != null ? { originalQuantity: item.originalQuantity } : {})
                   }))
             };
 
-            this.state.createReceipt(payload).subscribe(() => {
-                  this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
-            });
+            if (this.receiptMode() === 'EDIT' && receiptData?.id) {
+                  this.state.updateReceipt(receiptData.id, payload).subscribe(() => {
+                        this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
+                  });
+            } else {
+                  this.state.createReceipt(payload).subscribe(() => {
+                        this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
+                  });
+            }
       }
 
       onSaveAndPrint() {
