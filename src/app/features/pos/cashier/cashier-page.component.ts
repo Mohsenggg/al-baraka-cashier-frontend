@@ -135,7 +135,7 @@ export class CashierPageComponent implements OnInit {
 
       // Sidebar Events
       onSelectReceipt(id: number) {
-            this.state.getReceipt(id);
+            this.state.loadNavigationCache(id);
       }
 
       onApplyFilters(filters: any) {
@@ -144,6 +144,14 @@ export class CashierPageComponent implements OnInit {
 
       onClearFilters() {
             this.state.filterReceipts({ sort: 'receiptDate,DESC', page: 0, size: 20 });
+      }
+
+      onPreviousReceipt() {
+            this.state.navigateReceipt('PREVIOUS');
+      }
+
+      onNextReceipt() {
+            this.state.navigateReceipt('NEXT');
       }
 
       @HostListener('window:keydown', ['$event'])

@@ -170,3 +170,11 @@ export interface PageResponseDto<T> {
   numberOfElements: number;
   empty: boolean;
 }
+
+export interface ReceiptNavigationResponse {
+  currentReceiptId: number;
+  currentIndex: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  receipts: ReceiptResponse[];
+}

@@ -6,7 +6,7 @@ import type {
   ReceiptResponse, CreateReceiptInput, UpdateReceiptInput,
   DeleteReceiptResponse, Product, Paginated,
   ReceiptFilterParams, ReceiptListItemDto, PageResponseDto,
-  CashierProductDto
+  CashierProductDto, ReceiptNavigationResponse
 } from '../../core/models/pos.models';
 
 @Injectable({
@@ -39,6 +39,14 @@ export class CashierApiService {
 
   public getReceiptById(id: number): Observable<ReceiptResponse> {
     return this.http.get<ReceiptResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  public getReceiptNavigation(receiptId: number, direction: 'NEXT' | 'PREVIOUS', limit: number = 10): Observable<ReceiptNavigationResponse> {
+    const params = new HttpParams()
+      .set('receiptId', receiptId.toString())
+      .set('direction', direction)
+      .set('limit', limit.toString());
+    return this.http.get<ReceiptNavigationResponse>(`${this.apiUrl}/navigation`, { params });
   }
 
   public createReceipt(payload: CreateReceiptInput): Observable<ReceiptResponse> {

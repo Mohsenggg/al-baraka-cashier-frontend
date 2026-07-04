@@ -5,7 +5,7 @@
       <!-- ============================= -->
       <div class="receipt-navigation-row">
             <!-- Previous Receipt Button (Right arrow in RTL) -->
-            <button class="nav-btn prev-btn" (click)="previousReceipt.emit()" title="الفاتورة السابقة">
+            <button class="nav-btn prev-btn" (click)="nextReceipt.emit()" title="الفاتورة السابقة">
                   <span class="material-icons-outlined">keyboard_arrow_right</span>
                   <span class="nav-label">السابقة</span>
             </button>
@@ -25,11 +25,13 @@
                               </div>
                               <div class="inline-field">
                                     <span class="label">تاريخ:</span>
-                                    <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) | date:'yyyy/MM/dd HH:mm' }}</span>
+                                    <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) |
+                                          date:'yyyy/MM/dd HH:mm' }}</span>
                               </div>
                               <div class="inline-field">
                                     <span class="label">دفع:</span>
-                                    <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+                                    <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل'
+                                          }}</span>
                               </div>
                         </div>
                   </div>
@@ -54,7 +56,7 @@
             </div>
 
             <!-- Next Receipt Button (Left arrow in RTL) -->
-            <button class="nav-btn next-btn" (click)="nextReceipt.emit()" title="الفاتورة التالية">
+            <button class="nav-btn next-btn" (click)="previousReceipt.emit()" title="الفاتورة التالية">
                   <span class="material-icons-outlined">keyboard_arrow_left</span>
                   <span class="nav-label">التالية</span>
             </button>
@@ -79,15 +81,17 @@
                   <div class="table-body">
                         <div class="table-row" *ngFor="let item of items; let i = index">
                               <div class="td-cell num-col">{{ i + 1 }}</div>
-                              <div class="td-cell code-col">{{ item.product?.barcode || '-' }}</div>
+                              <div class="td-cell code-col">{{ item.product.barcode || '-' }}</div>
                               <div class="td-cell name-col">{{ item.productName }}</div>
                               <div class="td-cell price-col">{{ item.price | number:'1.2-2' }}</div>
 
                               <div class="td-cell qty-col">
                                     <div class="qty-stepper">
-                                          <button class="stepper-btn" (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
+                                          <button class="stepper-btn"
+                                                (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
                                           <div class="qty-value">{{ item.quantity }}</div>
-                                          <button class="stepper-btn" (click)="updateQuantity.emit({item: item, delta: 1})">+</button>
+                                          <button class="stepper-btn"
+                                                (click)="updateQuantity.emit({item: item, delta: 1})">+</button>
                                     </div>
                               </div>
 
@@ -122,9 +126,8 @@
                   <div class="input-cell code-cell">
                         <div class="search-wrapper">
                               <input #searchInput type="text" formControlName="barcode"
-                                    class="pos-input text-center barcode-input"
-                                    placeholder="كود الصنف أو الاسم..." autofocus
-                                    (keydown)="onSearchKeyDown($event)" autocomplete="off">
+                                    class="pos-input text-center barcode-input" placeholder="كود الصنف أو الاسم..."
+                                    autofocus (keydown)="onSearchKeyDown($event)" autocomplete="off">
                               <span class="material-icons-outlined search-icon">qr_code_scanner</span>
 
                               <!-- Search Dropdown -->
@@ -137,7 +140,8 @@
                                                 <span class="item-code">{{ result.barcode }}</span>
                                           </div>
                                           <div class="item-details">
-                                                <span class="item-price">{{ result.sellingPrice | number:'1.2-2' }} ر.س</span>
+                                                <span class="item-price">{{ result.sellingPrice | number:'1.2-2' }}
+                                                      ر.س</span>
                                                 <span class="item-stock" [class.low-stock]="result.stockQuantity < 5">
                                                       {{ result.stockQuantity }} متاح
                                                 </span>
@@ -149,12 +153,14 @@
 
                   <!-- Name Display Column -->
                   <div class="input-cell name-cell">
-                        <input type="text" class="pos-input text-center readonly-input" placeholder="اسم الصنف" readonly>
+                        <input type="text" class="pos-input text-center readonly-input" placeholder="اسم الصنف"
+                              readonly>
                   </div>
 
                   <!-- Price Column -->
                   <div class="input-cell price-cell">
-                        <input type="number" formControlName="price" class="pos-input text-center no-spinner readonly-input" readonly placeholder="0.00">
+                        <input type="number" formControlName="price"
+                              class="pos-input text-center no-spinner readonly-input" readonly placeholder="0.00">
                   </div>
 
                   <!-- Quantity Column -->
@@ -163,7 +169,8 @@
                               <button type="button" class="stepper-btn" (click)="decrementQty()">
                                     <span class="material-icons-outlined">remove</span>
                               </button>
-                              <input type="number" formControlName="quantity" class="pos-input text-center no-spinner qty-input">
+                              <input type="number" formControlName="quantity"
+                                    class="pos-input text-center no-spinner qty-input">
                               <button type="button" class="stepper-btn" (click)="incrementQty()">
                                     <span class="material-icons-outlined">add</span>
                               </button>

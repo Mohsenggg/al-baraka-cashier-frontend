@@ -50,6 +50,12 @@ export class CashierStateService {
   private productsSignal = signal<Product[]>([]);
   public products = this.productsSignal.asReadonly();
 
+  // --------- Navigation Cache State ---------
+  private navigationCache: ReceiptResponse[] = [];
+  private navCurrentIndex: number = -1;
+  private navHasPrevious: boolean = false;
+  private navHasNext: boolean = false;
+
   constructor() { }
 
   // --------- API Orchestration Methods ---------
@@ -121,28 +127,134 @@ export class CashierStateService {
     });
   }
 
+  private setReceiptAsCurrent(receipt: ReceiptResponse) {
+    this.currentSavedReceiptSignal.set(receipt);
+    this.draftItemsSignal.set(
+      receipt.items.map(i => ({
+        productId: 0, 
+        productName: i.productName,
+        quantity: i.quantity,
+        price: i.unitPrice,
+        discount: 0,
+        total: i.totalPrice,
+        remainingStock: i.remainingStock,
+        product: this.seed.getPlaceholderProduct({
+          name: i.productName,
+          barcode: i.productCode,
+          sellingPrice: i.unitPrice,
+          stockQuantity: i.remainingStock + i.quantity
+        })
+      }))
+    );
+  }
+
   public getReceipt(id: number): void {
     this.setLoading(true);
     this.api.getReceiptById(id).subscribe({
       next: (receipt) => {
-        this.currentSavedReceiptSignal.set(receipt);
-        this.draftItemsSignal.set(
-          receipt.items.map(i => ({
-            productId: 0, 
-            productName: i.productName,
-            quantity: i.quantity,
-            price: i.unitPrice,
-            discount: 0,
-            total: i.totalPrice,
-            remainingStock: i.remainingStock,
-            product: this.seed.getPlaceholderProduct({
-              name: i.productName,
-              barcode: i.productCode,
-              sellingPrice: i.unitPrice,
-              stockQuantity: i.remainingStock + i.quantity
-            })
-          }))
-        );
+        this.setReceiptAsCurrent(receipt);
+        this.clearError();
+      },
+      error: (err) => this.handleError(err),
+      complete: () => this.setLoading(false)
+    });
+  }
+
+  public loadNavigationCache(id: number, direction: 'NEXT' | 'PREVIOUS' = 'PREVIOUS'): void {
+    this.setLoading(true);
+    console.log(`[Navigation] Loading cache for receipt ID: ${id} with direction ${direction}`);
+    this.api.getReceiptNavigation(id, direction, 10).subscribe({
+      next: (res) => {
+        console.log('[Navigation] Cache loaded:', res);
+        this.navigationCache = res.receipts || [];
+        this.navCurrentIndex = res.currentIndex ?? -1;
+        this.navHasPrevious = res.hasPrevious ?? false;
+        this.navHasNext = res.hasNext ?? false;
+        if (this.navigationCache.length > 0 && this.navCurrentIndex >= 0 && this.navCurrentIndex < this.navigationCache.length) {
+            this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
+        }
+        this.clearError();
+      },
+      error: (err) => {
+        console.error('[Navigation] Failed to load cache:', err);
+        this.handleError(err);
+        // Fallback to standard getReceipt so the selected receipt is at least displayed
+        this.getReceipt(id);
+      },
+      complete: () => this.setLoading(false)
+    });
+  }
+
+  public navigateReceipt(direction: 'PREVIOUS' | 'NEXT'): void {
+    console.log(`[Navigation] Navigating ${direction}. Current cache length: ${this.navigationCache.length}, Current Index: ${this.navCurrentIndex}`);
+    
+    if (this.navigationCache.length === 0) {
+      const current = this.currentSavedReceiptSignal();
+      if (current && current.id) {
+         console.log('[Navigation] Cache is empty, initializing with current receipt ID:', current.id);
+         this.loadNavigationCache(current.id, direction);
+      } else {
+         console.log('[Navigation] Cache empty and no current receipt.');
+         if (direction === 'PREVIOUS') {
+             const list = this._filteredReceipts.value;
+             if (list && list.length > 0) {
+                 console.log('[Navigation] Fetching the latest receipt from the list as PREVIOUS:', list[0].id);
+                 this.loadNavigationCache(list[0].id, 'PREVIOUS');
+             } else {
+                 console.warn('[Navigation] Cannot navigate: No receipts available in the system.');
+             }
+         } else {
+             console.log('[Navigation] Cannot move NEXT from a blank receipt.');
+         }
+      }
+      return;
+    }
+
+    if (direction === 'PREVIOUS') {
+      if (this.navCurrentIndex > 0) {
+        this.navCurrentIndex--;
+        console.log(`[Navigation] Moved PREVIOUS in cache. New index: ${this.navCurrentIndex}`);
+        this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
+      } else if (this.navHasPrevious) {
+        const currentId = this.navigationCache[0].id;
+        console.log(`[Navigation] Reached beginning of cache. Fetching PREVIOUS chunk before ID: ${currentId}`);
+        this.fetchNavigationChunk(currentId, 'PREVIOUS');
+      } else {
+        console.log('[Navigation] No previous receipt available.');
+      }
+    } else if (direction === 'NEXT') {
+      if (this.navCurrentIndex < this.navigationCache.length - 1) {
+        this.navCurrentIndex++;
+        console.log(`[Navigation] Moved NEXT in cache. New index: ${this.navCurrentIndex}`);
+        this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
+      } else if (this.navHasNext) {
+        const currentId = this.navigationCache[this.navigationCache.length - 1].id;
+        console.log(`[Navigation] Reached end of cache. Fetching NEXT chunk after ID: ${currentId}`);
+        this.fetchNavigationChunk(currentId, 'NEXT');
+      } else {
+        console.log('[Navigation] No next receipt available.');
+      }
+    }
+  }
+
+  private fetchNavigationChunk(receiptId: number, direction: 'PREVIOUS' | 'NEXT'): void {
+    this.setLoading(true);
+    this.api.getReceiptNavigation(receiptId, direction, 10).subscribe({
+      next: (res) => {
+        this.navigationCache = res.receipts;
+        this.navCurrentIndex = res.currentIndex;
+        this.navHasPrevious = res.hasPrevious;
+        this.navHasNext = res.hasNext;
+        
+        if (direction === 'PREVIOUS' && this.navCurrentIndex > 0) {
+           this.navCurrentIndex--;
+        } else if (direction === 'NEXT' && this.navCurrentIndex < this.navigationCache.length - 1) {
+           this.navCurrentIndex++;
+        }
+        
+        if (this.navigationCache.length > 0 && this.navCurrentIndex >= 0 && this.navCurrentIndex < this.navigationCache.length) {
+            this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
+        }
         this.clearError();
       },
       error: (err) => this.handleError(err),
@@ -224,6 +336,10 @@ export class CashierStateService {
   public clearCart() {
     this.draftItemsSignal.set([]);
     this.currentSavedReceiptSignal.set(null);
+    this.navigationCache = [];
+    this.navCurrentIndex = -1;
+    this.navHasPrevious = false;
+    this.navHasNext = false;
   }
 
   public updateItemQuantity(productId: number, delta: number) {
