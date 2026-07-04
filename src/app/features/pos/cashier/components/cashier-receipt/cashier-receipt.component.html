@@ -103,7 +103,7 @@
                               </div>
 
                               <div class="td-cell total-col fw-bold">{{ item.total | number:'1.2-2' }}</div>
-                              <div class="td-cell balance-col">{{ item.originalRemainingStock ?? item.remainingStock ?? 0 }}</div>
+                              <div class="td-cell balance-col">{{ item.originalRemainingStock ?? item.remainingStock }}</div>
                               <div class="td-cell balance-col" *ngIf="receiptMode !== 'NEW'">{{ item.currentRemainingStock ?? '-' }}</div>
 
                               <div class="td-cell actions-col">

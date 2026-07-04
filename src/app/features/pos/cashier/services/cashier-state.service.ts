@@ -1,5 +1,5 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
-import { BehaviorSubject, Observable, tap, finalize, catchError, throwError, EMPTY } from 'rxjs';
+import { BehaviorSubject, Observable, tap, finalize, catchError, throwError, EMPTY, map, switchMap } from 'rxjs';
 import { CashierApiService } from './cashier-api.service';
 import { CashierSeedService } from './cashier-seed.service';
 import type {
@@ -89,24 +89,58 @@ export class CashierStateService {
 
       // --------- API Orchestration Methods ---------
 
-      public loadAllProducts(): void {
+      public loadAllProducts(): Observable<Product[]> {
             this.setLoading(true);
-            this.api.getAllProducts().subscribe({
-                  next: (dtoList) => {
-                        // Map DTOs to products, leveraging seed service for missing data
-                        const mappedProducts = dtoList.map(dto => this.seed.getPlaceholderProduct({
-                              id: dto.id,
-                              name: dto.name,
-                              barcode: dto.code,
-                              sellingPrice: dto.price,
-                              stockQuantity: dto.stock
-                        }));
+            return this.api.getAllProducts().pipe(
+                  map(dtoList => dtoList.map(dto => this.seed.getPlaceholderProduct({
+                        id: dto.id,
+                        name: dto.name,
+                        barcode: dto.code,
+                        sellingPrice: dto.price,
+                        stockQuantity: dto.stock
+                  }))),
+                  tap((mappedProducts) => {
                         this.productsSignal.set(mappedProducts);
+                        this.refreshNavigationCacheStock();
+                        this.refreshCurrentReceiptDisplay();
                         this.clearError();
-                  },
-                  error: (err) => this.handleError(err),
-                  complete: () => this.setLoading(false)
-            });
+                  }),
+                  catchError((err) => {
+                        this.handleError(err);
+                        return throwError(() => err);
+                  }),
+                  finalize(() => this.setLoading(false))
+            );
+      }
+
+      private getLiveStockForProductCode(productCode: string, fallback = 0): number {
+            const product = this.productsSignal().find(p => p.barcode === productCode);
+            return product ? product.stockQuantity : fallback;
+      }
+
+      private refreshNavigationCacheStock(): void {
+            if (this.navigationCache.length === 0) return;
+
+            this.navigationCache = this.navigationCache.map(receipt => ({
+                  ...receipt,
+                  items: receipt.items.map(item => ({
+                        ...item,
+                        currentRemainingStock: this.getLiveStockForProductCode(
+                              item.productCode,
+                              item.currentRemainingStock ?? item.remainingStock ?? 0
+                        )
+                  }))
+            }));
+      }
+
+      private refreshCurrentReceiptDisplay(): void {
+            const current = this.currentSavedReceiptSignal();
+            if (!current?.id) return;
+
+            const cached = this.navigationCache.find(r => r.id === current.id);
+            if (cached) {
+                  this.setReceiptAsCurrent(cached);
+            }
       }
 
       public searchProducts(query: string): Product[] {
@@ -166,7 +200,9 @@ export class CashierStateService {
                   receipt.items.map((i, index) => {
                         const foundProduct = allProducts.find(p => p.barcode === i.productCode);
                         const uniqueId = foundProduct ? foundProduct.id : -(index + 1);
-                        const currentLiveStock = i.currentRemainingStock ?? (foundProduct ? foundProduct.stockQuantity : (i.remainingStock ?? 0));
+                        const currentLiveStock = foundProduct
+                              ? foundProduct.stockQuantity
+                              : (i.currentRemainingStock ?? i.remainingStock ?? 0);
 
                         return {
                               productId: uniqueId,
@@ -181,7 +217,7 @@ export class CashierStateService {
                                     name: i.productName,
                                     barcode: i.productCode,
                                     sellingPrice: i.unitPrice,
-                                    stockQuantity: i.remainingStock + i.quantity
+                                    stockQuantity: currentLiveStock
                               }),
                               originalQuantity: i.quantity,
                               originalRemainingStock: i.remainingStock,
@@ -374,7 +410,11 @@ export class CashierStateService {
       public deleteReceipt(id: number): Observable<DeleteReceiptResponse> {
             this.setLoading(true);
             return this.api.deleteReceipt(id).pipe(
-                  tap(() => this.syncAfterReceiptDeleted(id)),
+                  tap(() => this.removeReceiptFromLocalState(id)),
+                  switchMap((response) =>
+                        this.loadAllProducts().pipe(map(() => response))
+                  ),
+                  tap(() => this.showReceiptAfterDelete(id)),
                   catchError((err) => {
                         this.handleError(err);
                         return throwError(() => err);
@@ -383,9 +423,8 @@ export class CashierStateService {
             );
       }
 
-      private syncAfterReceiptDeleted(deletedId: number): void {
+      private removeReceiptFromLocalState(deletedId: number): void {
             this.clearError();
-
             this._receiptsList.next(this._receiptsList.value.filter(r => r.id !== deletedId));
             this._filteredReceipts.next(this._filteredReceipts.value.filter(r => r.id !== deletedId));
 
@@ -393,19 +432,25 @@ export class CashierStateService {
             if (deletedIndex >= 0) {
                   this.navigationCache.splice(deletedIndex, 1);
                   if (this.navigationCache.length > 0) {
-                        const newIndex = deletedIndex < this.navigationCache.length
+                        this.navCurrentIndex = deletedIndex < this.navigationCache.length
                               ? deletedIndex
                               : this.navigationCache.length - 1;
-                        this.navCurrentIndex = newIndex;
-                        this.setReceiptAsCurrent(this.navigationCache[newIndex]);
+                  } else {
+                        this.navCurrentIndex = -1;
+                  }
+            }
+      }
+
+      private showReceiptAfterDelete(deletedId: number): void {
+            if (this.currentSavedReceiptSignal()?.id === deletedId) {
+                  if (this.navigationCache.length > 0 && this.navCurrentIndex >= 0) {
+                        this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
                   } else {
                         this.resetWorkspaceAfterDelete();
                   }
             } else {
-                  this.resetWorkspaceAfterDelete();
+                  this.refreshCurrentReceiptDisplay();
             }
-
-            this.loadAllProducts();
       }
 
       private resetWorkspaceAfterDelete(): void {

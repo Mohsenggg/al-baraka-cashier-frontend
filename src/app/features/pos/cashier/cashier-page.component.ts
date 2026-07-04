@@ -52,7 +52,7 @@ export class CashierPageComponent implements OnInit {
       hasStockErrors = this.state.hasStockErrors;
 
       ngOnInit() {
-            this.state.loadAllProducts();
+            this.state.loadAllProducts().subscribe();
             // Initial fetch to populate sidebar
             this.state.filterReceipts({ page: 0, size: 20 });
       }
