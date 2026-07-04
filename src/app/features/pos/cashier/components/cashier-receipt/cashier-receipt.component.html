@@ -5,7 +5,7 @@
       <!-- ============================= -->
       <div class="receipt-navigation-row">
             <!-- Previous Receipt Button (Right arrow in RTL) -->
-            <button class="nav-btn prev-btn" (click)="nextReceipt.emit()" title="الفاتورة السابقة">
+            <button class="nav-btn prev-btn" (click)="previousReceipt.emit()" title="الفاتورة السابقة">
                   <span class="material-icons-outlined">keyboard_arrow_right</span>
                   <span class="nav-label">السابقة</span>
             </button>
@@ -56,7 +56,7 @@
             </div>
 
             <!-- Next Receipt Button (Left arrow in RTL) -->
-            <button class="nav-btn next-btn" (click)="previousReceipt.emit()" title="الفاتورة التالية">
+            <button class="nav-btn next-btn" (click)="nextReceipt.emit()" title="الفاتورة التالية">
                   <span class="material-icons-outlined">keyboard_arrow_left</span>
                   <span class="nav-label">التالية</span>
             </button>

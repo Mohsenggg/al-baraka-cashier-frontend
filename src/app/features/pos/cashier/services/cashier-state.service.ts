@@ -162,14 +162,21 @@ export class CashierStateService {
 
   public loadNavigationCache(id: number, direction: 'NEXT' | 'PREVIOUS' = 'PREVIOUS'): void {
     this.setLoading(true);
-    console.log(`[Navigation] Loading cache for receipt ID: ${id} with direction ${direction}`);
-    this.api.getReceiptNavigation(id, direction, 10).subscribe({
+    // Backend pagination: 'NEXT' = older receipts, 'PREVIOUS' = newer receipts
+    // Frontend timeline: 'PREVIOUS' = older receipts, 'NEXT' = newer receipts
+    const backendDirection = direction === 'PREVIOUS' ? 'NEXT' : 'PREVIOUS';
+    console.log(`[Navigation] Loading cache for receipt ID: ${id} with frontend direction ${direction} (backend ${backendDirection})`);
+    
+    this.api.getReceiptNavigation(id, backendDirection, 10).subscribe({
       next: (res) => {
-        console.log('[Navigation] Cache loaded:', res);
+        console.log('[Navigation] Cache loaded from backend:', res);
         this.navigationCache = res.receipts || [];
         this.navCurrentIndex = res.currentIndex ?? -1;
-        this.navHasPrevious = res.hasPrevious ?? false;
-        this.navHasNext = res.hasNext ?? false;
+        // Backend hasNext means has OLDER. Frontend navHasPrevious means can we go OLDER.
+        // Backend hasPrevious means has NEWER. Frontend navHasNext means can we go NEWER.
+        this.navHasPrevious = res.hasNext ?? false;
+        this.navHasNext = res.hasPrevious ?? false;
+        
         if (this.navigationCache.length > 0 && this.navCurrentIndex >= 0 && this.navCurrentIndex < this.navigationCache.length) {
             this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
         }
@@ -194,7 +201,6 @@ export class CashierStateService {
          console.log('[Navigation] Cache is empty, initializing with current receipt ID:', current.id);
          this.loadNavigationCache(current.id, direction);
       } else {
-         console.log('[Navigation] Cache empty and no current receipt.');
          if (direction === 'PREVIOUS') {
              const list = this._filteredReceipts.value;
              if (list && list.length > 0) {
@@ -210,54 +216,83 @@ export class CashierStateService {
       return;
     }
 
+    // Determine array order: isNewerFirst is true if index 0 is newer than the end of the array.
+    // We assume ID sequentially correlates with time (higher ID = newer).
+    let isNewerFirst = true;
+    if (this.navigationCache.length >= 2) {
+       isNewerFirst = this.navigationCache[0].id > this.navigationCache[this.navigationCache.length - 1].id;
+    }
+
+    // PREVIOUS = go to older receipt. NEXT = go to newer receipt.
+    let targetIndex = this.navCurrentIndex;
+    let fetchDirection: 'PREVIOUS' | 'NEXT' | null = null;
+
     if (direction === 'PREVIOUS') {
-      if (this.navCurrentIndex > 0) {
-        this.navCurrentIndex--;
-        console.log(`[Navigation] Moved PREVIOUS in cache. New index: ${this.navCurrentIndex}`);
-        this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
-      } else if (this.navHasPrevious) {
-        const currentId = this.navigationCache[0].id;
-        console.log(`[Navigation] Reached beginning of cache. Fetching PREVIOUS chunk before ID: ${currentId}`);
-        this.fetchNavigationChunk(currentId, 'PREVIOUS');
-      } else {
-        console.log('[Navigation] No previous receipt available.');
-      }
+       if (isNewerFirst) targetIndex++; // moving right gets older
+       else targetIndex--; // moving left gets older
+       fetchDirection = 'PREVIOUS'; // when fetching, we want OLDER
     } else if (direction === 'NEXT') {
-      if (this.navCurrentIndex < this.navigationCache.length - 1) {
-        this.navCurrentIndex++;
-        console.log(`[Navigation] Moved NEXT in cache. New index: ${this.navCurrentIndex}`);
-        this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
-      } else if (this.navHasNext) {
-        const currentId = this.navigationCache[this.navigationCache.length - 1].id;
-        console.log(`[Navigation] Reached end of cache. Fetching NEXT chunk after ID: ${currentId}`);
-        this.fetchNavigationChunk(currentId, 'NEXT');
-      } else {
-        console.log('[Navigation] No next receipt available.');
-      }
+       if (isNewerFirst) targetIndex--; // moving left gets newer
+       else targetIndex++; // moving right gets newer
+       fetchDirection = 'NEXT'; // when fetching, we want NEWER
+    }
+
+    // Check if targetIndex is within bounds
+    if (targetIndex >= 0 && targetIndex < this.navigationCache.length) {
+       this.navCurrentIndex = targetIndex;
+       console.log(`[Navigation] Moved in cache to index: ${this.navCurrentIndex}`);
+       this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
+    } else {
+       // Target out of bounds, check if we can fetch more
+       const canFetch = direction === 'PREVIOUS' ? this.navHasPrevious : this.navHasNext;
+       if (canFetch && fetchDirection) {
+          const edgeId = this.navigationCache[this.navCurrentIndex].id;
+          console.log(`[Navigation] Reached edge of cache. Fetching ${fetchDirection} chunk based on ID: ${edgeId}`);
+          this.fetchNavigationChunk(edgeId, fetchDirection);
+       } else {
+          console.log(`[Navigation] Reached absolute limit. No more ${direction} receipts.`);
+          if (direction === 'NEXT') {
+              console.log('[Navigation] Reached newest receipt. Clearing cart for a new blank receipt.');
+              this.clearCart();
+          }
+       }
     }
   }
 
   private fetchNavigationChunk(receiptId: number, direction: 'PREVIOUS' | 'NEXT'): void {
     this.setLoading(true);
-    this.api.getReceiptNavigation(receiptId, direction, 10).subscribe({
+    const backendDirection = direction === 'PREVIOUS' ? 'NEXT' : 'PREVIOUS';
+    console.log(`[Navigation] Fetching chunk for ID: ${receiptId} with frontend direction ${direction} (backend ${backendDirection})`);
+
+    this.api.getReceiptNavigation(receiptId, backendDirection, 10).subscribe({
       next: (res) => {
-        this.navigationCache = res.receipts;
-        this.navCurrentIndex = res.currentIndex;
-        this.navHasPrevious = res.hasPrevious;
-        this.navHasNext = res.hasNext;
-        
-        if (direction === 'PREVIOUS' && this.navCurrentIndex > 0) {
-           this.navCurrentIndex--;
-        } else if (direction === 'NEXT' && this.navCurrentIndex < this.navigationCache.length - 1) {
-           this.navCurrentIndex++;
-        }
+        this.navigationCache = res.receipts || [];
+        this.navCurrentIndex = res.currentIndex ?? -1;
+        this.navHasPrevious = res.hasNext ?? false; // OLDER
+        this.navHasNext = res.hasPrevious ?? false; // NEWER
         
         if (this.navigationCache.length > 0 && this.navCurrentIndex >= 0 && this.navCurrentIndex < this.navigationCache.length) {
+            let isNewerFirst = true;
+            if (this.navigationCache.length >= 2) {
+               isNewerFirst = this.navigationCache[0].id > this.navigationCache[this.navigationCache.length - 1].id;
+            }
+
+            if (direction === 'PREVIOUS') {
+               if (isNewerFirst && this.navCurrentIndex < this.navigationCache.length - 1) this.navCurrentIndex++;
+               else if (!isNewerFirst && this.navCurrentIndex > 0) this.navCurrentIndex--;
+            } else if (direction === 'NEXT') {
+               if (isNewerFirst && this.navCurrentIndex > 0) this.navCurrentIndex--;
+               else if (!isNewerFirst && this.navCurrentIndex < this.navigationCache.length - 1) this.navCurrentIndex++;
+            }
+            
             this.setReceiptAsCurrent(this.navigationCache[this.navCurrentIndex]);
         }
         this.clearError();
       },
-      error: (err) => this.handleError(err),
+      error: (err) => {
+        console.warn('[Navigation] Fetch chunk API failed:', err);
+        this.handleError(err);
+      },
       complete: () => this.setLoading(false)
     });
   }
