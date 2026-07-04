@@ -10,6 +10,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
 // New state service
 import { CashierStateService } from './services/cashier-state.service';
 import { CreateReceiptInput, Product, CartItem } from '../core/models/pos.models';
+import { NotificationService } from '../../../shared/services/notification.service';
 
 @Component({
       selector: 'app-cashier-page',
@@ -28,6 +29,7 @@ import { CreateReceiptInput, Product, CartItem } from '../core/models/pos.models
 })
 export class CashierPageComponent implements OnInit {
       private state = inject(CashierStateService);
+      private notifications = inject(NotificationService);
 
       sidebarVisible = signal(false);
       rightSidebarVisible = signal(false);
@@ -108,7 +110,25 @@ export class CashierPageComponent implements OnInit {
       onEdit() {
             this.state.setReceiptMode('EDIT');
       }
-      onDelete() { }
+      onDelete() {
+            const receipt = this.currentReceipt();
+            if (!receipt?.id) {
+                  this.notifications.warning('لا توجد فاتورة محددة للحذف');
+                  return;
+            }
+            if (!confirm('هل أنت متأكد من حذف هذه الفاتورة؟ سيتم استرجاع رصيد الأصناف إلى المخزون.')) return;
+
+            this.state.deleteReceipt(receipt.id).subscribe({
+                  next: () => {
+                        this.notifications.success('تم حذف الفاتورة واسترجاع المخزون بنجاح');
+                        this.state.filterReceipts({ page: 0, size: 20 });
+                  },
+                  error: (err) => {
+                        const message = err?.error?.message || 'فشل حذف الفاتورة';
+                        this.notifications.error(message);
+                  }
+            });
+      }
       onReturn() { }
       onDrafts() { }
 

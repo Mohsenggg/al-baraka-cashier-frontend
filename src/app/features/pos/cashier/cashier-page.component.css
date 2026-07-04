@@ -818,6 +818,11 @@
       background-color: var(--pos-danger-hover);
 }
 
+.btn-delete:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+}
+
 /* ============================= */
 /* RECEIPT TABLE */
 /* ============================= */
