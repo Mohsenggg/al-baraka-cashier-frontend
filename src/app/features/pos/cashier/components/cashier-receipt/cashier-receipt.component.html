@@ -87,10 +87,10 @@
 
                               <div class="td-cell qty-col">
                                     <div class="qty-stepper">
-                                          <button class="stepper-btn" [disabled]="receiptMode === 'VIEW'"
+                                          <button class="stepper-btn" *ngIf="receiptMode !== 'VIEW'"
                                                 (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
                                           <div class="qty-value">{{ item.quantity }}</div>
-                                          <button class="stepper-btn" [disabled]="receiptMode === 'VIEW'"
+                                          <button class="stepper-btn" *ngIf="receiptMode !== 'VIEW'"
                                                 (click)="updateQuantity.emit({item: item, delta: 1})">+</button>
                                     </div>
                               </div>

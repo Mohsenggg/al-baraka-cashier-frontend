@@ -137,22 +137,31 @@ export class CashierStateService {
   private setReceiptAsCurrent(receipt: ReceiptResponse) {
     this.setReceiptMode('VIEW');
     this.currentSavedReceiptSignal.set(receipt);
+    
+    const allProducts = this.productsSignal();
+    
     this.draftItemsSignal.set(
-      receipt.items.map(i => ({
-        productId: 0, 
-        productName: i.productName,
-        quantity: i.quantity,
-        price: i.unitPrice,
-        discount: 0,
-        total: i.totalPrice,
-        remainingStock: i.remainingStock,
-        product: this.seed.getPlaceholderProduct({
-          name: i.productName,
-          barcode: i.productCode,
-          sellingPrice: i.unitPrice,
-          stockQuantity: i.remainingStock + i.quantity
-        })
-      }))
+      receipt.items.map((i, index) => {
+        const foundProduct = allProducts.find(p => p.barcode === i.productCode);
+        const uniqueId = foundProduct ? foundProduct.id : -(index + 1);
+        
+        return {
+          productId: uniqueId, 
+          productName: i.productName,
+          quantity: i.quantity,
+          price: i.unitPrice,
+          discount: 0,
+          total: i.totalPrice,
+          remainingStock: i.remainingStock,
+          product: foundProduct || this.seed.getPlaceholderProduct({
+            id: uniqueId,
+            name: i.productName,
+            barcode: i.productCode,
+            sellingPrice: i.unitPrice,
+            stockQuantity: i.remainingStock + i.quantity
+          })
+        };
+      })
     );
   }
 
