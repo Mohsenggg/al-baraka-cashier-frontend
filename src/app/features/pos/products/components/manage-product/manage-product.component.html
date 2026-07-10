@@ -48,12 +48,12 @@
                     <p class="card-desc">الاسم والسمات التي تُنشئ الاسم الكامل</p>
                   </div>
                 </div>
-                <div class="name-preview" [class.is-ready]="generatedName">
+                <div class="name-preview" [class.is-ready]="generatedName()">
                   <span class="material-icons-outlined name-preview-icon">
-                    {{ generatedName ? 'auto_awesome' : 'edit_note' }}
+                    {{ generatedName() ? 'auto_awesome' : 'edit_note' }}
                   </span>
-                  <span class="name-preview-text" *ngIf="generatedName">{{ generatedName }}</span>
-                  <span class="name-preview-hint" *ngIf="!generatedName">يُنشأ تلقائياً من اسم المنتج والسمات</span>
+                  <span class="name-preview-text" *ngIf="generatedName()">{{ generatedName() }}</span>
+                  <span class="name-preview-hint" *ngIf="!generatedName()">يُنشأ تلقائياً من اسم المنتج والسمات</span>
                 </div>
               </div>
 
@@ -83,7 +83,7 @@
                   <div class="attr-chips-row" *ngIf="attributesFormArray.length">
                     <button type="button" class="attr-chip"
                       *ngFor="let attrCtrl of attributesFormArray.controls; let i = index"
-                      [class.active]="editingAttributeIndex === i"
+                      [class.active]="editingAttributeIndex() === i"
                       (click)="loadAttributeForEdit(i)">
                       <span class="attr-chip-name">{{ attrCtrl.get('name')?.value }}</span>
                       <span class="attr-chip-value">{{ attrCtrl.get('value')?.value }}</span>
@@ -98,7 +98,7 @@
                       <div class="field-group attr-editor-field" (click)="$event.stopPropagation()">
                         <label>السمة</label>
                         <button #attributeTrigger type="button" class="form-select-trigger attr-select-trigger"
-                          [class.has-value]="!!pendingAttribute"
+                          [class.has-value]="!!pendingAttribute()"
                           [class.is-open]="activeDropdown === 'attribute'"
                           (click)="toggleDropdown('attribute')">
                           <span>{{ pendingAttributeLabel }}</span>
@@ -110,8 +110,8 @@
                         <label>قيمة السمة</label>
                         <input type="text" class="form-input"
                           [(ngModel)]="pendingAttributeValue" [ngModelOptions]="{standalone: true}"
-                          [disabled]="!pendingAttribute"
-                          [placeholder]="pendingAttribute ? 'أدخل ' + pendingAttribute.name : 'اختر سمة أولاً'"
+                          [disabled]="!pendingAttribute()"
+                          [placeholder]="pendingAttribute() ? 'أدخل ' + pendingAttribute()!.name : 'اختر سمة أولاً'"
                           (keyup.enter)="confirmAttributeValue()">
                       </div>
 
@@ -127,7 +127,7 @@
                     </div>
                   </div>
 
-                  <p class="attr-editor-error" *ngIf="attributeEditorError">{{ attributeEditorError }}</p>
+                  <p class="attr-editor-error" *ngIf="attributeEditorError()">{{ attributeEditorError() }}</p>
                 </div>
               </div>
             </section>

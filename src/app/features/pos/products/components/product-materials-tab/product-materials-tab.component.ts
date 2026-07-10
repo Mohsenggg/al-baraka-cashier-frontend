@@ -1,31 +1,28 @@
-import { Component, Input, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, inject, signal, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormsModule,
   FormArray,
-  FormBuilder,
   FormGroup,
-  Validators,
   AbstractControl
 } from '@angular/forms';
-import { ProductMaterialCatalogService } from '../../services/product-material-catalog.service';
+import { ProductManageStateService } from '../../services/product-manage-state.service';
 import {
   MaterialCatalogItem,
   ProductMaterialRow
 } from '../../models/product-material.models';
-import { positiveQuantityValidator } from '../../validators/product-material.validators';
 
 @Component({
   selector: 'app-product-materials-tab',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './product-materials-tab.component.html',
-  styleUrl: './product-materials-tab.component.css'
+  styleUrl: './product-materials-tab.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductMaterialsTabComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
-  private readonly catalog = inject(ProductMaterialCatalogService);
+  private readonly manageState = inject(ProductManageStateService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   @Input({ required: true }) materialsFormArray!: FormArray;
@@ -44,7 +41,7 @@ export class ProductMaterialsTabComponent implements OnInit {
   showDeleteConfirm = signal(false);
   deleteTargetIndex: number | null = null;
 
-  readonly units = this.catalog.units;
+  readonly units = this.manageState.units;
 
   ngOnInit(): void {
     this.initMaterialDialogForm();
@@ -54,7 +51,7 @@ export class ProductMaterialsTabComponent implements OnInit {
     const addedIds = this.materialsFormArray.controls.map(
       c => c.get('materialId')?.value as number
     );
-    return this.catalog.searchMaterials(
+    return this.manageState.searchMaterials(
       this.materialSearchQuery,
       addedIds,
       this.showAllMaterials()
@@ -144,9 +141,9 @@ export class ProductMaterialsTabComponent implements OnInit {
       return;
     }
 
-    const normalized = {
+    const normalized: Partial<ProductMaterialRow> = {
       ...value,
-      quantity: value.quantity != null ? Number(value.quantity) : null,
+      quantity: value.quantity != null ? Number(value.quantity) : undefined,
       costPerUnit: Number(value.costPerUnit) || 0,
       wastePercentage: value.wastePercentage != null && value.wastePercentage !== ''
         ? Number(value.wastePercentage) : null
@@ -155,7 +152,7 @@ export class ProductMaterialsTabComponent implements OnInit {
     if (this.editingMaterialIndex !== null) {
       (this.materialsFormArray.at(this.editingMaterialIndex) as FormGroup).patchValue(normalized);
     } else {
-      this.materialsFormArray.push(this.createMaterialGroup(normalized));
+      this.materialsFormArray.push(this.manageState.createMaterialFormGroup(normalized));
     }
 
     this.materialsFormArray.markAsDirty();
@@ -216,7 +213,7 @@ export class ProductMaterialsTabComponent implements OnInit {
   }
 
   getUnitLabel(unitId: number): string {
-    return this.catalog.getUnitLabel(unitId);
+    return this.manageState.getUnitLabel(unitId);
   }
 
   getDeleteTargetName(): string {
@@ -232,25 +229,7 @@ export class ProductMaterialsTabComponent implements OnInit {
     return !!this.materialDialogForm?.hasError('duplicateMaterial');
   }
 
-  static createMaterialGroup(fb: FormBuilder, data: Partial<ProductMaterialRow>): FormGroup {
-    return fb.group({
-      materialId: [data.materialId ?? null, Validators.required],
-      materialName: [data.materialName ?? '', Validators.required],
-      parentProductId: [data.parentProductId ?? null],
-      parentProductName: [data.parentProductName ?? ''],
-      quantity: [data.quantity ?? null, [Validators.required, positiveQuantityValidator()]],
-      unitId: [data.unitId ?? null, Validators.required],
-      costPerUnit: [data.costPerUnit ?? 0],
-      wastePercentage: [data.wastePercentage ?? null, [Validators.min(0), Validators.max(100)]],
-      notes: [data.notes ?? '']
-    });
-  }
-
   private initMaterialDialogForm(): void {
-    this.materialDialogForm = ProductMaterialsTabComponent.createMaterialGroup(this.fb, {});
-  }
-
-  private createMaterialGroup(data: Partial<ProductMaterialRow>): FormGroup {
-    return ProductMaterialsTabComponent.createMaterialGroup(this.fb, data);
+    this.materialDialogForm = this.manageState.createMaterialFormGroup({});
   }
 }

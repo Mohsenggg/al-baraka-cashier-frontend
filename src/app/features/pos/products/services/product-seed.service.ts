@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable, delay, of } from 'rxjs';
-import type { ProductListItem } from '../models/product.models';
+import type {
+      ProductListItem,
+      ProductManageDetail,
+      ProductManagePayload,
+      ProductReferenceData
+} from '../models/product.models';
+import type { MaterialCatalogItem, MaterialUnit, ProductMaterialRow } from '../models/product-material.models';
 
 @Injectable({
       providedIn: 'root'
@@ -9,6 +15,8 @@ export class ProductSeedService {
 
       /** Simulated network delay matching the original component behavior. */
       private readonly loadDelayMs = 500;
+      private readonly editLoadDelayMs = 400;
+      private readonly saveDelayMs = 800;
 
       public getProducts(): Observable<ProductListItem[]> {
             return of(this.getSeedProducts()).pipe(delay(this.loadDelayMs));
@@ -323,5 +331,132 @@ export class ProductSeedService {
 
       public getProductById(id: string): ProductListItem | undefined {
             return this.getSeedProducts().find(p => p.id === id);
+      }
+
+      // ─── Product Management Seeds ───────────────────────────────────────────
+
+      public getReferenceData(): ProductReferenceData {
+            return {
+                  attributes: [
+                        { id: 1, name: 'اللون' },
+                        { id: 2, name: 'الوزن' },
+                        { id: 3, name: 'الرائحة' },
+                        { id: 4, name: 'الخامة' },
+                        { id: 5, name: 'المقاس' },
+                        { id: 6, name: 'الماركة' }
+                  ],
+                  categories: [
+                        { id: 1, name: 'الكترونيات' },
+                        { id: 2, name: 'منظفات' },
+                        { id: 3, name: 'مواد غذائية' }
+                  ],
+                  manufacturers: [
+                        { id: 1, name: 'شركة أ' },
+                        { id: 2, name: 'شركة ب' }
+                  ],
+                  suppliers: [
+                        { id: 1, name: 'مورد 1' },
+                        { id: 2, name: 'مورد 2' },
+                        { id: 3, name: 'مورد 3' }
+                  ]
+            };
+      }
+
+      public getMaterialUnits(): MaterialUnit[] {
+            return [
+                  { id: 1, name: 'كيلوغرام', abbreviation: 'كغ' },
+                  { id: 2, name: 'غرام', abbreviation: 'غ' },
+                  { id: 3, name: 'لتر', abbreviation: 'ل' },
+                  { id: 4, name: 'مليلتر', abbreviation: 'مل' },
+                  { id: 5, name: 'قطعة', abbreviation: 'قطعة' },
+                  { id: 6, name: 'علبة', abbreviation: 'علبة' }
+            ];
+      }
+
+      public getMaterialCatalog(): MaterialCatalogItem[] {
+            return [
+                  { id: 101, name: 'ماء', barcode: '6281001001011', costPerUnit: 2, defaultUnitId: 3, type: 'raw' },
+                  { id: 102, name: 'عطر', barcode: '6281001001028', costPerUnit: 20, defaultUnitId: 4, type: 'raw' },
+                  { id: 103, name: 'زجاجة بلاستيك', barcode: '6281001001035', costPerUnit: 10, defaultUnitId: 5, type: 'inventory' },
+                  { id: 104, name: 'ملصق', barcode: '6281001001042', costPerUnit: 5, defaultUnitId: 5, type: 'inventory' },
+                  { id: 105, name: 'غطاء زجاجة', barcode: '6281001001059', costPerUnit: 3, defaultUnitId: 5, type: 'inventory' },
+                  { id: 106, name: 'مادة فعالة', barcode: '6281001001066', costPerUnit: 35, defaultUnitId: 2, type: 'raw' },
+                  { id: 107, name: 'مواد حافظة', barcode: '6281001001073', costPerUnit: 8, defaultUnitId: 2, type: 'raw' },
+                  { id: 108, name: 'صابون خام', barcode: '6281001001080', costPerUnit: 15, defaultUnitId: 1, type: 'raw' }
+            ];
+      }
+
+      public getProductForEdit(id: number): Observable<ProductManageDetail | null> {
+            const detail = this.getSeedProductDetail(id);
+            return of(detail).pipe(delay(this.editLoadDelayMs));
+      }
+
+      public getProductMaterials(productId: number): Observable<ProductMaterialRow[]> {
+            return of(this.getSeedProductMaterials(productId)).pipe(delay(this.editLoadDelayMs));
+      }
+
+      public saveProduct(payload: ProductManagePayload): Observable<ProductManagePayload> {
+            return of(payload).pipe(delay(this.saveDelayMs));
+      }
+
+      private getSeedProductDetail(id: number): ProductManageDetail | null {
+            if (id !== 15) return null;
+
+            return {
+                  id: 15,
+                  baseName: 'شامبو',
+                  generatedName: 'شامبو',
+                  attributes: [],
+                  barcodes: [],
+                  categoryId: null,
+                  manufacturerId: null,
+                  supplierIds: [],
+                  composition: {
+                        ownerProductId: 15,
+                        ownerProductName: 'شامبو',
+                        parentProductId: null,
+                        parentProductName: undefined
+                  }
+            };
+      }
+
+      private getSeedProductMaterials(productId: number): ProductMaterialRow[] {
+            if (productId !== 15) return [];
+
+            return [
+                  {
+                        materialId: 103,
+                        materialName: 'زجاجة بلاستيك',
+                        parentProductId: 15,
+                        parentProductName: 'شامبو 500مل',
+                        quantity: 1,
+                        unitId: 5,
+                        costPerUnit: 10,
+                        wastePercentage: 2,
+                        notes: ''
+                  },
+                  {
+                        materialId: 104,
+                        materialName: 'ملصق',
+                        parentProductId: 15,
+                        parentProductName: 'شامبو 500مل',
+                        quantity: 1,
+                        unitId: 5,
+                        costPerUnit: 5,
+                        wastePercentage: 5,
+                        notes: 'ملصق أمامي'
+                  },
+                  {
+                        materialId: 102,
+                        materialName: 'عطر',
+                        parentProductId: 15,
+                        parentProductName: 'شامبو 500مل',
+                        quantity: 50,
+                        unitId: 4,
+                        costPerUnit: 20,
+                        wastePercentage: 3,
+                        notes: ''
+                  }
+            ];
       }
 }

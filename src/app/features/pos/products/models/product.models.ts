@@ -1,3 +1,5 @@
+import type { ProductMaterialDto } from './product-material.models';
+
 export interface DescAttribute {
       id: number;
       name: string;
@@ -132,4 +134,99 @@ export function getDescAttrClass(ui?: 1 | 2): string {
 
 export function hasMultipleBarcodes(product: ProductListItem): boolean {
       return product.summary.barcodeCount > 1;
+}
+
+// ─── Product Management (create / edit) ───────────────────────────────────────
+
+export interface ProductAttributeOption {
+      id: number;
+      name: string;
+}
+
+export interface NamedEntity {
+      id: number;
+      name: string;
+}
+
+export interface ProductAttributeFormValue {
+      id: number;
+      name: string;
+      value: string;
+}
+
+export interface ProductBarcodeFormValue {
+      barcode: string;
+      sellingPrice: number;
+      buyingPrice: number;
+      stock: number;
+      isDefault: boolean;
+}
+
+/**
+ * Describes how a product relates to its parent and its bill-of-materials owner.
+ * Supports variant/child products and compound (bundle) composition.
+ */
+export interface ProductCompositionContext {
+      /** The product that owns the BOM (the item being edited). */
+      ownerProductId: number | null;
+      ownerProductName: string;
+      /** Optional parent product when this SKU is a variant/child of another product. */
+      parentProductId?: number | null;
+      parentProductName?: string;
+}
+
+export interface ProductManageDetail {
+      id: number;
+      baseName: string;
+      generatedName?: string;
+      attributes: ProductAttributeFormValue[];
+      barcodes: ProductBarcodeFormValue[];
+      categoryId: number | null;
+      manufacturerId: number | null;
+      supplierIds: number[];
+      composition?: ProductCompositionContext;
+}
+
+export interface ProductManagePayload {
+      id: number | null;
+      name: string;
+      baseName: string;
+      attributes: ProductAttributeFormValue[];
+      barcodes: ProductBarcodeFormValue[];
+      categoryId: number | null;
+      manufacturerId: number | null;
+      supplierIds: number[];
+      materials: ProductMaterialDto[];
+      composition?: ProductCompositionContext;
+}
+
+export interface ProfitMargin {
+      value: number;
+      percentage: number;
+}
+
+export interface ProductReferenceData {
+      attributes: ProductAttributeOption[];
+      categories: NamedEntity[];
+      manufacturers: NamedEntity[];
+      suppliers: NamedEntity[];
+}
+
+export function calculateProfitMargin(buying: number, selling: number): ProfitMargin {
+      if (!buying || buying <= 0) return { value: 0, percentage: 0 };
+      const value = selling - buying;
+      const percentage = (value / buying) * 100;
+      return { value, percentage };
+}
+
+export function resolveBarcodeStockStatus(total: number): StockStatus {
+      if (total === 0) return 'outofstock';
+      if (total <= 10) return 'critical';
+      if (total <= 30) return 'low';
+      return 'healthy';
+}
+
+export function getBarcodeStockLabel(total: number): string {
+      if (total === 0) return 'غير متاح';
+      return `${total} وحدة`;
 }

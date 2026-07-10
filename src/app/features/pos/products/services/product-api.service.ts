@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import type { ProductFilterParams, ProductListItemDto } from '../models/product.models';
+import type { ProductFilterParams, ProductListItemDto, ProductManageDetail, ProductManagePayload } from '../models/product.models';
+import type { ProductMaterialRow } from '../models/product-material.models';
 
 @Injectable({
       providedIn: 'root'
@@ -48,5 +49,22 @@ export class ProductApiService {
                   }
             });
             return this.http.get<ProductListItemDto[]>(`${this.apiUrl}/filter`, { params: httpParams });
+      }
+
+      // ─── Product Management API ─────────────────────────────────────────────
+
+      public getProductDetail(id: number): Observable<ProductManageDetail> {
+            return this.http.get<ProductManageDetail>(`${this.apiUrl}/detail/${id}`);
+      }
+
+      public getProductMaterials(productId: number): Observable<ProductMaterialRow[]> {
+            return this.http.get<ProductMaterialRow[]>(`${this.apiUrl}/${productId}/materials`);
+      }
+
+      public saveProduct(payload: ProductManagePayload): Observable<ProductManagePayload> {
+            if (payload.id) {
+                  return this.http.put<ProductManagePayload>(`${this.apiUrl}/detail/${payload.id}`, payload);
+            }
+            return this.http.post<ProductManagePayload>(`${this.apiUrl}/detail`, payload);
       }
 }
