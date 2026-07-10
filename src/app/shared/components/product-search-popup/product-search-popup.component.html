@@ -1,0 +1,123 @@
+<ng-container *ngIf="isOpen">
+  <div class="psp-backdrop" (click)="close()" aria-hidden="true"></div>
+
+  <div #popupPanel class="psp-panel" [class.placement-above]="placement === 'above'"
+    [ngStyle]="overlayStyle" (click)="$event.stopPropagation()" dir="rtl" role="dialog"
+    aria-modal="true" [attr.aria-label]="title">
+
+    <!-- Header -->
+    <div class="psp-header">
+      <div class="psp-header-title">
+        <span class="material-icons-outlined">inventory_2</span>
+        <span>{{ title }}</span>
+      </div>
+      <button type="button" class="psp-close-btn" (click)="close()" title="إغلاق (Esc)">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Search Area -->
+    <div class="psp-search-area">
+      <div class="psp-search-box">
+        <span class="material-icons-outlined psp-search-icon">search</span>
+        <input #popupSearchInput type="text" class="psp-search-input"
+          placeholder="ابحث بالاسم أو الكود..." [(ngModel)]="query"
+          (ngModelChange)="onQueryChange()" autocomplete="off">
+        <button type="button" class="psp-clear-btn" *ngIf="query" (click)="clearQuery()"
+          title="مسح">
+          <span class="material-icons-outlined">close</span>
+        </button>
+      </div>
+
+      <button type="button" class="psp-advanced-toggle" (click)="toggleAdvanced()"
+        [class.active]="advancedOpen">
+        <span class="material-icons-outlined">{{ advancedOpen ? 'expand_less' : 'expand_more' }}</span>
+        <span>فلاتر متقدمة</span>
+      </button>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="psp-advanced" *ngIf="showAdvancedFilters && advancedOpen">
+      <div class="psp-advanced-grid">
+        <div class="psp-field">
+          <label>اسم المنتج</label>
+          <input type="text" class="psp-field-input" [(ngModel)]="advName"
+            (ngModelChange)="applyFilter()" placeholder="اسم المنتج">
+        </div>
+        <div class="psp-field">
+          <label>كود / باركود</label>
+          <input type="text" class="psp-field-input" [(ngModel)]="advCode"
+            (ngModelChange)="applyFilter()" placeholder="الكود">
+        </div>
+        <div class="psp-field">
+          <label>السعر من</label>
+          <input type="number" class="psp-field-input" [(ngModel)]="advPriceMin"
+            (ngModelChange)="applyFilter()" placeholder="0" min="0">
+        </div>
+        <div class="psp-field">
+          <label>السعر إلى</label>
+          <input type="number" class="psp-field-input" [(ngModel)]="advPriceMax"
+            (ngModelChange)="applyFilter()" placeholder="9999" min="0">
+        </div>
+        <div class="psp-field psp-field-wide">
+          <label>المخزون</label>
+          <select class="psp-field-input" [(ngModel)]="advStockStatus" (ngModelChange)="applyFilter()">
+            <option value="all">الكل</option>
+            <option value="in_stock">متوفر</option>
+            <option value="out_of_stock">غير متوفر</option>
+          </select>
+        </div>
+      </div>
+      <button type="button" class="psp-clear-filters-btn" (click)="clearAdvancedFilters()">
+        مسح الفلاتر
+      </button>
+    </div>
+
+    <!-- Results Count -->
+    <div class="psp-results-meta">
+      <span>{{ filteredProducts.length }} منتج</span>
+      <span class="psp-kbd-hints">
+        <kbd>↑</kbd><kbd>↓</kbd> تنقل
+        <kbd>Enter</kbd> اختيار
+        <kbd>Esc</kbd> إغلاق
+      </span>
+    </div>
+
+    <!-- Products Table -->
+    <div class="psp-table-wrap" #resultsBody>
+      <table class="psp-table" *ngIf="filteredProducts.length > 0; else emptyState">
+        <thead>
+          <tr>
+            <th class="col-code">الكود</th>
+            <th class="col-name">المنتج</th>
+            <th class="col-price">السعر</th>
+            <th class="col-stock">المخزون</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of filteredProducts; let i = index; trackBy: trackByProductId"
+            class="psp-row" [class.highlighted]="isHighlighted(i)"
+            (click)="selectProduct(product)"
+            (dblclick)="onRowDoubleClick(product, $event)">
+            <td class="col-code">{{ product.barcode }}</td>
+            <td class="col-name">{{ product.name }}</td>
+            <td class="col-price">{{ product.sellingPrice | number:'1.2-2' }}</td>
+            <td class="col-stock">
+              <span [class.low-stock]="product.stockQuantity < 5"
+                [class.out-stock]="product.stockQuantity <= 0">
+                {{ product.stockQuantity }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #emptyState>
+        <div class="psp-empty">
+          <span class="material-icons-outlined">search_off</span>
+          <p>لا توجد منتجات مطابقة</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</ng-container>
