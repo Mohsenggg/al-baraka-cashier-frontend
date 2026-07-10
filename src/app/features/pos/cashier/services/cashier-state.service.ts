@@ -14,7 +14,7 @@ export function validateCartItemStock(item: CartItem, mode: ReceiptMode): string
       if (mode === 'EDIT' && item.originalQuantity != null && item.currentRemainingStock != null) {
             const maxAllowed = item.currentRemainingStock + item.originalQuantity;
             if (item.quantity > maxAllowed) {
-                  return `الكمية المطلوبة (${item.quantity}) تتجاوز الحد الأقصى المسموح (${maxAllowed}). المتبقي الحالي: ${item.currentRemainingStock}، الكمية الأصلية: ${item.originalQuantity}`;
+                  return `الكمية المطلوبة (${item.quantity}) تتجاوز الحد الأقصى المسموح به (${maxAllowed})`;
             }
       } else {
             if (item.quantity > item.product.stockQuantity) {
@@ -211,7 +211,7 @@ export class CashierStateService {
                               price: i.unitPrice,
                               discount: 0,
                               total: i.totalPrice,
-                              remainingStock: i.remainingStock,
+                              remainingStock: currentLiveStock,
                               product: foundProduct || this.seed.getPlaceholderProduct({
                                     id: uniqueId,
                                     name: i.productName,
@@ -474,7 +474,11 @@ export class CashierStateService {
                   items[existingIdx] = { ...items[existingIdx] };
                   items[existingIdx].quantity += quantity;
                   items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
-                  items[existingIdx].remainingStock = product.stockQuantity - items[existingIdx].quantity;
+                  if (mode === 'EDIT' && items[existingIdx].originalQuantity != null && items[existingIdx].currentRemainingStock != null) {
+                        items[existingIdx].remainingStock = items[existingIdx].currentRemainingStock! + items[existingIdx].originalQuantity! - items[existingIdx].quantity;
+                  } else {
+                        items[existingIdx].remainingStock = product.stockQuantity - items[existingIdx].quantity;
+                  }
                   items[existingIdx].stockError = validateCartItemStock(items[existingIdx], mode) ?? undefined;
             } else {
                   const newItem: CartItem = {
@@ -518,7 +522,11 @@ export class CashierStateService {
                         items[existingIdx] = { ...items[existingIdx] };
                         items[existingIdx].quantity = newQty;
                         items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
-                        items[existingIdx].remainingStock = items[existingIdx].product.stockQuantity - newQty;
+                        if (mode === 'EDIT' && items[existingIdx].originalQuantity != null && items[existingIdx].currentRemainingStock != null) {
+                              items[existingIdx].remainingStock = items[existingIdx].currentRemainingStock! + items[existingIdx].originalQuantity! - newQty;
+                        } else {
+                              items[existingIdx].remainingStock = items[existingIdx].product.stockQuantity - newQty;
+                        }
                         items[existingIdx].stockError = validateCartItemStock(items[existingIdx], mode) ?? undefined;
                   } else {
                         items.splice(existingIdx, 1);

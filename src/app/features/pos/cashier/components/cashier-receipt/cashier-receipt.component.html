@@ -74,8 +74,7 @@
                         <div class="th-cell price-col">السعر</div>
                         <div class="th-cell qty-col">الكمية</div>
                         <div class="th-cell total-col">الإجمالي</div>
-                        <div class="th-cell balance-col">الرصيد المتبقي</div>
-                        <div class="th-cell balance-col" *ngIf="receiptMode !== 'NEW'">الرصيد الحالي</div>
+                        <div class="th-cell balance-col" *ngIf="receiptMode !== 'VIEW'">الرصيد المتبقي</div>
                         <div class="th-cell actions-col">الإجراءات</div>
                   </div>
 
@@ -87,7 +86,8 @@
                               <div class="td-cell name-col">
                                     <div class="name-cell-content">
                                           <span>{{ item.productName }}</span>
-                                          <span class="stock-error-msg" *ngIf="item.stockError">{{ item.stockError }}</span>
+                                          <span class="stock-error-msg" *ngIf="item.stockError">{{ item.stockError
+                                                }}</span>
                                     </div>
                               </div>
                               <div class="td-cell price-col">{{ item.price | number:'1.2-2' }}</div>
@@ -103,11 +103,11 @@
                               </div>
 
                               <div class="td-cell total-col fw-bold">{{ item.total | number:'1.2-2' }}</div>
-                              <div class="td-cell balance-col">{{ item.originalRemainingStock ?? item.remainingStock }}</div>
-                              <div class="td-cell balance-col" *ngIf="receiptMode !== 'NEW'">{{ item.currentRemainingStock ?? '-' }}</div>
+                              <div class="td-cell balance-col" *ngIf="receiptMode !== 'VIEW'">{{ item.remainingStock }}</div>
 
                               <div class="td-cell actions-col">
-                                    <button class="pos-btn-icon-only danger" (click)="removeItem.emit(item.productId)" *ngIf="receiptMode !== 'VIEW'">
+                                    <button class="pos-btn-icon-only danger" (click)="removeItem.emit(item.productId)"
+                                          *ngIf="receiptMode !== 'VIEW'">
                                           <span class="material-icons-outlined">delete</span>
                                     </button>
                                     <button class="pos-btn-icon-only" (click)="viewItem.emit(item)">
@@ -125,7 +125,8 @@
             <!-- ============================= -->
             <!-- RECEIPT INPUT ROW -->
             <!-- ============================= -->
-            <form [formGroup]="inputForm" (ngSubmit)="submitInputRow()" class="input-row" *ngIf="receiptMode !== 'VIEW'">
+            <form [formGroup]="inputForm" (ngSubmit)="submitInputRow()" class="input-row"
+                  *ngIf="receiptMode !== 'VIEW'">
 
                   <!-- Empty cell for # column -->
                   <div class="input-cell num-placeholder"></div>
@@ -192,7 +193,6 @@
 
                   <!-- Empty cell for Balance column -->
                   <div class="input-cell balance-placeholder"></div>
-                  <div class="input-cell balance-placeholder" *ngIf="receiptMode !== 'NEW'"></div>
 
                   <!-- Actions Column (Add button) -->
                   <div class="input-actions">
