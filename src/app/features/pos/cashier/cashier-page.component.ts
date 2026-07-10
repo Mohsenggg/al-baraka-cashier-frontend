@@ -33,7 +33,6 @@ export class CashierPageComponent implements OnInit {
 
       sidebarVisible = signal(false);
       rightSidebarVisible = signal(false);
-      searchResults = signal<Product[]>([]);
 
       // State bindings
       receipts$ = this.state.receipts$;
@@ -50,6 +49,7 @@ export class CashierPageComponent implements OnInit {
       finalTotal = this.state.finalTotal;
       receiptMode = this.state.receiptMode;
       hasStockErrors = this.state.hasStockErrors;
+      products = this.state.products;
 
       ngOnInit() {
             this.state.loadAllProducts().subscribe();
@@ -155,15 +155,6 @@ export class CashierPageComponent implements OnInit {
 
       onAddItem(event: { product: Product, quantity: number }) {
             this.state.addCartItem(event.product, event.quantity);
-      }
-
-      onSearch(query: string) {
-            if (!query) {
-                  this.searchResults.set([]);
-                  return;
-            }
-            const results = this.state.searchProducts(query);
-            this.searchResults.set(results);
       }
 
       // Sidebar Events

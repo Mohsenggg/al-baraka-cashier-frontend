@@ -43,17 +43,16 @@
                   [items]="cartItems()"
                   [receipt]="currentReceipt()"
                   [receiptMode]="receiptMode()"
+                  [products]="products()"
                   [finalTotal]="finalTotal()"
                   [totalQuantity]="totalQuantity()"
                   [distinctItemsCount]="distinctItemsCount()"
-                  [searchResults]="searchResults()"
                   (previousReceipt)="onPreviousReceipt()" 
                   (nextReceipt)="onNextReceipt()"
                   (removeItem)="onRemoveItem($event)"
                   (viewItem)="onViewItem($event)"
                   (updateQuantity)="onUpdateQuantity($event)"
-                  (addItem)="onAddItem($event)"
-                  (search)="onSearch($event)">
+                  (addItem)="onAddItem($event)">
             </app-cashier-receipt>
 
       </main>

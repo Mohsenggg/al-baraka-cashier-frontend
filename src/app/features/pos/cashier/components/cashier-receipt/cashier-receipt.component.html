@@ -146,27 +146,9 @@
                         <div class="search-wrapper">
                               <input #searchInput type="text" formControlName="barcode"
                                     class="pos-input text-center barcode-input" placeholder="كود الصنف أو الاسم..."
-                                    autofocus (keydown)="onSearchKeyDown($event)" autocomplete="off">
+                                    autofocus (keydown)="onSearchKeyDown($event)"
+                                    (dblclick)="onSearchDoubleClick($event)" autocomplete="off">
                               <span class="material-icons-outlined search-icon">qr_code_scanner</span>
-
-                              <!-- Search Dropdown -->
-                              <div class="search-results-dropdown" *ngIf="searchResults.length > 0">
-                                    <div class="search-item" *ngFor="let result of searchResults; let idx = index"
-                                          [class.selected]="idx === selectedSearchIndex"
-                                          (click)="onSelectProduct(result)">
-                                          <div class="item-main">
-                                                <span class="item-name">{{ result.name }}</span>
-                                                <span class="item-code">{{ result.barcode }}</span>
-                                          </div>
-                                          <div class="item-details">
-                                                <span class="item-price">{{ result.sellingPrice | number:'1.2-2' }}
-                                                      ر.س</span>
-                                                <span class="item-stock" [class.low-stock]="result.stockQuantity < 5">
-                                                      {{ result.stockQuantity }} متاح
-                                                </span>
-                                          </div>
-                                    </div>
-                              </div>
                         </div>
                   </div>
 
@@ -247,5 +229,15 @@
                   </div>
             </div>
       </div>
+
+      <!-- Product Search Popup -->
+      <app-product-search-popup
+            [isOpen]="popupOpen"
+            [products]="products"
+            [trigger]="searchTriggerEl"
+            [initialQuery]="popupInitialQuery"
+            (productSelected)="onPopupProductSelected($event)"
+            (closed)="onPopupClosed()">
+      </app-product-search-popup>
 
 </div>
