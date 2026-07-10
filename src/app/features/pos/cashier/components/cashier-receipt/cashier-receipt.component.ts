@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild, ViewChildren, QueryList, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReceiptResponse, Product, CartItem, ReceiptMode } from '../../../core/models/pos.models';
@@ -18,6 +18,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       private destroy$ = new Subject<void>();
 
       @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+      @ViewChildren('rowQtyInput') rowQtyInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
       @Input() items: CartItem[] = [];
       @Input() receipt: ReceiptResponse | null = null;
@@ -106,6 +107,40 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             this.addItem.emit({ product, quantity });
             this.inputForm.patchValue({ barcode: '', quantity: 1, price: 0 });
             this.search.emit(''); // clear search
+            
+            setTimeout(() => {
+                  if (this.rowQtyInputs) {
+                        const inputs = this.rowQtyInputs.toArray();
+                        const targetInput = inputs.find(input => input.nativeElement.getAttribute('data-product-id') === String(product.id));
+                        if (targetInput) {
+                              targetInput.nativeElement.focus();
+                              targetInput.nativeElement.select();
+                              return;
+                        }
+                  }
+                  this.focusBarcodeScanner();
+            }, 50);
+      }
+
+      onInlineQuantityChange(item: CartItem, event: Event) {
+            const input = event.target as HTMLInputElement;
+            const newQty = parseInt(input.value, 10);
+            if (!isNaN(newQty) && newQty > 0) {
+                  const delta = newQty - item.quantity;
+                  if (delta !== 0) {
+                        this.updateQuantity.emit({ item, delta });
+                  }
+            } else {
+                  input.value = String(item.quantity);
+            }
+      }
+
+      onInlineQuantityEnter(item: CartItem, event: Event) {
+            this.onInlineQuantityChange(item, event);
+            this.focusBarcodeScanner();
+      }
+
+      focusBarcodeScanner() {
             setTimeout(() => this.searchInput?.nativeElement?.focus());
       }
 }

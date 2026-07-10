@@ -96,7 +96,17 @@
                                     <div class="qty-stepper" [class.qty-error]="!!item.stockError">
                                           <button class="stepper-btn" *ngIf="receiptMode !== 'VIEW'"
                                                 (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
-                                          <div class="qty-value">{{ item.quantity }}</div>
+                                          <input type="number" 
+                                                 *ngIf="receiptMode !== 'VIEW'"
+                                                 class="pos-input text-center no-spinner qty-input"
+                                                 [value]="item.quantity"
+                                                 (change)="onInlineQuantityChange(item, $event)"
+                                                 (keyup.enter)="onInlineQuantityEnter(item, $event)"
+                                                 [attr.data-product-id]="item.productId"
+                                                 #rowQtyInput
+                                                 style="width: 60px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; appearance: none; -moz-appearance: textfield;"
+                                          >
+                                          <div class="qty-value" *ngIf="receiptMode === 'VIEW'">{{ item.quantity }}</div>
                                           <button class="stepper-btn" *ngIf="receiptMode !== 'VIEW'"
                                                 (click)="updateQuantity.emit({item: item, delta: 1})">+</button>
                                     </div>
