@@ -380,6 +380,7 @@ export class CashierStateService {
             this.setLoading(true);
             return this.api.createReceipt(payload).pipe(
                   tap((receipt) => {
+                        this.updateProductsCacheFromReceipt(receipt);
                         this.currentSavedReceiptSignal.set(receipt);
                         this.clearCart();
                         this.clearError();
@@ -396,6 +397,7 @@ export class CashierStateService {
             this.setLoading(true);
             return this.api.updateReceipt(id, payload).pipe(
                   tap((receipt) => {
+                        this.updateProductsCacheFromReceipt(receipt);
                         this.setReceiptAsCurrent(receipt);
                         this.clearError();
                   }),
@@ -408,12 +410,18 @@ export class CashierStateService {
       }
 
       public deleteReceipt(id: number): Observable<DeleteReceiptResponse> {
+            const receiptToDelete = this._receiptsList.value.find(r => r.id === id) 
+                  || this.navigationCache.find(r => r.id === id)
+                  || (this.currentSavedReceiptSignal()?.id === id ? this.currentSavedReceiptSignal() : null);
+
             this.setLoading(true);
             return this.api.deleteReceipt(id).pipe(
-                  tap(() => this.removeReceiptFromLocalState(id)),
-                  switchMap((response) =>
-                        this.loadAllProducts().pipe(map(() => response))
-                  ),
+                  tap(() => {
+                        this.removeReceiptFromLocalState(id);
+                        if (receiptToDelete) {
+                              this.restoreStockForDeletedReceipt(receiptToDelete);
+                        }
+                  }),
                   tap(() => this.showReceiptAfterDelete(id)),
                   catchError((err) => {
                         this.handleError(err);
@@ -421,6 +429,43 @@ export class CashierStateService {
                   }),
                   finalize(() => this.setLoading(false))
             );
+      }
+
+      private updateProductsCacheFromReceipt(receipt: ReceiptResponse): void {
+            const currentProducts = [...this.productsSignal()];
+            let hasChanges = false;
+
+            receipt.items.forEach(item => {
+                  const pIdx = currentProducts.findIndex(p => p.barcode === item.productCode);
+                  if (pIdx > -1 && item.remainingStock !== undefined) {
+                        currentProducts[pIdx] = { ...currentProducts[pIdx], stockQuantity: item.remainingStock };
+                        hasChanges = true;
+                  }
+            });
+
+            if (hasChanges) {
+                  this.productsSignal.set(currentProducts);
+            }
+      }
+
+      private restoreStockForDeletedReceipt(receipt: ReceiptResponse): void {
+            const currentProducts = [...this.productsSignal()];
+            let hasChanges = false;
+
+            receipt.items.forEach(item => {
+                  const pIdx = currentProducts.findIndex(p => p.barcode === item.productCode);
+                  if (pIdx > -1) {
+                        currentProducts[pIdx] = { 
+                              ...currentProducts[pIdx], 
+                              stockQuantity: currentProducts[pIdx].stockQuantity + item.quantity 
+                        };
+                        hasChanges = true;
+                  }
+            });
+
+            if (hasChanges) {
+                  this.productsSignal.set(currentProducts);
+            }
       }
 
       private removeReceiptFromLocalState(deletedId: number): void {
