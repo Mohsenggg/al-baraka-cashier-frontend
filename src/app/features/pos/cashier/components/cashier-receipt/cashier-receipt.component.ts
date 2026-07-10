@@ -143,4 +143,8 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       focusBarcodeScanner() {
             setTimeout(() => this.searchInput?.nativeElement?.focus());
       }
+
+      trackByProductId(index: number, item: CartItem): number {
+            return item.productId;
+      }
 }

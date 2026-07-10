@@ -79,7 +79,7 @@
                   </div>
 
                   <div class="table-body">
-                        <div class="table-row" *ngFor="let item of items; let i = index"
+                        <div class="table-row" *ngFor="let item of items; let i = index; trackBy: trackByProductId"
                               [class.stock-error-row]="!!item.stockError">
                               <div class="td-cell num-col">{{ i + 1 }}</div>
                               <div class="td-cell code-col">{{ item.product.barcode || '-' }}</div>
