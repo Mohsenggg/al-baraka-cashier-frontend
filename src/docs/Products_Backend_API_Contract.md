@@ -94,7 +94,7 @@ All error responses use this structure:
 
 ```typescript
 type ProductType   = 'inventory' | 'service' | 'bundle' | 'raw';
-type ProductStatus = 'active' | 'inactive' | 'draft';
+type ProductStatus = 'active' | 'inactive' | 'draft' | 'deleted';
 type StockStatus   = 'healthy' | 'low' | 'critical' | 'outofstock';
 type MaterialType  = 'raw' | 'inventory';
 ```
@@ -107,6 +107,20 @@ type MaterialType  = 'raw' | 'inventory';
 | `totalStock <= minStockLevel` | `critical` |
 | `totalStock <= minStockLevel * 1.5` | `low` |
 | otherwise | `healthy` |
+
+### 1.5 Route Conventions
+
+**`/{id}` is reserved for numeric product IDs only.** Code-based lookups must use explicit paths — never ambiguous root routes.
+
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `GET /api/products/{id}` | Get product by ID | `GET /api/products/15` |
+| `PUT /api/products/{id}` | Update product (legacy slim) | `PUT /api/products/15` |
+| `DELETE /api/products/{id}` | Soft-delete product | `DELETE /api/products/15` |
+| `GET /api/products/code/{code}` | Lookup by business code | `GET /api/products/code/TRP-2024-002` |
+| `GET /api/products/barcode/{barcode}` | Lookup by barcode value | `GET /api/products/barcode/6281001001001` |
+
+> **Do not implement** `GET/PUT/DELETE /api/products/{code}` — a product code that is purely numeric (e.g. `12345`) would collide with ID routes and produce inconsistent behavior.
 
 ---
 
@@ -728,14 +742,18 @@ Accepts identical query parameters. Returns `PageResponseDto<ProductListItemDto>
 | **URL** | `/api/products/{id}` |
 | **Purpose** | Soft-delete product from list |
 
-**Frontend:** `ProductStateService.deleteProduct(productId)` → resolves to product `code` or `id`
+**Frontend:** `ProductStateService.deleteProduct(productId)` → `DELETE /api/products/{id}`
 
 **Sample Response** `204 No Content`
 
 **Behavior**
-- Soft delete (`deletedAt` timestamp); excluded from list/search.
+- Soft delete only — the record is never physically removed.
+- Sets `deletedAt` to the current timestamp and `status` to `deleted`.
+- Soft-deletes all active barcodes on the product (sets their `deletedAt`).
+- Excluded from list, search, filter, lookup, and cashier cache.
 - `409 Conflict` if product has active children or is referenced in open receipts.
 - Cascade options (configurable): deactivate children vs. orphan them.
+- `404 Not Found` if the product is already deleted or does not exist.
 
 ---
 
@@ -756,6 +774,10 @@ Accepts identical query parameters. Returns `PageResponseDto<ProductListItemDto>
 ```json
 { "id": 15, "status": "inactive", "updatedAt": "2026-07-11T01:42:00Z" }
 ```
+
+**Behavior**
+- Allowed values: `active`, `inactive`, `draft`.
+- `deleted` is rejected (`400`) — use `DELETE /api/products/{id}` (§5.4).
 
 ---
 
@@ -1250,15 +1272,15 @@ These endpoints already exist in the backend and **must remain backward-compatib
 
 ---
 
-### 12.2 Legacy Create/Update/Delete by Code
+### 12.2 Legacy Create/Update/Delete
 
 | Method | URL | Purpose |
 |--------|-----|---------|
 | `POST` | `/api/products` | Simple create (`CreateProductRequest`: code, name, price, stock) |
-| `PUT` | `/api/products/{code}` | Simple update by code |
-| `DELETE` | `/api/products/{code}` | Simple delete by code |
+| `PUT` | `/api/products/{id}` | Simple update by product ID (legacy slim) |
+| `DELETE` | `/api/products/{id}` | Soft-delete by product ID (same semantics as §5.4) |
 
-> These remain for backward compatibility. New development should use §5 aggregate endpoints.
+> Legacy slim endpoints use **product ID** for mutations. Code lookups use `GET /api/products/code/{code}` (§4.2). New development should use §5 aggregate endpoints (`/detail`).
 
 ---
 
@@ -1270,10 +1292,12 @@ These endpoints already exist in the backend and **must remain backward-compatib
 |-----------------|----------|---------------|
 | `getAllProducts()` | `GET /all-products` | `ProductStateService` (transition) |
 | `filterProducts(params)` | `GET /` or `/filter` | `ProductStateService` |
+| `getProductById(id)` | `GET /{id}` | `ProductApiService` |
+| `getProductByCode(code)` | `GET /code/{code}` | `ProductApiService` |
 | `getProductDetail(id)` | `GET /detail/{id}` | `ProductManageStateService` |
 | `getProductMaterials(id)` | `GET /{id}/materials` | `ProductManageStateService` |
 | `saveProduct(payload)` | `POST/PUT /detail[/id]` | `ProductManageStateService` |
-| `deleteProduct(code)` | `DELETE /{id}` | `ProductStateService` |
+| `deleteProduct(id)` | `DELETE /{id}` | `ProductStateService` |
 | `getProductByBarcode(barcode)` | `GET /barcode/{barcode}` | `CashierApiService` |
 
 ### 13.2 Enabling Backend in State Services
@@ -1340,8 +1364,8 @@ private readonly useSeedData = false;
 | 29 | GET | `/api/products/{id}/stock/compound` | Bundle producible qty |
 | 30 | GET | `/api/products/all-products` | Cashier cache (legacy) |
 | 31 | POST | `/api/products` | Simple create (legacy) |
-| 32 | PUT | `/api/products/{code}` | Simple update (legacy) |
-| 33 | DELETE | `/api/products/{code}` | Simple delete (legacy) |
+| 32 | PUT | `/api/products/{id}` | Simple update (legacy) |
+| 33 | DELETE | `/api/products/{id}` | Soft delete (legacy alias) |
 
 ---
 

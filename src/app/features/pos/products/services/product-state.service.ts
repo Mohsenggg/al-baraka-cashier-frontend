@@ -149,7 +149,7 @@ export class ProductStateService {
                   return throwError(() => new Error('Product not found'));
             }
 
-            return this.api.deleteProduct(product.code).pipe(
+            return this.api.deleteProduct(productId).pipe(
                   tap(() => {
                         this.allProductsSignal.update(products => products.filter(p => p.id !== productId));
                   }),

@@ -24,7 +24,7 @@ export interface ProductSummary {
 }
 
 export type ProductType = 'inventory' | 'service' | 'bundle' | 'raw';
-export type ProductStatus = 'active' | 'inactive' | 'draft';
+export type ProductStatus = 'active' | 'inactive' | 'draft' | 'deleted';
 export type StockStatus = 'healthy' | 'low' | 'critical' | 'outofstock';
 
 export interface ProductListItem {
@@ -109,7 +109,8 @@ export function getStatusLabel(status: ProductStatus): string {
       const labels: Record<ProductStatus, string> = {
             active: 'نشط',
             inactive: 'غير نشط',
-            draft: 'مسودة'
+            draft: 'مسودة',
+            deleted: 'محذوف'
       };
       return labels[status];
 }

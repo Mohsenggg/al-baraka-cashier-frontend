@@ -21,8 +21,12 @@ export class ProductApiService {
             return this.http.get<ProductListItemDto[]>(`${this.apiUrl}/search`, { params });
       }
 
+      public getProductById(id: number | string): Observable<ProductListItemDto> {
+            return this.http.get<ProductListItemDto>(`${this.apiUrl}/${id}`);
+      }
+
       public getProductByCode(code: string): Observable<ProductListItemDto> {
-            return this.http.get<ProductListItemDto>(`${this.apiUrl}/${code}`);
+            return this.http.get<ProductListItemDto>(`${this.apiUrl}/code/${code}`);
       }
 
       public getProductByBarcode(barcode: string): Observable<ProductListItemDto> {
@@ -33,12 +37,12 @@ export class ProductApiService {
             return this.http.post<ProductListItemDto>(this.apiUrl, payload);
       }
 
-      public updateProduct(code: string, payload: Partial<ProductListItemDto>): Observable<ProductListItemDto> {
-            return this.http.put<ProductListItemDto>(`${this.apiUrl}/${code}`, payload);
+      public updateProduct(id: number | string, payload: Partial<ProductListItemDto>): Observable<ProductListItemDto> {
+            return this.http.put<ProductListItemDto>(`${this.apiUrl}/${id}`, payload);
       }
 
-      public deleteProduct(code: string): Observable<void> {
-            return this.http.delete<void>(`${this.apiUrl}/${code}`);
+      public deleteProduct(id: number | string): Observable<void> {
+            return this.http.delete<void>(`${this.apiUrl}/${id}`);
       }
 
       public filterProducts(params: ProductFilterParams): Observable<ProductListItemDto[]> {
