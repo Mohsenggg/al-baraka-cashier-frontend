@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
+import type { PageResponseDto } from '../../core/models/pos.models';
 import type { ProductFilterParams, ProductListItemDto, ProductManageDetail, ProductManagePayload } from '../models/product.models';
 import type { ProductMaterialRow } from '../models/product-material.models';
 
@@ -19,6 +20,18 @@ export class ProductApiService {
       public searchProducts(query: string = ''): Observable<ProductListItemDto[]> {
             const params = new HttpParams().set('query', query);
             return this.http.get<ProductListItemDto[]>(`${this.apiUrl}/search`, { params });
+      }
+
+      public listProducts(params: ProductFilterParams = {}): Observable<PageResponseDto<ProductListItemDto>> {
+            return this.http.get<PageResponseDto<ProductListItemDto>>(this.apiUrl, {
+                  params: this.buildHttpParams(params)
+            });
+      }
+
+      public filterProducts(params: ProductFilterParams): Observable<PageResponseDto<ProductListItemDto>> {
+            return this.http.get<PageResponseDto<ProductListItemDto>>(`${this.apiUrl}/filter`, {
+                  params: this.buildHttpParams(params)
+            });
       }
 
       public getProductById(id: number | string): Observable<ProductListItemDto> {
@@ -45,16 +58,6 @@ export class ProductApiService {
             return this.http.delete<void>(`${this.apiUrl}/${id}`);
       }
 
-      public filterProducts(params: ProductFilterParams): Observable<ProductListItemDto[]> {
-            let httpParams = new HttpParams();
-            Object.entries(params).forEach(([key, value]) => {
-                  if (value !== undefined && value !== null && value !== '') {
-                        httpParams = httpParams.set(key, value.toString());
-                  }
-            });
-            return this.http.get<ProductListItemDto[]>(`${this.apiUrl}/filter`, { params: httpParams });
-      }
-
       // ─── Product Management API ─────────────────────────────────────────────
 
       public getProductDetail(id: number): Observable<ProductManageDetail> {
@@ -70,5 +73,22 @@ export class ProductApiService {
                   return this.http.put<ProductManagePayload>(`${this.apiUrl}/detail/${payload.id}`, payload);
             }
             return this.http.post<ProductManagePayload>(`${this.apiUrl}/detail`, payload);
+      }
+
+      private buildHttpParams(params: ProductFilterParams): HttpParams {
+            const normalized: Record<string, string | number> = { ...params };
+
+            if (params.dateAdded && !params.dateFrom) {
+                  normalized.dateFrom = params.dateAdded;
+            }
+            delete normalized.dateAdded;
+
+            let httpParams = new HttpParams();
+            Object.entries(normalized).forEach(([key, value]) => {
+                  if (value !== undefined && value !== null && value !== '') {
+                        httpParams = httpParams.set(key, value.toString());
+                  }
+            });
+            return httpParams;
       }
 }

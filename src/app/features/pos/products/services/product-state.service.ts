@@ -1,8 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, finalize, map, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, debounceTime, finalize, Subject, tap, throwError } from 'rxjs';
 import { ProductApiService } from './product-api.service';
 import { ProductSeedService } from './product-seed.service';
-import type { ProductListItem, ProductListItemDto } from '../models/product.models';
+import type { ProductFilterParams, ProductListItem, ProductListItemDto } from '../models/product.models';
 import { resolveStockStatus } from '../models/product.models';
 
 @Injectable({
@@ -13,6 +13,7 @@ export class ProductStateService {
       private seed = inject(ProductSeedService);
 
       private readonly useSeedData = true;
+      private readonly apiReload$ = new Subject<void>();
 
       private _loading = new BehaviorSubject<boolean>(false);
       public loading$ = this._loading.asObservable();
@@ -23,6 +24,9 @@ export class ProductStateService {
       private allProductsSignal = signal<ProductListItem[]>([]);
       public allProducts = this.allProductsSignal.asReadonly();
 
+      private serverTotalElements = signal(0);
+      private serverTotalPages = signal(0);
+
       public isLoading = signal<boolean>(false);
       public showAdvancedFilters = signal<boolean>(false);
 
@@ -30,11 +34,24 @@ export class ProductStateService {
       public selectedCategory = signal<string>('');
       public selectedType = signal<string>('');
       public selectedStockStatus = signal<string>('');
+      public advancedFilters = signal<Partial<ProductFilterParams>>({});
 
       public currentPage = signal<number>(1);
       public pageSize = signal<number>(20);
 
+      constructor() {
+            this.apiReload$.pipe(debounceTime(300)).subscribe(() => {
+                  if (!this.useSeedData) {
+                        this.fetchProductsFromApi();
+                  }
+            });
+      }
+
       public filteredProducts = computed(() => {
+            if (!this.useSeedData) {
+                  return this.allProductsSignal();
+            }
+
             let products = this.allProductsSignal();
             const query = this.searchQuery().toLowerCase();
 
@@ -65,54 +82,70 @@ export class ProductStateService {
                   });
             }
 
+            const advanced = this.advancedFilters();
+            if (advanced.priceMin != null) {
+                  products = products.filter(p => p.summary.maxSellingPrice >= advanced.priceMin!);
+            }
+            if (advanced.priceMax != null) {
+                  products = products.filter(p => p.summary.maxSellingPrice <= advanced.priceMax!);
+            }
+            if (advanced.stockMin != null) {
+                  products = products.filter(p => p.summary.totalStock >= advanced.stockMin!);
+            }
+            if (advanced.stockMax != null) {
+                  products = products.filter(p => p.summary.totalStock <= advanced.stockMax!);
+            }
+
             return products;
       });
 
-      public totalPages = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()));
-      public totalProducts = computed(() => this.filteredProducts().length);
+      public totalPages = computed(() => this.useSeedData
+            ? Math.ceil(this.filteredProducts().length / this.pageSize())
+            : this.serverTotalPages());
+
+      public totalProducts = computed(() => this.useSeedData
+            ? this.filteredProducts().length
+            : this.serverTotalElements());
 
       public products = computed(() => {
+            if (!this.useSeedData) {
+                  return this.allProductsSignal();
+            }
+
             const start = (this.currentPage() - 1) * this.pageSize();
             const end = start + this.pageSize();
             return this.filteredProducts().slice(start, end);
       });
 
       public loadProducts(): void {
-            this.setLoading(true);
+            if (this.useSeedData) {
+                  this.loadProductsFromSeed();
+                  return;
+            }
 
-            const source$ = this.useSeedData
-                  ? this.seed.getProducts()
-                  : this.api.getAllProducts().pipe(map(dtos => dtos.map(dto => this.mapDtoToListItem(dto))));
-
-            source$.pipe(
-                  tap(products => {
-                        this.allProductsSignal.set(products);
-                        this.clearError();
-                  }),
-                  catchError(err => {
-                        this.handleError(err);
-                        return throwError(() => err);
-                  }),
-                  finalize(() => this.setLoading(false))
-            ).subscribe();
+            this.fetchProductsFromApi();
       }
 
       public setSearchQuery(query: string): void {
             this.searchQuery.set(query);
             this.currentPage.set(1);
+            this.queueApiReload();
       }
 
       public onFilterChange(): void {
             this.currentPage.set(1);
+            this.queueApiReload();
       }
 
       public toggleAdvancedFilters(): void {
             this.showAdvancedFilters.update(value => !value);
       }
 
-      public applyAdvancedFilters(): void {
+      public applyAdvancedFilters(filters: Partial<ProductFilterParams> = {}): void {
+            this.advancedFilters.set(filters);
             this.currentPage.set(1);
             this.showAdvancedFilters.set(false);
+            this.queueApiReload();
       }
 
       public clearFilters(): void {
@@ -120,8 +153,10 @@ export class ProductStateService {
             this.selectedCategory.set('');
             this.selectedType.set('');
             this.selectedStockStatus.set('');
+            this.advancedFilters.set({});
             this.currentPage.set(1);
             this.showAdvancedFilters.set(false);
+            this.queueApiReload();
       }
 
       public hasActiveFilters(advancedFilterValues: Record<string, unknown> = {}): boolean {
@@ -130,7 +165,8 @@ export class ProductStateService {
                   this.selectedCategory() ||
                   this.selectedType() ||
                   this.selectedStockStatus() ||
-                  Object.values(advancedFilterValues).some(v => v)
+                  Object.values(advancedFilterValues).some(v => v) ||
+                  Object.values(this.advancedFilters()).some(v => v !== undefined && v !== null && v !== '')
             );
       }
 
@@ -151,7 +187,7 @@ export class ProductStateService {
 
             return this.api.deleteProduct(productId).pipe(
                   tap(() => {
-                        this.allProductsSignal.update(products => products.filter(p => p.id !== productId));
+                        this.loadProducts();
                   }),
                   catchError(err => {
                         this.handleError(err);
@@ -189,23 +225,94 @@ export class ProductStateService {
       public previousPage(): void {
             if (this.currentPage() > 1) {
                   this.currentPage.update(p => p - 1);
+                  this.queueApiReload(true);
             }
       }
 
       public nextPage(): void {
             if (this.currentPage() < this.totalPages()) {
                   this.currentPage.update(p => p + 1);
+                  this.queueApiReload(true);
             }
       }
 
       public goToPage(page: number): void {
             if (page > 0 && page <= this.totalPages()) {
                   this.currentPage.set(page);
+                  this.queueApiReload(true);
             }
       }
 
       public clearError(): void {
             this._error.next(null);
+      }
+
+      private loadProductsFromSeed(): void {
+            this.setLoading(true);
+
+            this.seed.getProducts().pipe(
+                  tap(products => {
+                        this.allProductsSignal.set(products);
+                        this.clearError();
+                  }),
+                  catchError(err => {
+                        this.handleError(err);
+                        return throwError(() => err);
+                  }),
+                  finalize(() => this.setLoading(false))
+            ).subscribe();
+      }
+
+      private fetchProductsFromApi(): void {
+            this.setLoading(true);
+
+            this.api.filterProducts(this.buildFilterParams()).pipe(
+                  tap(response => {
+                        const items = (response.content ?? []).map(dto => this.mapDtoToListItem(dto));
+                        this.allProductsSignal.set(items);
+                        this.serverTotalElements.set(response.totalElements ?? 0);
+                        this.serverTotalPages.set(response.totalPages ?? 0);
+                        this.clearError();
+                  }),
+                  catchError(err => {
+                        this.handleError(err);
+                        return throwError(() => err);
+                  }),
+                  finalize(() => this.setLoading(false))
+            ).subscribe();
+      }
+
+      private buildFilterParams(): ProductFilterParams {
+            const advanced = this.advancedFilters();
+
+            return {
+                  query: this.searchQuery() || undefined,
+                  category: this.selectedCategory() || undefined,
+                  type: this.selectedType() || undefined,
+                  stockStatus: this.selectedStockStatus() || undefined,
+                  priceMin: advanced.priceMin,
+                  priceMax: advanced.priceMax,
+                  stockMin: advanced.stockMin,
+                  stockMax: advanced.stockMax,
+                  dateFrom: advanced.dateFrom ?? advanced.dateAdded,
+                  dateTo: advanced.dateTo,
+                  page: this.currentPage() - 1,
+                  size: this.pageSize(),
+                  sort: 'createdAt,DESC'
+            };
+      }
+
+      private queueApiReload(immediate = false): void {
+            if (this.useSeedData) {
+                  return;
+            }
+
+            if (immediate) {
+                  this.fetchProductsFromApi();
+                  return;
+            }
+
+            this.apiReload$.next();
       }
 
       private mapDtoToListItem(dto: ProductListItemDto): ProductListItem {

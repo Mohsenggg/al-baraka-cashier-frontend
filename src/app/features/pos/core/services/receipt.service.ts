@@ -8,6 +8,7 @@ import type {
       DeleteReceiptResponse, Product, ReceiptItemInput, Paginated, CartItem,
       ReceiptFilterParams, ReceiptListItemDto, PageResponseDto
 } from '../models/pos.models';
+import type { ProductListItemDto } from '../../products/models/product.models';
 
 @Injectable({
       providedIn: 'root'
@@ -212,17 +213,17 @@ export class ReceiptService {
             );
       }
 
-      public listProducts(search: string = '', page: number = 1, size: number = 10): Promise<Paginated<Product>> {
+      public listProducts(search: string = '', page: number = 0, size: number = 10): Promise<PageResponseDto<ProductListItemDto>> {
             let params = new HttpParams()
                   .set('page', page.toString())
                   .set('size', size.toString());
 
             if (search) {
-                  params = params.set('search', search);
+                  params = params.set('query', search);
             }
 
             return firstValueFrom(
-                  this.http.get<Paginated<Product>>(this.productsApiUrl, { params }).pipe(
+                  this.http.get<PageResponseDto<ProductListItemDto>>(this.productsApiUrl, { params }).pipe(
                         catchError(err => {
                               this.handleError(err);
                               throw err;

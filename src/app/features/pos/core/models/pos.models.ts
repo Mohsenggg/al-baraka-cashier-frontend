@@ -172,8 +172,11 @@ export interface PageResponseDto<T> {
   totalPages: number;
   size: number;
   number: number;
+  page?: number;
   last: boolean;
   first: boolean;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
   numberOfElements: number;
   empty: boolean;
 }

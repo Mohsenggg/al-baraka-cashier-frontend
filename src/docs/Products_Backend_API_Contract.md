@@ -1291,7 +1291,8 @@ These endpoints already exist in the backend and **must remain backward-compatib
 | Frontend Method | Endpoint | State Service |
 |-----------------|----------|---------------|
 | `getAllProducts()` | `GET /all-products` | `ProductStateService` (transition) |
-| `filterProducts(params)` | `GET /` or `/filter` | `ProductStateService` |
+| `filterProducts(params)` | `GET /filter` → `PageResponseDto<ProductListItemDto>` | `ProductStateService` |
+| `listProducts(params)` | `GET /` → `PageResponseDto<ProductListItemDto>` | `ProductApiService` |
 | `getProductById(id)` | `GET /{id}` | `ProductApiService` |
 | `getProductByCode(code)` | `GET /code/{code}` | `ProductApiService` |
 | `getProductDetail(id)` | `GET /detail/{id}` | `ProductManageStateService` |
@@ -1300,14 +1301,32 @@ These endpoints already exist in the backend and **must remain backward-compatib
 | `deleteProduct(id)` | `DELETE /{id}` | `ProductStateService` |
 | `getProductByBarcode(barcode)` | `GET /barcode/{barcode}` | `CashierApiService` |
 
-### 13.2 Enabling Backend in State Services
+### 13.2 Paginated List Consumption
+
+`GET /api/products` and `GET /api/products/filter` return `PageResponseDto<ProductListItemDto>`, **not** a bare array.
+
+```typescript
+// Correct — unwrap .content
+this.api.filterProducts(params).subscribe(response => {
+  const items = response.content ?? [];
+  this.totalElements = response.totalElements;
+  this.totalPages = response.totalPages;
+});
+
+// Wrong — will fail at runtime
+response.map(dto => ...)  // TypeError: response.map is not a function
+```
+
+`ProductStateService` handles this when `useSeedData = false`. Non-paginated endpoints (`/search`, `/all-products`) still return `ProductListItemDto[]`.
+
+### 13.3 Enabling Backend in State Services
 
 ```typescript
 // product-state.service.ts & product-manage-state.service.ts
 private readonly useSeedData = false;
 ```
 
-### 13.3 Recommended Migration Path
+### 13.4 Recommended Migration Path
 
 | Phase | Action |
 |-------|--------|
@@ -1317,7 +1336,7 @@ private readonly useSeedData = false;
 | **Phase 4** | Implement §6 composition + §7 BOM |
 | **Phase 5** | Implement §11 inventory operations |
 
-### 13.4 ID Type Consistency
+### 13.5 ID Type Consistency
 
 | Context | ID Type | Notes |
 |---------|---------|-------|

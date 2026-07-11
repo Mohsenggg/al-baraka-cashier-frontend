@@ -48,11 +48,18 @@ export interface ProductFilterParams {
       category?: string;
       type?: string;
       stockStatus?: string;
+      status?: string;
       priceMin?: number;
       priceMax?: number;
       stockMin?: number;
       stockMax?: number;
+      dateFrom?: string;
+      dateTo?: string;
+      /** @deprecated Use dateFrom — kept for form field mapping */
       dateAdded?: string;
+      page?: number;
+      size?: number;
+      sort?: string;
 }
 
 export interface ProductPagination {

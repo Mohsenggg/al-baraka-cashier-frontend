@@ -101,7 +101,14 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       applyAdvancedFilters(): void {
-            this.state.applyAdvancedFilters();
+            const value = this.filterForm.value;
+            this.state.applyAdvancedFilters({
+                  priceMin: value.priceMin ? Number(value.priceMin) : undefined,
+                  priceMax: value.priceMax ? Number(value.priceMax) : undefined,
+                  stockMin: value.stockMin ? Number(value.stockMin) : undefined,
+                  stockMax: value.stockMax ? Number(value.stockMax) : undefined,
+                  dateFrom: value.dateAdded || undefined
+            });
       }
 
       clearFilters(): void {
