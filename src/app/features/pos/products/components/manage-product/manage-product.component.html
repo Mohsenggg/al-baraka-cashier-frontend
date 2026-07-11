@@ -24,6 +24,11 @@
             مواد المنتج
             <span class="tab-badge" *ngIf="materialsFormArray.length">{{ materialsFormArray.length }}</span>
           </button>
+          <button type="button" class="tab-btn" [class.active]="activeTab === 'replenishment'" (click)="activeTab = 'replenishment'; $event.stopPropagation()">
+            <span class="material-icons-outlined">autorenew</span>
+            إعادة التعبئة
+            <span class="tab-badge" *ngIf="replenishmentItemsCount">{{ replenishmentItemsCount }}</span>
+          </button>
         </nav>
       </div>
     </header>
@@ -318,6 +323,16 @@
             [parentProductName]="parentProductName"
             [loading]="isPageLoading()">
           </app-product-materials-tab>
+        </div>
+
+        <!-- REPLENISHMENT TAB -->
+        <div *ngIf="activeTab === 'replenishment'">
+          <app-product-replenishment-tab
+            [currentProductId]="productId()"
+            [currentProductName]="parentProductName"
+            [loading]="isPageLoading()"
+            (itemsCountChange)="replenishmentItemsCount = $event">
+          </app-product-replenishment-tab>
         </div>
 
       </form>

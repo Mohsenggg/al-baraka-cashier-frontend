@@ -15,6 +15,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
 import { ProductManageStateService } from '../../services/product-manage-state.service';
 import { ProductMaterialsTabComponent } from '../product-materials-tab/product-materials-tab.component';
+import { ProductReplenishmentTabComponent } from '../product-replenishment-tab/product-replenishment-tab.component';
 import { FloatingDropdownComponent } from '../../../../../shared/components/floating-dropdown/floating-dropdown.component';
 import type { NamedEntity, ProductAttributeOption } from '../../models/product.models';
 import { calculateProfitMargin } from '../../models/product.models';
@@ -22,7 +23,7 @@ import { calculateProfitMargin } from '../../models/product.models';
 @Component({
       selector: 'app-manage-product',
       standalone: true,
-      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, ProductMaterialsTabComponent, FloatingDropdownComponent],
+      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, ProductMaterialsTabComponent, ProductReplenishmentTabComponent, FloatingDropdownComponent],
       templateUrl: './manage-product.component.html',
       styleUrl: './manage-product.component.css',
       changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,7 +34,8 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       private readonly route = inject(ActivatedRoute);
       private readonly destroy$ = new Subject<void>();
 
-      activeTab: 'basic' | 'materials' = 'basic';
+      activeTab: 'basic' | 'materials' | 'replenishment' = 'basic';
+      replenishmentItemsCount = 0;
       sidebarVisible = signal(false);
       activeDropdown: 'attribute' | 'category' | 'manufacturer' | 'supplier' | null = null;
       showOverlay: 'category' | 'manufacturer' | 'supplier' | 'attribute' | null = null;

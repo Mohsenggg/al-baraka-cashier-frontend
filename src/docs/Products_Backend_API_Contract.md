@@ -57,7 +57,7 @@ All error responses use this structure:
 
 | HTTP Status | When |
 |-------------|------|
-| `400 Bad Request` | Validation failure, business rule violation |
+| `400 Bad Request` | Validation failure, business rule violation, unsupported sort field |
 | `404 Not Found` | Product, material, or reference entity not found |
 | `409 Conflict` | Duplicate code/barcode, circular parent reference |
 | `422 Unprocessable Entity` | Composition/BOM integrity violation |
@@ -89,6 +89,8 @@ All error responses use this structure:
 | `sort` | string | `createdAt,DESC` | Spring-style: `field,direction` |
 
 **Supported sort fields (list):** `name`, `code`, `createdAt`, `maxSellingPrice`, `totalStock`, `type`, `status`
+
+Unsupported `sort` values return `400 Bad Request` with the list of allowed fields. Computed fields (`maxSellingPrice`, `totalStock`) are sorted server-side using active barcode aggregates.
 
 ### 1.4 Domain Enums
 

@@ -79,9 +79,9 @@ export class ProductApiService {
             const normalized: Record<string, string | number> = { ...params };
 
             if (params.dateAdded && !params.dateFrom) {
-                  normalized.dateFrom = params.dateAdded;
+                  normalized['dateFrom'] = params.dateAdded;
             }
-            delete normalized.dateAdded;
+            delete normalized['dateAdded'];
 
             let httpParams = new HttpParams();
             Object.entries(normalized).forEach(([key, value]) => {

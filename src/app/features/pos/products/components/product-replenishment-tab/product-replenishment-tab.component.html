@@ -1,0 +1,176 @@
+<section class="replenishment-tab" (click)="closeSearchResults()">
+  <!-- Header + Search -->
+  <div class="replenishment-card">
+    <div class="replenishment-card-header">
+      <div class="replenishment-header-text">
+        <span class="material-icons-outlined replenishment-icon">autorenew</span>
+        <div>
+          <h2 class="replenishment-title">إعادة التعبئة</h2>
+          <p class="replenishment-desc">حدد المنتجات التي تُستهلك عند إعادة تعبئة هذا المنتج</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="replenishment-search-row" (click)="$event.stopPropagation()">
+      <div class="search-bar-wrapper">
+        <span class="material-icons-outlined search-icon">search</span>
+        <input type="text" class="search-input" placeholder="ابحث عن منتج بالاسم أو الباركود..."
+          [(ngModel)]="productSearchQuery" [ngModelOptions]="{standalone: true}"
+          (input)="onSearchInput()" (focus)="onSearchFocus()">
+        <div class="search-autocomplete" *ngIf="showSearchResults()">
+          <button type="button" class="autocomplete-item" *ngFor="let item of searchResults"
+            (click)="selectProductFromSearch(item)">
+            <span class="autocomplete-name">{{ item.name }}</span>
+            <span class="autocomplete-meta" dir="ltr">{{ item.barcode }}</span>
+          </button>
+          <p class="autocomplete-empty" *ngIf="searchResults.length === 0">لا توجد نتائج مطابقة</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="replenishment-loading" *ngIf="loading">
+    <span class="spinner"></span>
+    <span>جاري تحميل قواعد التعبئة...</span>
+  </div>
+
+  <!-- Table Card -->
+  <div class="replenishment-card" *ngIf="!loading">
+    <div class="replenishment-table-header">
+      <h3 class="table-section-title">جدول التعبئة</h3>
+      <button type="button" class="btn-add-item" (click)="openAddItemManually(); $event.stopPropagation()">
+        <span class="material-icons-outlined">add</span>
+        اضافة منتج
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div class="replenishment-empty" *ngIf="itemsFormArray.length === 0">
+      <span class="material-icons-outlined empty-icon">inventory</span>
+      <h3>لا توجد قواعد تعبئة</h3>
+      <p>ابحث عن منتج أو اضغط "اضافة منتج" لتحديد ما يُستهلك عند إعادة تعبئة هذا المنتج</p>
+    </div>
+
+    <!-- Duplicate warning -->
+    <div class="replenishment-alert" *ngIf="hasDuplicateSourceProducts">
+      <span class="material-icons-outlined">warning</span>
+      لا يمكن إضافة نفس المنتج المصدر أكثر من مرة
+    </div>
+
+    <!-- Table -->
+    <div class="replenishment-table-scroll" *ngIf="itemsFormArray.length > 0">
+      <table class="replenishment-table">
+        <thead>
+          <tr>
+            <th>المنتج المصدر</th>
+            <th>الكمية المطلوبة</th>
+            <th class="col-actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
+            [formGroup]="asFormGroup(row)">
+            <td class="col-product">
+              <span class="product-name">{{ asFormGroup(row).get('sourceProductName')?.value }}</span>
+            </td>
+            <td class="col-qty" [class.has-error]="isQuantityInvalid(i)">
+              <input type="number" formControlName="quantity" class="form-input form-input-compact"
+                min="0" step="0.01" (blur)="asFormGroup(row).get('quantity')?.markAsTouched()">
+              <span class="inline-error" *ngIf="isQuantityInvalid(i)">{{ getQuantityError(i) }}</span>
+            </td>
+            <td class="col-actions">
+              <button type="button" class="btn-row-action" title="تعديل" (click)="openEditDialog(i)">
+                <span class="material-icons-outlined">edit</span>
+              </button>
+              <button type="button" class="btn-row-action btn-row-delete" title="حذف"
+                (click)="requestRemoveItem(i)">
+                <span class="material-icons-outlined">delete_outline</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Summary -->
+    <div class="replenishment-summary-row" *ngIf="itemsFormArray.length > 0">
+      <span class="summary-label">عدد منتجات التعبئة</span>
+      <span class="summary-value">{{ itemsFormArray.length }}</span>
+    </div>
+  </div>
+</section>
+
+<!-- Add / Edit Item Dialog -->
+<div class="overlay" *ngIf="showItemDialog()" (click)="closeItemDialog()" dir="rtl">
+  <div class="replenishment-dialog" (click)="$event.stopPropagation()" [formGroup]="itemDialogForm">
+    <div class="replenishment-dialog-header">
+      <h3>{{ editingItemIndex !== null ? 'تعديل منتج التعبئة' : 'اضافة منتج للتعبئة' }}</h3>
+      <button type="button" class="panel-close" (click)="closeItemDialog()">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="replenishment-dialog-body">
+      <div class="product-name-banner" *ngIf="itemDialogForm.get('sourceProductId')?.value">
+        <span class="material-icons-outlined">inventory_2</span>
+        <span>{{ itemDialogForm.get('sourceProductName')?.value }}</span>
+      </div>
+
+      <div class="dialog-grid">
+        <div class="dialog-field dialog-field-span-2" *ngIf="!itemDialogForm.get('sourceProductId')?.value">
+          <label>المنتج المصدر <span class="required">*</span></label>
+          <p class="dialog-hint">اختر منتجاً من نتائج البحث أولاً</p>
+          <span class="field-error" *ngIf="isDialogSourceRequired()">المنتج المصدر مطلوب</span>
+        </div>
+
+        <div class="dialog-field" [class.has-error]="itemDialogForm.get('quantity')?.invalid && itemDialogForm.get('quantity')?.touched">
+          <label>الكمية المطلوبة <span class="required">*</span></label>
+          <input type="number" class="dialog-input" formControlName="quantity" min="0" step="0.01" placeholder="0">
+          <span class="field-error" *ngIf="itemDialogForm.get('quantity')?.hasError('quantityRequired') && itemDialogForm.get('quantity')?.touched">مطلوبة</span>
+          <span class="field-error" *ngIf="itemDialogForm.get('quantity')?.hasError('quantityInvalid') && itemDialogForm.get('quantity')?.touched">أكبر من صفر</span>
+        </div>
+      </div>
+
+      <div class="dialog-error" *ngIf="isDialogDuplicate()">
+        <span class="material-icons-outlined">error_outline</span>
+        هذا المنتج مضاف مسبقاً
+      </div>
+
+      <div class="dialog-error" *ngIf="isDialogSelfReference()">
+        <span class="material-icons-outlined">error_outline</span>
+        لا يمكن اختيار المنتج الحالي كمصدر للتعبئة
+      </div>
+    </div>
+
+    <div class="replenishment-dialog-footer">
+      <button type="button" class="btn-dialog btn-dialog-primary" (click)="confirmItemDialog()">
+        {{ editingItemIndex !== null ? 'حفظ' : 'اضافة' }}
+      </button>
+      <button type="button" class="btn-dialog btn-dialog-secondary" (click)="closeItemDialog()">الغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation -->
+<div class="overlay" *ngIf="showDeleteConfirm()" (click)="cancelRemoveItem()" dir="rtl">
+  <div class="overlay-panel confirm-dialog modern-panel" (click)="$event.stopPropagation()">
+    <div class="panel-header">
+      <h3>تأكيد الحذف</h3>
+      <button type="button" class="panel-close" (click)="cancelRemoveItem()">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+    <div class="panel-content">
+      <p class="confirm-message">
+        هل أنت متأكد من حذف المنتج
+        <strong>{{ getDeleteTargetName() }}</strong>
+        من قواعد التعبئة؟
+      </p>
+      <div class="panel-actions">
+        <button type="button" class="btn-modern btn-danger" (click)="confirmRemoveItem()">حذف</button>
+        <button type="button" class="btn-modern btn-secondary" (click)="cancelRemoveItem()">الغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
