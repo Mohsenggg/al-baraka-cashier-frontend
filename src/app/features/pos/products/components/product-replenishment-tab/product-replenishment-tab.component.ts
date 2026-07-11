@@ -102,6 +102,20 @@ export class ProductReplenishmentTabComponent implements OnInit {
     return this.itemsFormArray.hasError('duplicateSourceProduct');
   }
 
+  get hasMultipleSources(): boolean {
+    return this.itemsFormArray.length > 1;
+  }
+
+  get sharedTargetQuantity(): number | null {
+    if (this.itemsFormArray.length === 0) return null;
+    const first = this.itemsFormArray.at(0).get('targetProductQuantity')?.value;
+    return first != null ? Number(first) : null;
+  }
+
+  get displayTargetProductName(): string {
+    return this.currentProductName || 'المنتج الحالي';
+  }
+
   onSearchInput(): void {
     this.showAllProducts.set(false);
     this.showSearchResults.set(this.productSearchQuery.trim().length > 0 || this.showAllProducts());
@@ -127,9 +141,10 @@ export class ProductReplenishmentTabComponent implements OnInit {
   openAddDialog(item: ReplenishmentSourceProduct): void {
     this.editingItemIndex = null;
     this.itemDialogForm.reset({
+      targetProductQuantity: this.sharedTargetQuantity ?? 1,
       sourceProductId: item.id,
       sourceProductName: item.name,
-      quantity: null
+      sourceProductQuantity: null
     });
     this.showItemDialog.set(true);
   }
@@ -176,9 +191,10 @@ export class ProductReplenishmentTabComponent implements OnInit {
     }
 
     const normalized = {
+      targetProductQuantity: Number(value.targetProductQuantity),
       sourceProductId,
       sourceProductName: value.sourceProductName as string,
-      quantity: Number(value.quantity)
+      sourceProductQuantity: Number(value.sourceProductQuantity)
     };
 
     if (this.editingItemIndex !== null) {
@@ -187,11 +203,29 @@ export class ProductReplenishmentTabComponent implements OnInit {
       this.itemsFormArray.push(this.createItemFormGroup(normalized));
     }
 
+    this.syncTargetQuantityAcrossRows(normalized.targetProductQuantity);
     this.itemsFormArray.markAsDirty();
     this.itemsFormArray.updateValueAndValidity();
     this.emitItemsCount();
     this.cdr.markForCheck();
     this.closeItemDialog();
+  }
+
+  onSharedTargetQuantityChange(rawValue: string | number): void {
+    const parsed = Number(rawValue);
+    if (isNaN(parsed) || parsed <= 0) return;
+    this.syncTargetQuantityAcrossRows(parsed);
+    this.itemsFormArray.markAsDirty();
+    this.cdr.markForCheck();
+  }
+
+  onRowTargetQuantityChange(index: number): void {
+    const row = this.getRowGroup(index);
+    const qty = Number(row.get('targetProductQuantity')?.value);
+    if (!isNaN(qty) && qty > 0) {
+      this.syncTargetQuantityAcrossRows(qty);
+      this.cdr.markForCheck();
+    }
   }
 
   requestRemoveItem(index: number): void {
@@ -227,17 +261,30 @@ export class ProductReplenishmentTabComponent implements OnInit {
     return index;
   }
 
-  isQuantityInvalid(index: number): boolean {
-    const ctrl = this.getRowGroup(index).get('quantity');
+  isFieldInvalid(index: number, field: 'targetProductQuantity' | 'sourceProductQuantity'): boolean {
+    const ctrl = this.getRowGroup(index).get(field);
     return !!(ctrl?.invalid && ctrl.touched);
   }
 
-  getQuantityError(index: number): string {
-    const ctrl = this.getRowGroup(index).get('quantity');
+  isSharedTargetInvalid(): boolean {
+    if (this.itemsFormArray.length === 0) return false;
+    return this.isFieldInvalid(0, 'targetProductQuantity');
+  }
+
+  getQuantityError(index: number, field: 'targetProductQuantity' | 'sourceProductQuantity'): string {
+    const ctrl = this.getRowGroup(index).get(field);
     if (!ctrl?.errors) return '';
     if (ctrl.errors['quantityRequired']) return 'الكمية مطلوبة';
     if (ctrl.errors['quantityInvalid']) return 'يجب أن تكون الكمية أكبر من صفر';
     return 'قيمة غير صالحة';
+  }
+
+  getDialogQuantityError(field: 'targetProductQuantity' | 'sourceProductQuantity'): string {
+    const ctrl = this.itemDialogForm?.get(field);
+    if (!ctrl?.errors || !ctrl.touched) return '';
+    if (ctrl.errors['quantityRequired']) return 'مطلوبة';
+    if (ctrl.errors['quantityInvalid']) return 'أكبر من صفر';
+    return 'غير صالحة';
   }
 
   getDeleteTargetName(): string {
@@ -259,10 +306,15 @@ export class ProductReplenishmentTabComponent implements OnInit {
   }
 
   /** Placeholder for future backend load — returns configured rows for save payload. */
-  getReplenishmentItemsForSave(): { sourceProductId: number; quantity: number }[] {
+  getReplenishmentItemsForSave(): {
+    targetProductQuantity: number;
+    sourceProductId: number;
+    sourceProductQuantity: number;
+  }[] {
     return this.itemsFormArray.controls.map(ctrl => ({
+      targetProductQuantity: Number(ctrl.get('targetProductQuantity')?.value),
       sourceProductId: ctrl.get('sourceProductId')?.value as number,
-      quantity: Number(ctrl.get('quantity')?.value)
+      sourceProductQuantity: Number(ctrl.get('sourceProductQuantity')?.value)
     }));
   }
 
@@ -270,11 +322,23 @@ export class ProductReplenishmentTabComponent implements OnInit {
     this.itemDialogForm = this.createItemFormGroup({});
   }
 
-  private createItemFormGroup(data: Partial<{ sourceProductId: number; sourceProductName: string; quantity: number }>): FormGroup {
+  private createItemFormGroup(data: Partial<{
+    targetProductQuantity: number;
+    sourceProductId: number;
+    sourceProductName: string;
+    sourceProductQuantity: number;
+  }>): FormGroup {
     return this.fb.group({
+      targetProductQuantity: [data.targetProductQuantity ?? null, [Validators.required, positiveQuantityValidator()]],
       sourceProductId: [data.sourceProductId ?? null, Validators.required],
       sourceProductName: [data.sourceProductName ?? ''],
-      quantity: [data.quantity ?? null, [Validators.required, positiveQuantityValidator()]]
+      sourceProductQuantity: [data.sourceProductQuantity ?? null, [Validators.required, positiveQuantityValidator()]]
+    });
+  }
+
+  private syncTargetQuantityAcrossRows(quantity: number): void {
+    this.itemsFormArray.controls.forEach(ctrl => {
+      ctrl.get('targetProductQuantity')?.setValue(quantity, { emitEvent: false });
     });
   }
 

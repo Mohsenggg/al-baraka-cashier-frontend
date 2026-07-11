@@ -281,64 +281,192 @@
   font-size: 1.1rem;
 }
 
-/* Table */
-.replenishment-table-scroll {
-  overflow-x: auto;
-  padding: 0;
+/* Conversion layout */
+.conversion-list,
+.conversion-recipe {
+  padding: 16px;
 }
 
-.replenishment-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-family);
-}
-
-.replenishment-table thead {
+.conversion-card {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
   background: #f8fafc;
-  border-bottom: 2px solid var(--pos-border);
+  border: 1px solid var(--pos-border);
+  border-radius: 10px;
 }
 
-.replenishment-table th {
-  padding: 8px 12px;
-  text-align: right;
-  font-size: 0.75rem;
+.conversion-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.conversion-side-label {
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--pos-text-secondary);
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
-.replenishment-table td {
-  padding: 8px 10px;
-  vertical-align: middle;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: right;
+.conversion-side-target .conversion-side-label {
+  color: var(--pos-primary);
 }
 
-.replenishment-table tbody tr:hover {
-  background: #f8fafc;
+.conversion-side-source .conversion-side-label {
+  color: #0f766e;
 }
 
-.replenishment-table tbody tr:last-child td {
-  border-bottom: none;
+.conversion-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.col-product {
-  min-width: 180px;
+.qty-input {
+  width: 72px;
+  flex-shrink: 0;
+  text-align: center;
+  font-weight: 700;
 }
 
-.product-name {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
+.conversion-product-name {
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--pos-text-primary);
 }
 
-.col-qty {
-  width: 140px;
+.conversion-product-target {
+  color: var(--pos-primary);
 }
 
-.col-qty.has-error .form-input {
-  border-color: var(--pos-danger-text);
+.conversion-equals {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 1px solid var(--pos-border);
+  border-radius: 50%;
+  color: var(--pos-text-secondary);
+}
+
+.conversion-equals .material-icons-outlined {
+  font-size: 1.2rem;
+}
+
+.conversion-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Multi-source recipe */
+.conversion-recipe {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--pos-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.recipe-produces {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.recipe-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 72px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--pos-primary);
+  font-family: var(--font-family);
+}
+
+.recipe-section-label .material-icons-outlined {
+  font-size: 1rem;
+}
+
+.recipe-produces-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.recipe-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: #fff;
+  border-bottom: 1px solid var(--pos-border);
+  color: var(--pos-text-secondary);
+}
+
+.recipe-divider .material-icons-outlined {
+  font-size: 1rem;
+}
+
+.recipe-divider-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pos-text-secondary);
+}
+
+.recipe-requires {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: #f0fdf4;
+}
+
+.recipe-requires .recipe-section-label {
+  color: #0f766e;
+}
+
+.requires-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.requires-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+
+.requires-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.requires-row-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .inline-error {
@@ -448,9 +576,9 @@
 .replenishment-dialog {
   display: flex;
   flex-direction: column;
-  width: 440px;
+  width: 520px;
   max-width: 100%;
-  max-height: min(80vh, 320px);
+  max-height: min(85vh, 480px);
   background: var(--pos-card-bg);
   border: 1px solid var(--pos-border);
   border-radius: 12px;
@@ -508,6 +636,98 @@
 .product-name-banner .material-icons-outlined {
   font-size: 1rem;
   flex-shrink: 0;
+}
+
+.dialog-conversion {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.dialog-conversion-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dialog-side-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--pos-text-secondary);
+}
+
+.dialog-conversion-target .dialog-side-label {
+  color: var(--pos-primary);
+}
+
+.dialog-conversion-source .dialog-side-label {
+  color: #0f766e;
+}
+
+.dialog-qty-product {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialog-product-readonly {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--pos-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pos-text-primary);
+}
+
+.dialog-product-readonly .material-icons-outlined {
+  font-size: 1rem;
+  color: var(--pos-text-secondary);
+}
+
+.dialog-source-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fef3c7;
+  border: 1px dashed #fde68a;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: #92400e;
+}
+
+.dialog-source-hint .material-icons-outlined {
+  font-size: 1rem;
+}
+
+.dialog-conversion-equals {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 28px;
+  color: var(--pos-text-secondary);
+}
+
+.dialog-conversion-equals .material-icons-outlined {
+  font-size: 1.4rem;
+}
+
+.dialog-conversion-summary {
+  margin: 0;
+  padding: 10px 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--pos-text-primary);
+  text-align: center;
+  line-height: 1.6;
 }
 
 .dialog-grid {
@@ -688,6 +908,36 @@
   .replenishment-dialog {
     max-height: 92vh;
     width: 100%;
+  }
+
+  .dialog-conversion {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-conversion-equals {
+    padding-top: 0;
+    transform: rotate(90deg);
+  }
+
+  .conversion-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .conversion-equals {
+    margin: 0 auto;
+    transform: rotate(90deg);
+  }
+
+  .conversion-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .recipe-produces,
+  .recipe-requires {
+    flex-direction: column;
+    gap: 10px;
   }
 
   .replenishment-table-header {
