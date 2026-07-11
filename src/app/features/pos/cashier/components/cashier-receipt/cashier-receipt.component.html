@@ -30,8 +30,15 @@
                               </div>
                               <div class="inline-field">
                                     <span class="label">دفع:</span>
-                                    <span class="value badge">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل'
-                                          }}</span>
+                                    <span class="value badge" *ngIf="receiptMode === 'VIEW'">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+                                    <select *ngIf="receiptMode !== 'VIEW'" 
+                                          class="pos-input text-center" 
+                                          style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 80px;"
+                                          [value]="receipt?.paymentMethod || 'CASH'"
+                                          (change)="onPaymentMethodChange($event)">
+                                          <option value="CASH">نقدي</option>
+                                          <option value="TRANSFER">تحويل</option>
+                                    </select>
                               </div>
                         </div>
                   </div>
@@ -42,14 +49,26 @@
                               <span class="material-icons-outlined icon">person</span>
                               <span class="title">العميل</span>
                         </div>
-                        <div class="inline-fields">
-                              <div class="inline-field">
+                        <div class="inline-fields" style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; align-items: center;">
+                              <div class="inline-field" style="margin: 0; padding: 0;">
                                     <span class="label">الاسم:</span>
-                                    <span class="value">{{ receipt?.customerName || 'عميل نقدي' }}</span>
+                                    <span class="value" *ngIf="receiptMode === 'VIEW'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">{{ receipt?.customerName || 'عميل نقدي' }}</span>
+                                    <input *ngIf="receiptMode !== 'VIEW'" type="text"
+                                          class="pos-input"
+                                          style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
+                                          [value]="receipt?.customerName || ''"
+                                          (input)="onCustomerNameChange($event)"
+                                          placeholder="عميل نقدي">
                               </div>
-                              <div class="inline-field">
+                              <div class="inline-field" style="margin: 0; padding: 0;">
                                     <span class="label">هاتف:</span>
-                                    <span class="value">{{ receipt?.customer?.phone || '-------' }}</span>
+                                    <span class="value" *ngIf="receiptMode === 'VIEW'">{{ receipt?.customer?.phone || '-------' }}</span>
+                                    <input *ngIf="receiptMode !== 'VIEW'" type="text"
+                                          class="pos-input"
+                                          style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
+                                          [value]="receipt?.customer?.phone || ''"
+                                          (input)="onCustomerPhoneChange($event)"
+                                          placeholder="-------">
                               </div>
                         </div>
                   </div>

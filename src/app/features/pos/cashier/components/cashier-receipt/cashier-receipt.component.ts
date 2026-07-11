@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ReceiptResponse, Product, CartItem, ReceiptMode } from '../../../core/models/pos.models';
+import { ReceiptResponse, Product, CartItem, ReceiptMode, PaymentMethod } from '../../../core/models/pos.models';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime } from 'rxjs/operators';
 import { ProductSearchPopupComponent } from '../../../../../shared/components/product-search-popup/product-search-popup.component';
@@ -41,6 +41,9 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       @Output() viewItem = new EventEmitter<any>();
       @Output() updateQuantity = new EventEmitter<{ item: CartItem, delta: number }>();
       @Output() addItem = new EventEmitter<{ product: Product, quantity: number }>();
+      @Output() updatePaymentMethod = new EventEmitter<PaymentMethod>();
+      @Output() updateCustomerName = new EventEmitter<string>();
+      @Output() updateCustomerPhone = new EventEmitter<string>();
 
       inputForm!: FormGroup;
       popupOpen = false;
@@ -82,6 +85,18 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             if (qty > 1) {
                   this.inputForm.get('quantity')?.setValue(qty - 1);
             }
+      }
+
+      onPaymentMethodChange(event: Event) {
+            this.updatePaymentMethod.emit((event.target as HTMLSelectElement).value as PaymentMethod);
+      }
+
+      onCustomerNameChange(event: Event) {
+            this.updateCustomerName.emit((event.target as HTMLInputElement).value);
+      }
+
+      onCustomerPhoneChange(event: Event) {
+            this.updateCustomerPhone.emit((event.target as HTMLInputElement).value);
       }
 
       submitInputRow() {

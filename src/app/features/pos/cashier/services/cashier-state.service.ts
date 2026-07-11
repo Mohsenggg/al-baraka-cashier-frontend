@@ -580,6 +580,11 @@ export class CashierStateService {
             }
       }
 
+      public updateDraftReceiptData(partial: Partial<ReceiptResponse>) {
+            const current = this.currentSavedReceiptSignal() || {} as ReceiptResponse;
+            this.currentSavedReceiptSignal.set({ ...current, ...partial });
+      }
+
       // --------- Internal Helper Methods ---------
 
       private setLoading(isLoading: boolean) {

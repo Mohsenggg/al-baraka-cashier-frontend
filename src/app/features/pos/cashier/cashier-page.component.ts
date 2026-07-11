@@ -9,7 +9,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
 
 // New state service
 import { CashierStateService } from './services/cashier-state.service';
-import { CreateReceiptInput, Product, CartItem } from '../core/models/pos.models';
+import { CreateReceiptInput, Product, CartItem, PaymentMethod } from '../core/models/pos.models';
 import { NotificationService } from '../../../shared/services/notification.service';
 
 @Component({
@@ -155,6 +155,20 @@ export class CashierPageComponent implements OnInit {
 
       onAddItem(event: { product: Product, quantity: number }) {
             this.state.addCartItem(event.product, event.quantity);
+      }
+
+      onUpdatePaymentMethod(method: PaymentMethod) {
+            this.state.updateDraftReceiptData({ paymentMethod: method });
+      }
+
+      onUpdateCustomerName(name: string) {
+            this.state.updateDraftReceiptData({ customerName: name });
+      }
+
+      onUpdateCustomerPhone(phone: string) {
+            const current = this.currentReceipt();
+            const customer = { ...(current?.customer || {}), phone } as any;
+            this.state.updateDraftReceiptData({ customer });
       }
 
       // Sidebar Events
