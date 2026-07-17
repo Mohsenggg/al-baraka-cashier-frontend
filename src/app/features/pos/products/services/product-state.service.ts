@@ -1,7 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, debounceTime, finalize, Subject, tap, throwError } from 'rxjs';
 import { ProductApiService } from './product-api.service';
-import { ProductSeedService } from './product-seed.service';
 import type { ProductFilterParams, ProductListItem, ProductListItemDto } from '../models/product.models';
 import { resolveStockStatus } from '../models/product.models';
 
@@ -10,9 +9,7 @@ import { resolveStockStatus } from '../models/product.models';
 })
 export class ProductStateService {
       private api = inject(ProductApiService);
-      private seed = inject(ProductSeedService);
 
-      private readonly useSeedData = true;
       private readonly apiReload$ = new Subject<void>();
 
       private _loading = new BehaviorSubject<boolean>(false);
@@ -28,101 +25,29 @@ export class ProductStateService {
       private serverTotalPages = signal(0);
 
       public isLoading = signal<boolean>(false);
-      public showAdvancedFilters = signal<boolean>(false);
 
       public searchQuery = signal<string>('');
       public selectedCategory = signal<string>('');
-      public selectedType = signal<string>('');
-      public selectedStockStatus = signal<string>('');
-      public advancedFilters = signal<Partial<ProductFilterParams>>({});
+      public selectedStatus = signal<string>('');
 
       public currentPage = signal<number>(1);
       public pageSize = signal<number>(20);
 
       constructor() {
             this.apiReload$.pipe(debounceTime(300)).subscribe(() => {
-                  if (!this.useSeedData) {
-                        this.fetchProductsFromApi();
-                  }
+                  this.fetchProductsFromApi();
             });
       }
 
-      public filteredProducts = computed(() => {
-            if (!this.useSeedData) {
-                  return this.allProductsSignal();
-            }
+      public totalPages = computed(() => this.serverTotalPages());
 
-            let products = this.allProductsSignal();
-            const query = this.searchQuery().toLowerCase();
-
-            if (query) {
-                  products = products.filter(p =>
-                        p.name.toLowerCase().includes(query) ||
-                        p.descAttributes?.some(attr => attr.value.toLowerCase().includes(query)) ||
-                        p.code.toLowerCase().includes(query) ||
-                        p.barcodes.some(b => b.barcode.toLowerCase().includes(query))
-                  );
-            }
-
-            const category = this.selectedCategory();
-            if (category) {
-                  products = products.filter(p => p.category === category);
-            }
-
-            const type = this.selectedType();
-            if (type) {
-                  products = products.filter(p => p.type === type);
-            }
-
-            const stockStatus = this.selectedStockStatus();
-            if (stockStatus) {
-                  products = products.filter(p => {
-                        const status = resolveStockStatus(p.summary.totalStock, p.minStockLevel, p.maxStockLevel);
-                        return status === stockStatus;
-                  });
-            }
-
-            const advanced = this.advancedFilters();
-            if (advanced.priceMin != null) {
-                  products = products.filter(p => p.summary.maxSellingPrice >= advanced.priceMin!);
-            }
-            if (advanced.priceMax != null) {
-                  products = products.filter(p => p.summary.maxSellingPrice <= advanced.priceMax!);
-            }
-            if (advanced.stockMin != null) {
-                  products = products.filter(p => p.summary.totalStock >= advanced.stockMin!);
-            }
-            if (advanced.stockMax != null) {
-                  products = products.filter(p => p.summary.totalStock <= advanced.stockMax!);
-            }
-
-            return products;
-      });
-
-      public totalPages = computed(() => this.useSeedData
-            ? Math.ceil(this.filteredProducts().length / this.pageSize())
-            : this.serverTotalPages());
-
-      public totalProducts = computed(() => this.useSeedData
-            ? this.filteredProducts().length
-            : this.serverTotalElements());
+      public totalProducts = computed(() => this.serverTotalElements());
 
       public products = computed(() => {
-            if (!this.useSeedData) {
-                  return this.allProductsSignal();
-            }
-
-            const start = (this.currentPage() - 1) * this.pageSize();
-            const end = start + this.pageSize();
-            return this.filteredProducts().slice(start, end);
+            return this.allProductsSignal();
       });
 
       public loadProducts(): void {
-            if (this.useSeedData) {
-                  this.loadProductsFromSeed();
-                  return;
-            }
-
             this.fetchProductsFromApi();
       }
 
@@ -137,54 +62,23 @@ export class ProductStateService {
             this.queueApiReload();
       }
 
-      public toggleAdvancedFilters(): void {
-            this.showAdvancedFilters.update(value => !value);
-      }
-
-      public applyAdvancedFilters(filters: Partial<ProductFilterParams> = {}): void {
-            this.advancedFilters.set(filters);
-            this.currentPage.set(1);
-            this.showAdvancedFilters.set(false);
-            this.queueApiReload();
-      }
-
       public clearFilters(): void {
             this.searchQuery.set('');
             this.selectedCategory.set('');
-            this.selectedType.set('');
-            this.selectedStockStatus.set('');
-            this.advancedFilters.set({});
+            this.selectedStatus.set('');
             this.currentPage.set(1);
-            this.showAdvancedFilters.set(false);
             this.queueApiReload();
       }
 
-      public hasActiveFilters(advancedFilterValues: Record<string, unknown> = {}): boolean {
+      public hasActiveFilters(): boolean {
             return !!(
                   this.searchQuery() ||
                   this.selectedCategory() ||
-                  this.selectedType() ||
-                  this.selectedStockStatus() ||
-                  Object.values(advancedFilterValues).some(v => v) ||
-                  Object.values(this.advancedFilters()).some(v => v !== undefined && v !== null && v !== '')
+                  this.selectedStatus()
             );
       }
 
-      public deleteProduct(productId: string): Observable<void> {
-            const product = this.allProductsSignal().find(p => p.id === productId);
-
-            if (this.useSeedData) {
-                  this.allProductsSignal.update(products => products.filter(p => p.id !== productId));
-                  return new Observable<void>(observer => {
-                        observer.next();
-                        observer.complete();
-                  });
-            }
-
-            if (!product) {
-                  return throwError(() => new Error('Product not found'));
-            }
-
+      public deleteProduct(productId: number): Observable<void> {
             return this.api.deleteProduct(productId).pipe(
                   tap(() => {
                         this.loadProducts();
@@ -247,26 +141,10 @@ export class ProductStateService {
             this._error.next(null);
       }
 
-      private loadProductsFromSeed(): void {
-            this.setLoading(true);
-
-            this.seed.getProducts().pipe(
-                  tap(products => {
-                        this.allProductsSignal.set(products);
-                        this.clearError();
-                  }),
-                  catchError(err => {
-                        this.handleError(err);
-                        return throwError(() => err);
-                  }),
-                  finalize(() => this.setLoading(false))
-            ).subscribe();
-      }
-
       private fetchProductsFromApi(): void {
             this.setLoading(true);
 
-            this.api.filterProducts(this.buildFilterParams()).pipe(
+            this.api.listProducts(this.buildFilterParams()).pipe(
                   tap(response => {
                         const items = (response.content ?? []).map(dto => this.mapDtoToListItem(dto));
                         this.allProductsSignal.set(items);
@@ -283,19 +161,10 @@ export class ProductStateService {
       }
 
       private buildFilterParams(): ProductFilterParams {
-            const advanced = this.advancedFilters();
-
             return {
                   query: this.searchQuery() || undefined,
-                  category: this.selectedCategory() || undefined,
-                  type: this.selectedType() || undefined,
-                  stockStatus: this.selectedStockStatus() || undefined,
-                  priceMin: advanced.priceMin,
-                  priceMax: advanced.priceMax,
-                  stockMin: advanced.stockMin,
-                  stockMax: advanced.stockMax,
-                  dateFrom: advanced.dateFrom ?? advanced.dateAdded,
-                  dateTo: advanced.dateTo,
+                  categoryId: this.selectedCategory() ? Number(this.selectedCategory()) : undefined,
+                  status: this.selectedStatus() || undefined,
                   page: this.currentPage() - 1,
                   size: this.pageSize(),
                   sort: 'createdAt,DESC'
@@ -303,10 +172,6 @@ export class ProductStateService {
       }
 
       private queueApiReload(immediate = false): void {
-            if (this.useSeedData) {
-                  return;
-            }
-
             if (immediate) {
                   this.fetchProductsFromApi();
                   return;
@@ -316,28 +181,7 @@ export class ProductStateService {
       }
 
       private mapDtoToListItem(dto: ProductListItemDto): ProductListItem {
-            const barcodes = dto.barcodes ?? [];
-            const summary = dto.summary ?? {
-                  defaultBarcodeId: barcodes.find(b => b.default)?.id ?? 0,
-                  maxSellingPrice: barcodes.reduce((max, b) => Math.max(max, b.sellingPrice), 0),
-                  totalStock: barcodes.reduce((sum, b) => sum + b.stock, 0),
-                  barcodeCount: barcodes.length
-            };
-
-            return {
-                  id: dto.id,
-                  name: dto.name,
-                  code: dto.code,
-                  type: dto.type,
-                  status: dto.status,
-                  category: dto.category,
-                  minStockLevel: dto.minStockLevel,
-                  maxStockLevel: dto.maxStockLevel,
-                  createdAt: dto.createdAt ? new Date(dto.createdAt) : undefined,
-                  descAttributes: dto.descAttributes,
-                  barcodes,
-                  summary
-            };
+            return { ...dto };
       }
 
       private setLoading(loading: boolean): void {

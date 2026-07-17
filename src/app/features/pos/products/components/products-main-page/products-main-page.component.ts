@@ -7,8 +7,8 @@ import {
       ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
 import { ProductStateService } from '../../services/product-state.service';
 import {
@@ -16,10 +16,7 @@ import {
       getStockLabel,
       getTypeLabel,
       getStatusLabel,
-      getStatusClass,
-      getVisibleDescAttributes,
-      getDescAttrClass,
-      hasMultipleBarcodes
+      getStatusClass
 } from '../../models/product.models';
 
 @Component({
@@ -32,27 +29,22 @@ import {
 })
 export class ProductsMainPageComponent implements OnInit {
       private state = inject(ProductStateService);
-      private formBuilder = inject(FormBuilder);
+      private router = inject(Router);
 
       sidebarVisible = signal(false);
 
       isLoading = this.state.isLoading;
-      showAdvancedFilters = this.state.showAdvancedFilters;
       searchQuery = this.state.searchQuery;
       selectedCategory = this.state.selectedCategory;
-      selectedType = this.state.selectedType;
-      selectedStockStatus = this.state.selectedStockStatus;
+      selectedStatus = this.state.selectedStatus;
       currentPage = this.state.currentPage;
       pageSize = this.state.pageSize;
       totalPages = this.state.totalPages;
       totalProducts = this.state.totalProducts;
       products = this.state.products;
 
-      filterForm!: FormGroup;
-      hoveredProductId = signal<string>('');
-      openMenuId = signal<string | null>(null);
-      openBarcodePopoverId = signal<string | null>(null);
-      popoverPosition = signal<'up' | 'down'>('down');
+      hoveredProductId = signal<number | null>(null);
+      openMenuId = signal<number | null>(null);
 
       Math = Math;
 
@@ -61,13 +53,6 @@ export class ProductsMainPageComponent implements OnInit {
       readonly getTypeLabel = getTypeLabel;
       readonly getStatusLabel = getStatusLabel;
       readonly getStatusClass = getStatusClass;
-      readonly getVisibleDescAttributes = getVisibleDescAttributes;
-      readonly getDescAttrClass = getDescAttrClass;
-      readonly hasMultipleBarcodes = hasMultipleBarcodes;
-
-      constructor() {
-            this.initializeFilterForm();
-      }
 
       ngOnInit(): void {
             this.state.loadProducts();
@@ -75,16 +60,6 @@ export class ProductsMainPageComponent implements OnInit {
 
       onToggleSidebar(): void {
             this.sidebarVisible.update(v => !v);
-      }
-
-      private initializeFilterForm(): void {
-            this.filterForm = this.formBuilder.group({
-                  priceMin: [''],
-                  priceMax: [''],
-                  stockMin: [''],
-                  stockMax: [''],
-                  dateAdded: ['']
-            });
       }
 
       onSearch(event: Event): void {
@@ -96,83 +71,41 @@ export class ProductsMainPageComponent implements OnInit {
             this.state.onFilterChange();
       }
 
-      toggleAdvancedFilters(): void {
-            this.state.toggleAdvancedFilters();
-      }
-
-      applyAdvancedFilters(): void {
-            const value = this.filterForm.value;
-            this.state.applyAdvancedFilters({
-                  priceMin: value.priceMin ? Number(value.priceMin) : undefined,
-                  priceMax: value.priceMax ? Number(value.priceMax) : undefined,
-                  stockMin: value.stockMin ? Number(value.stockMin) : undefined,
-                  stockMax: value.stockMax ? Number(value.stockMax) : undefined,
-                  dateFrom: value.dateAdded || undefined
-            });
-      }
-
       clearFilters(): void {
-            this.filterForm.reset();
             this.state.clearFilters();
       }
 
       hasActiveFilters(): boolean {
-            return this.state.hasActiveFilters(this.filterForm.value);
+            return this.state.hasActiveFilters();
       }
 
-      onRowHover(productId: string): void {
+      onRowHover(productId: number): void {
             this.hoveredProductId.set(productId);
       }
 
       onRowLeave(): void {
-            this.hoveredProductId.set('');
+            this.hoveredProductId.set(null);
       }
 
-      toggleBarcodePopover(productId: string, event: Event): void {
+      toggleMenu(productId: number, event: Event): void {
             event.stopPropagation();
-            this.openMenuId.set(null);
-
-            const isOpening = this.openBarcodePopoverId() !== productId;
-            this.openBarcodePopoverId.set(isOpening ? productId : null);
-
-            if (isOpening) {
-                  const button = event.currentTarget as HTMLElement;
-                  if (button) {
-                        const rect = button.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight;
-                        const spaceBelow = viewportHeight - rect.bottom;
-
-                        if (spaceBelow < 320 && rect.top > spaceBelow) {
-                              this.popoverPosition.set('up');
-                        } else {
-                              this.popoverPosition.set('down');
-                        }
-                  }
-            }
-      }
-
-      toggleMenu(productId: string, event: Event): void {
-            event.stopPropagation();
-            this.openBarcodePopoverId.set(null);
             this.openMenuId.set(this.openMenuId() === productId ? null : productId);
       }
 
       @HostListener('document:click')
       handleDocumentClick(): void {
             this.openMenuId.set(null);
-            this.openBarcodePopoverId.set(null);
       }
 
-      onViewProduct(productId: string): void {
-            console.log('View product:', productId);
+      onViewProduct(productId: number): void {
+            this.router.navigate(['/pos/product/manage', productId]);
       }
 
-      onEditProduct(productId: string): void {
-            console.log('Edit product:', productId);
+      onEditProduct(productId: number): void {
+            this.router.navigate(['/pos/product/manage', productId]);
       }
 
-      onDeleteProduct(productId: string): void {
-            console.log('Delete product:', productId);
+      onDeleteProduct(productId: number): void {
             if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
                   this.state.deleteProduct(productId).subscribe();
             }

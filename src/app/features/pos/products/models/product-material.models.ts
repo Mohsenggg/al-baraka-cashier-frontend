@@ -13,11 +13,9 @@ export interface MaterialCatalogItem {
   type: 'raw' | 'inventory';
 }
 
-export interface ProductMaterialRow {
+export interface ProductCompositionRow {
   materialId: number;
   materialName: string;
-  parentProductId: number | null;
-  parentProductName: string;
   quantity: number;
   unitId: number;
   costPerUnit: number;
@@ -25,16 +23,10 @@ export interface ProductMaterialRow {
   notes: string;
 }
 
-export interface ProductMaterialDto {
+export interface ProductCompositionDto {
   materialId: number;
   quantity: number;
   unitId: number;
   wastePercentage?: number | null;
   notes?: string;
-}
-
-export interface ProductMaterialsPayload {
-  id?: number;
-  name: string;
-  materials: ProductMaterialDto[];
 }

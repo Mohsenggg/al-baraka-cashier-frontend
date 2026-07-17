@@ -1,11 +1,4 @@
-import type { ProductMaterialDto } from './product-material.models';
-
-export interface DescAttribute {
-      id: number;
-      name: string;
-      value: string;
-      ui?: 1 | 2;
-}
+import type { ProductCompositionDto } from './product-material.models';
 
 export interface ProductBarcode {
       id: number;
@@ -16,47 +9,28 @@ export interface ProductBarcode {
       default: boolean;
 }
 
-export interface ProductSummary {
-      defaultBarcodeId: number;
-      maxSellingPrice: number;
-      totalStock: number;
-      barcodeCount: number;
-}
-
 export type ProductType = 'inventory' | 'service' | 'bundle' | 'raw';
 export type ProductStatus = 'active' | 'inactive' | 'draft' | 'deleted';
 export type StockStatus = 'healthy' | 'low' | 'critical' | 'outofstock';
 
 export interface ProductListItem {
-      id: string;
+      id: number;
       name: string;
-      descAttributes?: DescAttribute[];
       code: string;
-      imageUrl?: string;
-      barcodes: ProductBarcode[];
-      summary: ProductSummary;
-      type: ProductType;
-      status: ProductStatus;
       category?: string;
-      minStockLevel?: number;
-      maxStockLevel?: number;
-      createdAt?: Date;
+      manufacturer?: string;
+      sellingPrice: number;
+      stock: number;
+      status: ProductStatus;
+      type: ProductType;
 }
 
 export interface ProductFilterParams {
       query?: string;
-      category?: string;
-      type?: string;
-      stockStatus?: string;
+      categoryId?: number;
+      manufacturerId?: number;
+      supplierId?: number;
       status?: string;
-      priceMin?: number;
-      priceMax?: number;
-      stockMin?: number;
-      stockMax?: number;
-      dateFrom?: string;
-      dateTo?: string;
-      /** @deprecated Use dateFrom — kept for form field mapping */
-      dateAdded?: string;
       page?: number;
       size?: number;
       sort?: string;
@@ -69,35 +43,31 @@ export interface ProductPagination {
       totalPages: number;
 }
 
-/** Flat API DTO — maps to ProductListItem in the state service when backend is connected. */
 export interface ProductListItemDto {
-      id: string;
+      id: number;
       name: string;
       code: string;
-      type: ProductType;
-      status: ProductStatus;
       category?: string;
-      minStockLevel?: number;
-      maxStockLevel?: number;
-      createdAt?: string;
-      descAttributes?: DescAttribute[];
-      barcodes?: ProductBarcode[];
-      summary?: ProductSummary;
+      manufacturer?: string;
+      sellingPrice: number;
+      stock: number;
+      status: ProductStatus;
+      type: ProductType;
 }
 
-export function resolveStockStatus(stock: number, minLevel?: number, _maxLevel?: number): StockStatus {
+export function resolveStockStatus(stock: number): StockStatus {
       if (stock === 0) return 'outofstock';
-      if (minLevel && stock <= minLevel) return 'critical';
-      if (minLevel && stock <= minLevel * 1.5) return 'low';
+      if (stock <= 10) return 'critical';
+      if (stock <= 30) return 'low';
       return 'healthy';
 }
 
 export function getStockClass(product: ProductListItem): StockStatus {
-      return resolveStockStatus(product.summary.totalStock, product.minStockLevel, product.maxStockLevel);
+      return resolveStockStatus(product.stock);
 }
 
 export function getStockLabel(product: ProductListItem): string {
-      const stock = product.summary.totalStock;
+      const stock = product.stock;
       if (stock === 0) return '0';
       return `${stock}`;
 }
@@ -126,26 +96,6 @@ export function getStatusClass(status: ProductStatus): string {
       return `status-${status}`;
 }
 
-export function getVisibleDescAttributes(product: ProductListItem): DescAttribute[] {
-      if (!product.descAttributes?.length) {
-            return [];
-      }
-
-      return [...product.descAttributes]
-            .filter(attr => attr.ui === 1 || attr.ui === 2)
-            .sort((a, b) => (a.ui ?? 99) - (b.ui ?? 99));
-}
-
-export function getDescAttrClass(ui?: 1 | 2): string {
-      return ui === 1 ? 'desc-attr-primary' : 'desc-attr-secondary';
-}
-
-export function hasMultipleBarcodes(product: ProductListItem): boolean {
-      return product.summary.barcodeCount > 1;
-}
-
-// ─── Product Management (create / edit) ───────────────────────────────────────
-
 export interface ProductAttributeOption {
       id: number;
       name: string;
@@ -170,54 +120,31 @@ export interface ProductBarcodeFormValue {
       isDefault: boolean;
 }
 
-/**
- * Describes how a product relates to its parent and its bill-of-materials owner.
- * Supports variant/child products and compound (bundle) composition.
- */
-export interface ProductCompositionContext {
-      /** The product that owns the BOM (the item being edited). */
-      ownerProductId: number | null;
-      ownerProductName: string;
-      /** Optional parent product when this SKU is a variant/child of another product. */
-      parentProductId?: number | null;
-      parentProductName?: string;
-}
-
-export interface ProductManageDetail {
-      id: number;
-      baseName: string;
-      generatedName?: string;
-      attributes: ProductAttributeFormValue[];
-      barcodes: ProductBarcodeFormValue[];
-      categoryId: number | null;
-      manufacturerId: number | null;
-      supplierIds: number[];
-      composition?: ProductCompositionContext;
+export interface ProductConversionDto {
+      parentProductId: number;
+      parentQuantity: number;
+      childQuantity: number;
 }
 
 export interface ProductManagePayload {
-      id: number | null;
-      name: string;
+      id?: number | null;
       baseName: string;
+      name: string;
+      status: string;
       attributes: ProductAttributeFormValue[];
       barcodes: ProductBarcodeFormValue[];
       categoryId: number | null;
       manufacturerId: number | null;
       supplierIds: number[];
-      materials: ProductMaterialDto[];
-      composition?: ProductCompositionContext;
+      hasConversions: boolean;
+      conversions: ProductConversionDto[];
+      hasComposition: boolean;
+      composition: ProductCompositionDto[];
 }
 
 export interface ProfitMargin {
       value: number;
       percentage: number;
-}
-
-export interface ProductReferenceData {
-      attributes: ProductAttributeOption[];
-      categories: NamedEntity[];
-      manufacturers: NamedEntity[];
-      suppliers: NamedEntity[];
 }
 
 export function calculateProfitMargin(buying: number, selling: number): ProfitMargin {

@@ -7,9 +7,7 @@
             <div class="page-header">
                   <div class="header-content">
                         <div class="header-titles">
-
                               <h1 class="page-title">المنتجات</h1>
-                              <!-- <p class="page-subtitle">إدارة المنتجات والمخزون والأسعار والباركودات</p> -->
                         </div>
 
                         <!-- ============================= -->
@@ -21,55 +19,36 @@
                               <div class="search-bar-wrapper">
                                     <span class="material-icons-outlined search-icon">search</span>
                                     <input type="text" class="search-input"
-                                          placeholder="ابحث عن المنتجات باستخدام الاسم أو الباركود أو الرمز..."
+                                          placeholder="ابحث عن المنتجات باستخدام الاسم أو הرمز..."
                                           [value]="searchQuery()" (input)="onSearch($event)">
                               </div>
 
                               <!-- Filter Controls -->
                               <div class="filter-controls">
-                                    <!-- Stock Status Filter -->
+                                    <!-- Status Filter -->
                                     <div class="filter-item">
-                                          <select class="filter-select" [value]="selectedStockStatus()"
-                                                (change)="selectedStockStatus.set($any($event.target).value); onFilterChange()">
-                                                <option value="">حالة المخزون</option>
-                                                <option value="healthy">متاح</option>
-                                                <option value="low">مخزون منخفض</option>
-                                                <option value="critical">حرج</option>
-                                                <option value="outofstock">غير متاح</option>
+                                          <select class="filter-select" [value]="selectedStatus()"
+                                                (change)="selectedStatus.set($any($event.target).value); onFilterChange()">
+                                                <option value="">حالة المنتج</option>
+                                                <option value="active">نشط</option>
+                                                <option value="inactive">غير نشط</option>
+                                                <option value="draft">مسودة</option>
+                                                <option value="deleted">محذوف</option>
                                           </select>
                                     </div>
 
-                                    <!-- Type Filter -->
-                                    <div class="filter-item">
-                                          <select class="filter-select" [value]="selectedType()"
-                                                (change)="selectedType.set($any($event.target).value); onFilterChange()">
-                                                <option value="">نوع المنتج</option>
-                                                <option value="inventory">منتج مخزون</option>
-                                                <option value="service">خدمة</option>
-                                                <option value="bundle">حزمة</option>
-                                                <option value="raw">مادة خام</option>
-                                          </select>
-                                    </div>
-
-                                    <!-- Category Filter -->
+                                    <!-- Category Filter (Uses ID now if updated) -->
+                                    <!-- Ideally this should use dynamically loaded categories but keeping static for UI template format -->
                                     <div class="filter-item">
                                           <select class="filter-select" [value]="selectedCategory()"
                                                 (change)="selectedCategory.set($any($event.target).value); onFilterChange()">
-                                                <option value="">الفئة</option>
-                                                <option value="electronics">إلكترونيات</option>
-                                                <option value="accessories">إكسسوارات</option>
-                                                <option value="supplies">مستلزمات</option>
+                                                <option value="">الفئة (معرف)</option>
+                                                <option value="1">فئة 1</option>
+                                                <option value="2">فئة 2</option>
                                           </select>
                                     </div>
 
-                                    <!-- More Filters Button -->
-                                    <button class="btn-more-filters" [class.active]="showAdvancedFilters()"
-                                          (click)="toggleAdvancedFilters()">
-                                          <span class="material-icons-outlined">tune</span>
-                                          <span>المزيد من التصفية</span>
-                                    </button>
-
-                                    <!-- Clear Filters (if active) -->
+                                    <!-- Clear Filters -->
                                     <button class="btn-clear-filters" *ngIf="hasActiveFilters()"
                                           (click)="clearFilters()">
                                           <span class="material-icons-outlined">close</span>
@@ -82,43 +61,6 @@
                               <span class="material-icons-outlined">add_circle</span>
                               <span>إضافة منتج</span>
                         </button>
-                  </div>
-            </div>
-
-            <!-- ============================= -->
-            <!-- ADVANCED FILTERS PANEL -->
-            <!-- ============================= -->
-            <div class="advanced-filters-panel" [class.expanded]="showAdvancedFilters()">
-                  <div class="filters-content">
-                        <div class="filter-row">
-                              <div class="filter-group">
-                                    <label>التاريخ المضاف</label>
-                                    <input type="date" class="filter-input">
-                              </div>
-                              <div class="filter-group">
-                                    <label>كمية المخزون</label>
-                                    <div class="dual-input">
-                                          <input type="number" placeholder="الحد الأقصى" class="filter-input">
-                                          <span class="to-label">إلى</span>
-                                          <input type="number" placeholder="الحد الأدنى" class="filter-input">
-                                    </div>
-                              </div>
-                              <div class="filter-group">
-                                    <label>نطاق السعر </label>
-                                    <div class="dual-input">
-                                          <input type="number" placeholder="الحد الأقصى" class="filter-input">
-                                          <span class="to-label">إلى</span>
-                                          <input type="number" placeholder="الحد الأدنى" class="filter-input">
-                                    </div>
-                              </div>
-                        </div>
-                        <div class="filters-actions">
-                              <button class="btn-filter-apply" (click)="applyAdvancedFilters()">
-                                    <span class="material-icons-outlined">search</span>
-                                    تطبيق التصفية
-                              </button>
-                              <button class="btn-filter-clear" (click)="clearFilters()">مسح الكل</button>
-                        </div>
                   </div>
             </div>
 
@@ -136,7 +78,6 @@
                               <div class="skeleton-cell"></div>
                               <div class="skeleton-cell"></div>
                               <div class="skeleton-cell"></div>
-                              <div class="skeleton-cell"></div>
                         </div>
                   </div>
 
@@ -145,7 +86,7 @@
                         <span class="material-icons-outlined empty-icon">inventory_2</span>
                         <h3>لم يتم العثور على منتجات</h3>
                         <p>جرب تغيير معايير البحث أو إنشاء منتج جديد.</p>
-                        <button class="btn-add-product-empty">
+                        <button class="btn-add-product-empty" routerLink="/pos/product/manage">
                               <span class="material-icons-outlined">add_circle</span>
                               إضافة منتج
                         </button>
@@ -158,43 +99,31 @@
                                     <th class="col-product">
                                           <div class="product-col-header">
                                                 <span class="col-title">المنتج</span>
-                                                <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span>
-                                                      الوصف</span>
+                                                <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span> الرمز</span>
                                           </div>
                                     </th>
                                     <th class="col-price">سعر البيع</th>
-                                    <th class="col-stock">إجمالي المخزون</th>
+                                    <th class="col-stock">المخزون</th>
                                     <th class="col-type">نوع المنتج</th>
                                     <th class="col-status">الحالة</th>
                                     <th class="col-actions">الإجراءات</th>
-                                    <th class="col-barcode">متعدد الباركود</th>
                               </tr>
                         </thead>
                         <tbody>
                               <tr class="product-row" *ngFor="let product of products()"
                                     (mouseenter)="onRowHover(product.id)" (mouseleave)="onRowLeave()">
 
-                                    <!-- Product Column (rightmost visual) -->
+                                    <!-- Product Column -->
                                     <td class="col-product">
                                           <p class="product-text">
                                                 <span class="product-name">{{ product.name }}</span>
-                                                <ng-container *ngIf="getVisibleDescAttributes(product) as descAttrs">
-                                                      <ng-container *ngIf="descAttrs.length">
-                                                            {{ ' ' }}<span class="product-desc-attrs"><ng-container
-                                                                        *ngFor="let attr of descAttrs; let last = last"><span
-                                                                              [class]="getDescAttrClass(attr.ui)">{{
-                                                                              attr.value }}</span><ng-container
-                                                                              *ngIf="!last">{{ ' '
-                                                                              }}</ng-container></ng-container></span>
-                                                      </ng-container>
-                                                </ng-container>
+                                                <span class="product-desc-attrs">{{ product.code }}</span>
                                           </p>
                                     </td>
 
                                     <!-- Selling Price Column -->
                                     <td class="col-price">
-                                          <span class="price-amount">{{ product.summary.maxSellingPrice | number:'1.2-2'
-                                                }}</span>
+                                          <span class="price-amount">{{ product.sellingPrice | number:'1.2-2' }}</span>
                                     </td>
 
                                     <!-- Total Stock Column -->
@@ -231,75 +160,9 @@
                                                 <div class="menu" *ngIf="openMenuId() === product.id"
                                                       (click)="$event.stopPropagation()">
                                                       <button class="menu-item"
-                                                            (click)="onViewProduct(product.id)">عـرض</button>
-                                                      <button class="menu-item"
                                                             (click)="onEditProduct(product.id)">تعديل</button>
                                                       <button class="menu-item danger"
                                                             (click)="onDeleteProduct(product.id)">حـذف</button>
-                                                </div>
-                                          </div>
-                                    </td>
-
-                                    <!-- Barcode Column (leftmost, minimal) -->
-                                    <td class="col-barcode">
-                                          <div class="barcode-popover-wrapper" *ngIf="hasMultipleBarcodes(product)">
-                                                <button class="btn-barcode-details" type="button"
-                                                      title="تفاصيل الباركودات"
-                                                      [attr.aria-expanded]="openBarcodePopoverId() === product.id"
-                                                      (click)="toggleBarcodePopover(product.id, $event)">
-                                                      <span class="material-icons-outlined">info</span>
-                                                      <span class="barcode-multi-label">متعدد الباركود</span>
-                                                </button>
-
-                                                <div class="barcode-popover"
-                                                      [class.popover-up]="popoverPosition() === 'up'"
-                                                      [class.popover-down]="popoverPosition() === 'down'"
-                                                      *ngIf="openBarcodePopoverId() === product.id"
-                                                      (click)="$event.stopPropagation()">
-                                                      <div class="popover-header">تفاصيل الباركودات</div>
-
-                                                      <table class="barcode-details-table">
-                                                            <thead>
-                                                                  <tr>
-                                                                        <th>الباركود</th>
-                                                                        <th>سعر البيع</th>
-                                                                        <th>سعر الشراء</th>
-                                                                        <th>المخزون</th>
-                                                                  </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                  <tr *ngFor="let barcode of product.barcodes"
-                                                                        [class.is-default]="barcode.id === product.summary.defaultBarcodeId">
-                                                                        <td>
-                                                                              <span class="barcode-cell-value">{{
-                                                                                    barcode.barcode }}</span>
-                                                                              <span class="default-tag"
-                                                                                    *ngIf="barcode.id === product.summary.defaultBarcodeId">افتراضي</span>
-                                                                        </td>
-                                                                        <td>{{ barcode.sellingPrice | number:'1.2-2' }}
-                                                                        </td>
-                                                                        <td>{{ barcode.buyingPrice | number:'1.2-2' }}
-                                                                        </td>
-                                                                        <td>{{ barcode.stock }}</td>
-                                                                  </tr>
-                                                            </tbody>
-                                                      </table>
-
-                                                      <div class="popover-footer">
-                                                            <div class="popover-summary-item">
-                                                                  <span class="popover-summary-label">إجمالي
-                                                                        المخزون</span>
-                                                                  <span class="popover-summary-value">{{
-                                                                        product.summary.totalStock }}</span>
-                                                            </div>
-                                                            <div class="popover-summary-item">
-                                                                  <span class="popover-summary-label">أعلى سعر
-                                                                        بيع</span>
-                                                                  <span class="popover-summary-value">{{
-                                                                        product.summary.maxSellingPrice | number:'1.2-2'
-                                                                        }}</span>
-                                                            </div>
-                                                      </div>
                                                 </div>
                                           </div>
                                     </td>

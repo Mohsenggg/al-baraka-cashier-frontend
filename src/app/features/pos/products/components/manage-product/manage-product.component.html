@@ -10,7 +10,7 @@
           </button>
           <div class="header-titles">
             <h1 class="page-title">{{ pageTitle }}</h1>
-            <p class="page-subtitle">أدخل بيانات المنتج والباركودات والمواد الخام</p>
+            <p class="page-subtitle">أدخل بيانات المنتج والباركودات والتكوين</p>
           </div>
         </div>
 
@@ -19,15 +19,15 @@
             <span class="material-icons-outlined">inventory_2</span>
             معلومات أساسية
           </button>
-          <button type="button" class="tab-btn" [class.active]="activeTab === 'materials'" (click)="activeTab = 'materials'; $event.stopPropagation()">
-            <span class="material-icons-outlined">science</span>
-            مواد المنتج
-            <span class="tab-badge" *ngIf="materialsFormArray.length">{{ materialsFormArray.length }}</span>
+          <button type="button" class="tab-btn" [class.active]="activeTab === 'conversions'" (click)="activeTab = 'conversions'; $event.stopPropagation()">
+            <span class="material-icons-outlined">transform</span>
+            التحويلات
+            <span class="tab-badge" *ngIf="conversionsFormArray.length">{{ conversionsFormArray.length }}</span>
           </button>
-          <button type="button" class="tab-btn" [class.active]="activeTab === 'replenishment'" (click)="activeTab = 'replenishment'; $event.stopPropagation()">
-            <span class="material-icons-outlined">autorenew</span>
-            إعادة التعبئة
-            <span class="tab-badge" *ngIf="replenishmentItemsCount">{{ replenishmentItemsCount }}</span>
+          <button type="button" class="tab-btn" [class.active]="activeTab === 'composition'" (click)="activeTab = 'composition'; $event.stopPropagation()">
+            <span class="material-icons-outlined">science</span>
+            مكونات المنتج
+            <span class="tab-badge" *ngIf="compositionFormArray.length">{{ compositionFormArray.length }}</span>
           </button>
         </nav>
       </div>
@@ -70,6 +70,15 @@
                     <input id="baseName" type="text" formControlName="baseName" class="form-input"
                       placeholder="مثال: صابون سائل" autocomplete="off">
                     <span class="field-error" *ngIf="isBaseNameInvalid">اسم المنتج مطلوب</span>
+                  </div>
+                  
+                  <div class="field-group field-group-full" style="margin-top: 1rem;">
+                    <label for="status">حالة المنتج <span class="required">*</span></label>
+                    <select id="status" formControlName="status" class="form-input form-select-inline">
+                      <option value="active">نشط</option>
+                      <option value="inactive">غير نشط</option>
+                      <option value="draft">مسودة</option>
+                    </select>
                   </div>
                 </div>
 
@@ -315,24 +324,159 @@
           </section>
         </div>
 
-        <!-- MATERIALS TAB -->
-        <div *ngIf="activeTab === 'materials'">
-          <app-product-materials-tab
-            [materialsFormArray]="materialsFormArray"
-            [parentProductId]="productId()"
-            [parentProductName]="parentProductName"
-            [loading]="isPageLoading()">
-          </app-product-materials-tab>
+        <!-- CONVERSIONS TAB -->
+        <div *ngIf="activeTab === 'conversions'" class="form-sections">
+          <section class="form-card">
+            <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+              <div class="card-header-text">
+                <span class="material-icons-outlined card-icon">transform</span>
+                <div>
+                  <h2 class="card-title">إعدادات التحويل</h2>
+                  <p class="card-desc">حدد إذا كان هذا المنتج يمكن تحويله من منتجات أخرى</p>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="hasConversions">
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">تفعيل التحويلات لهذا المنتج</span>
+              </label>
+            </div>
+
+            <div class="card-body table-scroll" *ngIf="productForm.get('hasConversions')?.value">
+              <div class="card-header-actions" style="margin-bottom: 1rem; justify-content: flex-end;">
+                <button type="button" class="btn-add-barcode" (click)="addConversion()">
+                  <span class="material-icons-outlined">add</span>
+                  إضافة تحويل
+                </button>
+              </div>
+              <table class="barcodes-table">
+                <thead>
+                  <tr>
+                    <th>المنتج الأساسي (بحث بالاسم)</th>
+                    <th>الكمية الأساسية</th>
+                    <th>كمية التحويل (هذا المنتج)</th>
+                    <th class="col-actions"></th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="conversions">
+                  <tr *ngFor="let row of conversionsFormArray.controls; let i = index" [formGroupName]="i">
+                    <td>
+                      <div class="search-bar-wrapper" style="position: relative;">
+                        <input type="text" class="form-input form-input-compact" 
+                          placeholder="ابحث عن منتج..."
+                          [value]="row.get('parentProductId')?.value ? 'Product ID: ' + row.get('parentProductId')?.value : ''"
+                          (input)="onProductSearchInput($event, 'conversion', i)">
+                        <div class="search-autocomplete" *ngIf="activeSearchContext?.type === 'conversion' && activeSearchContext?.index === i && productSearchResults().length > 0" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">
+                          <button type="button" class="autocomplete-item" style="width: 100%; text-align: right; padding: 0.5rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #eee;"
+                            *ngFor="let item of productSearchResults()"
+                            (click)="selectProductFromSearch(item)">
+                            {{ item.name }} ({{ item.code }})
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="number" formControlName="parentQuantity" class="form-input form-input-compact" min="0" step="0.01">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="childQuantity" class="form-input form-input-compact" min="0" step="0.01">
+                    </td>
+                    <td class="col-actions">
+                      <button type="button" class="btn-row-delete"
+                        (click)="removeConversion(i)" title="حذف التحويل">
+                        <span class="material-icons-outlined">delete_outline</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="conversionsFormArray.length === 0" style="text-align: center; padding: 2rem; color: #666;">
+                لا توجد تحويلات مضافة
+              </div>
+            </div>
+          </section>
         </div>
 
-        <!-- REPLENISHMENT TAB -->
-        <div *ngIf="activeTab === 'replenishment'">
-          <app-product-replenishment-tab
-            [currentProductId]="productId()"
-            [currentProductName]="parentProductName"
-            [loading]="isPageLoading()"
-            (itemsCountChange)="replenishmentItemsCount = $event">
-          </app-product-replenishment-tab>
+        <!-- COMPOSITION TAB -->
+        <div *ngIf="activeTab === 'composition'" class="form-sections">
+          <section class="form-card">
+            <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+              <div class="card-header-text">
+                <span class="material-icons-outlined card-icon">science</span>
+                <div>
+                  <h2 class="card-title">مكونات المنتج</h2>
+                  <p class="card-desc">حدد إذا كان هذا المنتج يتكون من مواد أو منتجات أخرى</p>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="hasComposition">
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">تفعيل مكونات المنتج</span>
+              </label>
+            </div>
+
+            <div class="card-body table-scroll" *ngIf="productForm.get('hasComposition')?.value">
+              <div class="card-header-actions" style="margin-bottom: 1rem; justify-content: flex-end;">
+                <button type="button" class="btn-add-barcode" (click)="addCompositionRow()">
+                  <span class="material-icons-outlined">add</span>
+                  إضافة مادة
+                </button>
+              </div>
+              <table class="barcodes-table">
+                <thead>
+                  <tr>
+                    <th>المادة / المنتج</th>
+                    <th>الكمية</th>
+                    <th>معرف الوحدة</th>
+                    <th>نسبة الهدر %</th>
+                    <th>ملاحظات</th>
+                    <th class="col-actions"></th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="composition">
+                  <tr *ngFor="let row of compositionFormArray.controls; let i = index" [formGroupName]="i">
+                    <td>
+                      <div class="search-bar-wrapper" style="position: relative;">
+                        <input type="text" class="form-input form-input-compact" 
+                          placeholder="ابحث عن مادة..."
+                          [value]="row.get('materialName')?.value || ''"
+                          (input)="onProductSearchInput($event, 'composition', i)">
+                        <div class="search-autocomplete" *ngIf="activeSearchContext?.type === 'composition' && activeSearchContext?.index === i && productSearchResults().length > 0" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">
+                          <button type="button" class="autocomplete-item" style="width: 100%; text-align: right; padding: 0.5rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #eee;"
+                            *ngFor="let item of productSearchResults()"
+                            (click)="selectProductFromSearch(item)">
+                            {{ item.name }}
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="number" formControlName="quantity" class="form-input form-input-compact" min="0" step="0.01">
+                    </td>
+                    <td>
+                      <!-- Simple numeric input for unitId for now, standardizes with API -->
+                      <input type="number" formControlName="unitId" class="form-input form-input-compact" placeholder="Unit ID">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="wastePercentage" class="form-input form-input-compact" min="0" max="100" step="0.1">
+                    </td>
+                    <td>
+                      <input type="text" formControlName="notes" class="form-input form-input-compact" placeholder="ملاحظات">
+                    </td>
+                    <td class="col-actions">
+                      <button type="button" class="btn-row-delete"
+                        (click)="removeCompositionRow(i)" title="حذف المادة">
+                        <span class="material-icons-outlined">delete_outline</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="compositionFormArray.length === 0" style="text-align: center; padding: 2rem; color: #666;">
+                لا توجد مكونات مضافة
+              </div>
+            </div>
+          </section>
         </div>
 
       </form>
@@ -385,6 +529,7 @@
   (addClicked)="openOverlay('attribute')"
   (closeDropdown)="closeDropdowns()">
 </app-floating-dropdown>
+
 <!-- OVERLAY: Add Category / Manufacturer / Supplier -->
 <div class="overlay" *ngIf="showOverlay" (click)="closeOverlay()" dir="rtl">
   <div class="overlay-panel modern-panel" (click)="$event.stopPropagation()">

@@ -1,35 +1,28 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, catchError, finalize, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, tap, throwError, forkJoin } from 'rxjs';
 import { ProductApiService } from './product-api.service';
-import { ProductSeedService } from './product-seed.service';
-import { duplicateMaterialValidator } from '../validators/product-material.validators';
 import type {
       NamedEntity,
       ProductAttributeFormValue,
       ProductAttributeOption,
       ProductBarcodeFormValue,
-      ProductCompositionContext,
-      ProductManageDetail,
-      ProductManagePayload
+      ProductManagePayload,
+      ProductConversionDto
 } from '../models/product.models';
 import {
       calculateProfitMargin,
       getBarcodeStockLabel,
       resolveBarcodeStockStatus
 } from '../models/product.models';
-import type { MaterialCatalogItem, MaterialUnit, ProductMaterialDto, ProductMaterialRow } from '../models/product-material.models';
-import { positiveQuantityValidator } from '../validators/product-material.validators';
+import type { ProductCompositionDto } from '../models/product-material.models';
 
 @Injectable({
       providedIn: 'root'
 })
 export class ProductManageStateService {
       private readonly api = inject(ProductApiService);
-      private readonly seed = inject(ProductSeedService);
       private readonly fb = inject(FormBuilder);
-
-      private readonly useSeedData = true;
 
       productForm!: FormGroup;
 
@@ -41,22 +34,15 @@ export class ProductManageStateService {
       readonly saveError = signal<string | null>(null);
       readonly generatedName = signal('');
 
-      readonly compositionContext = signal<ProductCompositionContext | null>(null);
-
       private readonly attributesSignal = signal<ProductAttributeOption[]>([]);
       private readonly categoriesSignal = signal<NamedEntity[]>([]);
       private readonly manufacturersSignal = signal<NamedEntity[]>([]);
       private readonly suppliersSignal = signal<NamedEntity[]>([]);
 
-      private readonly unitsSignal = signal<MaterialUnit[]>([]);
-      private readonly catalogSignal = signal<MaterialCatalogItem[]>([]);
-
       readonly attributes = this.attributesSignal.asReadonly();
       readonly categories = this.categoriesSignal.asReadonly();
       readonly manufacturers = this.manufacturersSignal.asReadonly();
       readonly suppliers = this.suppliersSignal.asReadonly();
-      readonly units = this.unitsSignal.asReadonly();
-      readonly catalog = this.catalogSignal.asReadonly();
 
       readonly pendingAttribute = signal<ProductAttributeOption | null>(null);
       readonly pendingAttributeValue = signal('');
@@ -64,14 +50,16 @@ export class ProductManageStateService {
       readonly attributeEditorError = signal<string | null>(null);
 
       initialize(): void {
-            this.loadReferenceData();
-            this.loadMaterialCatalog();
             this.initForm();
             this.addBarcode();
       }
 
-      get materialsFormArray(): FormArray {
-            return this.productForm.get('materials') as FormArray;
+      get compositionFormArray(): FormArray {
+            return this.productForm.get('composition') as FormArray;
+      }
+
+      get conversionsFormArray(): FormArray {
+            return this.productForm.get('conversions') as FormArray;
       }
 
       get attributesFormArray(): FormArray {
@@ -87,10 +75,6 @@ export class ProductManageStateService {
             return !!(control?.invalid && control.touched);
       }
 
-      get parentProductName(): string {
-            return this.generatedName() || this.productForm.get('baseName')?.value || '';
-      }
-
       get pageTitle(): string {
             return this.isEditMode() ? 'تعديل منتج' : 'اضافة منتج جديد';
       }
@@ -102,25 +86,56 @@ export class ProductManageStateService {
       }
 
       resolveEditMode(id: number | null): void {
-            if (!id || isNaN(id)) return;
+            if (!id || isNaN(id)) {
+                  // Only load lookups if creating a new product
+                  this.loadReferenceData();
+                  return;
+            }
 
             this.productId.set(id);
             this.isEditMode.set(true);
             this.loadProductForEdit(id);
       }
 
+      private loadReferenceData(): void {
+            this.isPageLoading.set(true);
+            forkJoin({
+                  categories: this.api.getCategories(),
+                  manufacturers: this.api.getManufacturers(),
+                  suppliers: this.api.getSuppliers(),
+                  attributes: this.api.getAttributes()
+            }).pipe(
+                  tap(data => {
+                        this.categoriesSignal.set(data.categories);
+                        this.manufacturersSignal.set(data.manufacturers);
+                        this.suppliersSignal.set(data.suppliers);
+                        this.attributesSignal.set(data.attributes);
+                  }),
+                  catchError(err => {
+                        this.saveError.set('فشل في تحميل البيانات المرجعية');
+                        return throwError(() => err);
+                  }),
+                  finalize(() => this.isPageLoading.set(false))
+            ).subscribe();
+      }
+
       loadProductForEdit(id: number): void {
             this.isPageLoading.set(true);
 
-            const detail$ = this.useSeedData
-                  ? this.seed.getProductForEdit(id)
-                  : this.api.getProductDetail(id);
-
-            detail$.pipe(
-                  tap(detail => {
-                        if (detail) {
-                              this.applyProductDetail(detail);
-                        }
+            forkJoin({
+                  categories: this.api.getCategories(),
+                  manufacturers: this.api.getManufacturers(),
+                  suppliers: this.api.getSuppliers(),
+                  attributes: this.api.getAttributes(),
+                  product: this.api.getProductById(id)
+            }).pipe(
+                  tap(data => {
+                        this.categoriesSignal.set(data.categories);
+                        this.manufacturersSignal.set(data.manufacturers);
+                        this.suppliersSignal.set(data.suppliers);
+                        this.attributesSignal.set(data.attributes);
+                        
+                        this.applyProductDetail(data.product);
                   }),
                   catchError(err => {
                         this.saveError.set(this.extractErrorMessage(err));
@@ -132,14 +147,11 @@ export class ProductManageStateService {
 
       saveProduct(): Observable<ProductManagePayload> | null {
             this.productForm.markAllAsTouched();
-            this.materialsFormArray.controls.forEach(ctrl => ctrl.markAllAsTouched());
+            this.compositionFormArray.controls.forEach(ctrl => ctrl.markAllAsTouched());
+            this.conversionsFormArray.controls.forEach(ctrl => ctrl.markAllAsTouched());
 
             if (this.productForm.invalid) {
-                  if (this.materialsFormArray.invalid) {
-                        this.saveError.set('يرجى تصحيح بيانات المواد قبل الحفظ');
-                  } else {
-                        this.saveError.set('يرجى تعبئة الحقول المطلوبة قبل الحفظ');
-                  }
+                  this.saveError.set('يرجى تعبئة الحقول المطلوبة بشكل صحيح قبل الحفظ');
                   return null;
             }
 
@@ -148,15 +160,14 @@ export class ProductManageStateService {
             this.saveError.set(null);
             this.saveSuccess.set(false);
 
-            const save$ = this.useSeedData
-                  ? this.seed.saveProduct(payload)
-                  : this.api.saveProduct(payload);
+            const save$ = this.isEditMode() && this.productId()
+                  ? this.api.updateProduct(this.productId()!, payload)
+                  : this.api.createProduct(payload);
 
             return save$.pipe(
                   tap(saved => {
                         this.isSaving.set(false);
                         this.saveSuccess.set(true);
-                        console.log('Product aggregate payload:', saved);
                   }),
                   catchError(err => {
                         this.isSaving.set(false);
@@ -167,27 +178,21 @@ export class ProductManageStateService {
       }
 
       buildProductPayload(): ProductManagePayload {
-            const materials: ProductMaterialDto[] = this.materialsFormArray.value.map(
-                  (m: ProductMaterialDto & { notes?: string }) => ({
-                        materialId: m.materialId,
-                        quantity: Number(m.quantity),
-                        unitId: m.unitId,
-                        wastePercentage: m.wastePercentage ?? null,
-                        notes: m.notes || ''
-                  })
-            );
+            const formValue = this.productForm.value;
 
             return {
-                  id: this.productId(),
-                  name: this.generatedName() || this.productForm.get('baseName')?.value,
-                  baseName: this.productForm.get('baseName')?.value,
-                  attributes: this.attributesFormArray.value,
-                  barcodes: this.barcodesFormArray.value,
-                  categoryId: this.productForm.get('categoryId')?.value,
-                  manufacturerId: this.productForm.get('manufacturerId')?.value,
-                  supplierIds: this.productForm.get('supplierIds')?.value,
-                  materials,
-                  composition: this.compositionContext() ?? undefined
+                  baseName: formValue.baseName,
+                  name: this.generatedName() || formValue.baseName,
+                  status: formValue.status,
+                  attributes: formValue.attributes,
+                  barcodes: formValue.barcodes,
+                  categoryId: formValue.categoryId,
+                  manufacturerId: formValue.manufacturerId,
+                  supplierIds: formValue.supplierIds,
+                  hasConversions: formValue.hasConversions,
+                  conversions: formValue.hasConversions ? formValue.conversions : [],
+                  hasComposition: formValue.hasComposition,
+                  composition: formValue.hasComposition ? formValue.composition : []
             };
       }
 
@@ -199,7 +204,6 @@ export class ProductManageStateService {
                   .join(' ');
             const name = `${baseName} ${attrs}`.trim();
             this.generatedName.set(name);
-            this.syncCompositionOwnerName(name);
       }
 
       selectPendingAttribute(attr: ProductAttributeOption): void {
@@ -329,6 +333,34 @@ export class ProductManageStateService {
             });
       }
 
+      addConversion(): void {
+            this.conversionsFormArray.push(this.fb.group({
+                  parentProductId: [null, Validators.required],
+                  parentQuantity: [1, [Validators.required, Validators.min(0.01)]],
+                  childQuantity: [1, [Validators.required, Validators.min(0.01)]]
+            }));
+      }
+
+      removeConversion(index: number): void {
+            this.conversionsFormArray.removeAt(index);
+      }
+
+      addCompositionRow(): void {
+            this.compositionFormArray.push(this.fb.group({
+                  materialId: [null, Validators.required],
+                  materialName: [''],
+                  quantity: [1, [Validators.required, Validators.min(0.01)]],
+                  unitId: [null, Validators.required],
+                  costPerUnit: [0],
+                  wastePercentage: [0, [Validators.min(0), Validators.max(100)]],
+                  notes: ['']
+            }));
+      }
+
+      removeCompositionRow(index: number): void {
+            this.compositionFormArray.removeAt(index);
+      }
+
       getProfitMargin(buying: number, selling: number) {
             return calculateProfitMargin(buying, selling);
       }
@@ -405,77 +437,35 @@ export class ProductManageStateService {
             }
       }
 
-      searchMaterials(query: string, excludeIds: number[] = [], showAllWhenEmpty = false): MaterialCatalogItem[] {
-            const term = query.trim().toLowerCase();
-            const available = this.catalog().filter(item => !excludeIds.includes(item.id));
-
-            if (!term) {
-                  return showAllWhenEmpty ? available : [];
-            }
-
-            return available.filter(
-                  item => item.name.toLowerCase().includes(term) || item.barcode.includes(term)
-            );
-      }
-
-      getMaterialById(id: number): MaterialCatalogItem | undefined {
-            return this.catalog().find(m => m.id === id);
-      }
-
-      getUnitLabel(unitId: number): string {
-            const unit = this.units().find(u => u.id === unitId);
-            return unit ? unit.name : '—';
-      }
-
-      createMaterialFormGroup(data: Partial<ProductMaterialRow>): FormGroup {
-            return this.fb.group({
-                  materialId: [data.materialId ?? null, Validators.required],
-                  materialName: [data.materialName ?? '', Validators.required],
-                  parentProductId: [data.parentProductId ?? this.productId()],
-                  parentProductName: [data.parentProductName ?? this.parentProductName],
-                  quantity: [data.quantity ?? null, [Validators.required, positiveQuantityValidator()]],
-                  unitId: [data.unitId ?? null, Validators.required],
-                  costPerUnit: [data.costPerUnit ?? 0],
-                  wastePercentage: [data.wastePercentage ?? null, [Validators.min(0), Validators.max(100)]],
-                  notes: [data.notes ?? '']
-              });
-      }
-
       private initForm(): void {
             this.productForm = this.fb.group({
                   baseName: ['', Validators.required],
+                  status: ['active', Validators.required],
                   attributes: this.fb.array([]),
                   barcodes: this.fb.array([]),
-                  materials: this.fb.array([], [duplicateMaterialValidator()]),
                   categoryId: [null],
                   manufacturerId: [null],
-                  supplierIds: [[]]
+                  supplierIds: [[]],
+                  hasConversions: [false],
+                  conversions: this.fb.array([]),
+                  hasComposition: [false],
+                  composition: this.fb.array([])
             });
       }
 
-      private loadReferenceData(): void {
-            const data = this.seed.getReferenceData();
-            this.attributesSignal.set([...data.attributes]);
-            this.categoriesSignal.set([...data.categories]);
-            this.manufacturersSignal.set([...data.manufacturers]);
-            this.suppliersSignal.set([...data.suppliers]);
-      }
-
-      private loadMaterialCatalog(): void {
-            this.unitsSignal.set(this.seed.getMaterialUnits());
-            this.catalogSignal.set(this.seed.getMaterialCatalog());
-      }
-
-      private applyProductDetail(detail: ProductManageDetail): void {
+      private applyProductDetail(detail: ProductManagePayload): void {
             this.productForm.patchValue({
                   baseName: detail.baseName,
+                  status: detail.status || 'active',
                   categoryId: detail.categoryId,
                   manufacturerId: detail.manufacturerId,
-                  supplierIds: detail.supplierIds
+                  supplierIds: detail.supplierIds,
+                  hasConversions: detail.hasConversions,
+                  hasComposition: detail.hasComposition
             });
 
             this.attributesFormArray.clear();
-            detail.attributes.forEach(attr => {
+            (detail.attributes || []).forEach(attr => {
                   this.attributesFormArray.push(this.fb.group({
                         id: [attr.id],
                         name: [attr.name],
@@ -484,7 +474,7 @@ export class ProductManageStateService {
             });
 
             this.barcodesFormArray.clear();
-            if (detail.barcodes.length) {
+            if (detail.barcodes && detail.barcodes.length) {
                   detail.barcodes.forEach(barcode => {
                         this.barcodesFormArray.push(this.fb.group({
                               barcode: [barcode.barcode],
@@ -494,50 +484,35 @@ export class ProductManageStateService {
                               isDefault: [barcode.isDefault]
                         }));
                   });
-            } else if (this.barcodesFormArray.length === 0) {
+            } else {
                   this.addBarcode();
             }
 
-            if (detail.composition) {
-                  this.compositionContext.set(detail.composition);
-            } else {
-                  this.compositionContext.set({
-                        ownerProductId: detail.id,
-                        ownerProductName: detail.generatedName || detail.baseName
+            this.conversionsFormArray.clear();
+            if (detail.conversions && detail.conversions.length) {
+                  detail.conversions.forEach(conv => {
+                        this.conversionsFormArray.push(this.fb.group({
+                              parentProductId: [conv.parentProductId, Validators.required],
+                              parentQuantity: [conv.parentQuantity, [Validators.required, Validators.min(0.01)]],
+                              childQuantity: [conv.childQuantity, [Validators.required, Validators.min(0.01)]]
+                        }));
+                  });
+            }
+
+            this.compositionFormArray.clear();
+            if (detail.composition && detail.composition.length) {
+                  detail.composition.forEach(comp => {
+                        this.compositionFormArray.push(this.fb.group({
+                              materialId: [comp.materialId, Validators.required],
+                              quantity: [comp.quantity, [Validators.required, Validators.min(0.01)]],
+                              unitId: [comp.unitId, Validators.required],
+                              wastePercentage: [comp.wastePercentage || 0, [Validators.min(0), Validators.max(100)]],
+                              notes: [comp.notes || '']
+                        }));
                   });
             }
 
             this.updateGeneratedName();
-            this.loadMaterialsForEdit(detail.id);
-      }
-
-      private loadMaterialsForEdit(productId: number): void {
-            const materials$ = this.useSeedData
-                  ? this.seed.getProductMaterials(productId)
-                  : this.api.getProductMaterials(productId);
-
-            materials$.pipe(
-                  tap(rows => {
-                        this.materialsFormArray.clear();
-                        rows.forEach(row => {
-                              this.materialsFormArray.push(this.createMaterialFormGroup(row));
-                        });
-                        this.materialsFormArray.updateValueAndValidity();
-                  }),
-                  catchError(err => {
-                        this.saveError.set(this.extractErrorMessage(err));
-                        return throwError(() => err);
-                  })
-            ).subscribe();
-      }
-
-      private syncCompositionOwnerName(name: string): void {
-            const ctx = this.compositionContext();
-            if (!ctx) return;
-            this.compositionContext.set({
-                  ...ctx,
-                  ownerProductName: name
-            });
       }
 
       private addCategory(name: string): NamedEntity {

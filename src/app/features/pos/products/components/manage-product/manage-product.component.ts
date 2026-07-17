@@ -11,31 +11,30 @@ import {
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
 import { ProductManageStateService } from '../../services/product-manage-state.service';
-import { ProductMaterialsTabComponent } from '../product-materials-tab/product-materials-tab.component';
-import { ProductReplenishmentTabComponent } from '../product-replenishment-tab/product-replenishment-tab.component';
 import { FloatingDropdownComponent } from '../../../../../shared/components/floating-dropdown/floating-dropdown.component';
-import type { NamedEntity, ProductAttributeOption } from '../../models/product.models';
+import type { NamedEntity, ProductAttributeOption, ProductListItemDto } from '../../models/product.models';
 import { calculateProfitMargin } from '../../models/product.models';
+import { ProductApiService } from '../../services/product-api.service';
 
 @Component({
       selector: 'app-manage-product',
       standalone: true,
-      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, ProductMaterialsTabComponent, ProductReplenishmentTabComponent, FloatingDropdownComponent],
+      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, FloatingDropdownComponent],
       templateUrl: './manage-product.component.html',
       styleUrl: './manage-product.component.css',
       changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ManageProductComponent implements OnInit, OnDestroy {
       private readonly state = inject(ProductManageStateService);
+      private readonly api = inject(ProductApiService);
       private readonly router = inject(Router);
       private readonly route = inject(ActivatedRoute);
       private readonly destroy$ = new Subject<void>();
 
-      activeTab: 'basic' | 'materials' | 'replenishment' = 'basic';
-      replenishmentItemsCount = 0;
+      activeTab: 'basic' | 'conversions' | 'composition' = 'basic';
       sidebarVisible = signal(false);
       activeDropdown: 'attribute' | 'category' | 'manufacturer' | 'supplier' | null = null;
       showOverlay: 'category' | 'manufacturer' | 'supplier' | 'attribute' | null = null;
@@ -61,12 +60,23 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
       readonly calculateProfitMargin = calculateProfitMargin;
 
+      // Product search state for composition/conversions
+      productSearchQuery = signal('');
+      productSearchResults = signal<ProductListItemDto[]>([]);
+      isSearchingProducts = signal(false);
+      private searchSubject = new Subject<string>();
+      activeSearchContext: { type: 'composition' | 'conversion', index: number } | null = null;
+
       get productForm() {
             return this.state.productForm;
       }
 
-      get materialsFormArray() {
-            return this.state.materialsFormArray;
+      get compositionFormArray() {
+            return this.state.compositionFormArray;
+      }
+
+      get conversionsFormArray() {
+            return this.state.conversionsFormArray;
       }
 
       get attributesFormArray() {
@@ -83,10 +93,6 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
       get pageTitle(): string {
             return this.state.pageTitle;
-      }
-
-      get parentProductName(): string {
-            return this.state.parentProductName;
       }
 
       get pendingAttributeLabel(): string {
@@ -115,6 +121,28 @@ export class ManageProductComponent implements OnInit, OnDestroy {
                   this.state.onFormValueChanged();
             });
             this.resolveEditMode();
+
+            this.searchSubject.pipe(
+                  takeUntil(this.destroy$),
+                  debounceTime(300),
+                  distinctUntilChanged()
+            ).subscribe(query => {
+                  if (!query.trim()) {
+                        this.productSearchResults.set([]);
+                        return;
+                  }
+                  this.isSearchingProducts.set(true);
+                  this.api.listProducts({ query, size: 5 }).subscribe({
+                        next: (res) => {
+                              this.productSearchResults.set(res.content);
+                              this.isSearchingProducts.set(false);
+                        },
+                        error: () => {
+                              this.productSearchResults.set([]);
+                              this.isSearchingProducts.set(false);
+                        }
+                  });
+            });
       }
 
       ngOnDestroy(): void {
@@ -124,7 +152,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
       private resolveEditMode(): void {
             const idParam = this.route.snapshot.paramMap.get('id');
-            if (!idParam) return;
+            if (!idParam) {
+                  this.state.resolveEditMode(null);
+                  return;
+            }
             const id = Number(idParam);
             if (isNaN(id)) return;
             this.state.resolveEditMode(id);
@@ -179,6 +210,22 @@ export class ManageProductComponent implements OnInit, OnDestroy {
             this.state.setDefaultBarcode(index);
       }
 
+      addConversion(): void {
+            this.state.addConversion();
+      }
+
+      removeConversion(index: number): void {
+            this.state.removeConversion(index);
+      }
+
+      addCompositionRow(): void {
+            this.state.addCompositionRow();
+      }
+
+      removeCompositionRow(index: number): void {
+            this.state.removeCompositionRow(index);
+      }
+
       getTotalStock(): number {
             return this.state.getTotalStock();
       }
@@ -197,11 +244,12 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
       closeDropdowns(): void {
             this.activeDropdown = null;
+            this.activeSearchContext = null;
       }
 
       onFormBodyScroll(): void {
-            if (this.activeDropdown) {
-                  this.activeDropdown = null;
+            if (this.activeDropdown || this.activeSearchContext) {
+                  this.closeDropdowns();
             }
       }
 
@@ -255,6 +303,36 @@ export class ManageProductComponent implements OnInit, OnDestroy {
             }
       }
 
+      onProductSearchInput(event: Event, type: 'composition' | 'conversion', index: number): void {
+            const query = (event.target as HTMLInputElement).value;
+            this.productSearchQuery.set(query);
+            this.activeSearchContext = { type, index };
+            this.searchSubject.next(query);
+      }
+
+      selectProductFromSearch(product: ProductListItemDto): void {
+            if (!this.activeSearchContext) return;
+            const { type, index } = this.activeSearchContext;
+
+            if (type === 'composition') {
+                  const ctrl = this.compositionFormArray.at(index);
+                  ctrl.patchValue({
+                        materialId: product.id,
+                        materialName: product.name,
+                        costPerUnit: product.sellingPrice // simplified mapping
+                  });
+            } else if (type === 'conversion') {
+                  const ctrl = this.conversionsFormArray.at(index);
+                  ctrl.patchValue({
+                        parentProductId: product.id
+                  });
+            }
+
+            this.productSearchQuery.set('');
+            this.productSearchResults.set([]);
+            this.activeSearchContext = null;
+      }
+
       onCancel(): void {
             this.router.navigate(['/pos/products']);
       }
@@ -262,8 +340,14 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       onSave(): void {
             const result = this.state.saveProduct();
             if (!result) {
-                  if (this.state.saveError() && this.materialsFormArray.invalid) {
-                        this.activeTab = 'materials';
+                  if (this.state.saveError()) {
+                        if (this.productForm.get('composition')?.invalid && this.productForm.get('hasComposition')?.value) {
+                              this.activeTab = 'composition';
+                        } else if (this.productForm.get('conversions')?.invalid && this.productForm.get('hasConversions')?.value) {
+                              this.activeTab = 'conversions';
+                        } else {
+                              this.activeTab = 'basic';
+                        }
                   }
                   return;
             }
