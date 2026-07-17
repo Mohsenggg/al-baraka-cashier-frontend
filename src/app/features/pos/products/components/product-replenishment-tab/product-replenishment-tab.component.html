@@ -66,7 +66,7 @@
           <div class="conversion-qty-row">
             <input type="number" formControlName="targetProductQuantity" class="form-input form-input-compact qty-input"
               min="0" step="0.01"
-              (blur)="onRowTargetQuantityChange(0); asFormGroup(itemsFormArray.at(0)).get('targetProductQuantity')?.markAsTouched()">
+              (blur)="onSingleRuleFieldBlur(); asFormGroup(itemsFormArray.at(0)).get('targetProductQuantity')?.markAsTouched()">
             <span class="conversion-product-name">{{ displayTargetProductName }}</span>
           </div>
           <span class="inline-error" *ngIf="isFieldInvalid(0, 'targetProductQuantity')">
@@ -83,7 +83,7 @@
           <div class="conversion-qty-row">
             <input type="number" formControlName="sourceProductQuantity" class="form-input form-input-compact qty-input"
               min="0" step="0.01"
-              (blur)="asFormGroup(itemsFormArray.at(0)).get('sourceProductQuantity')?.markAsTouched()">
+              (blur)="onSingleRuleFieldBlur(); asFormGroup(itemsFormArray.at(0)).get('sourceProductQuantity')?.markAsTouched()">
             <span class="conversion-product-name">{{ asFormGroup(itemsFormArray.at(0)).get('sourceProductName')?.value }}</span>
           </div>
           <span class="inline-error" *ngIf="isFieldInvalid(0, 'sourceProductQuantity')">
@@ -112,13 +112,13 @@
         <div class="recipe-produces-body">
           <div class="conversion-qty-row">
             <input type="number" class="form-input form-input-compact qty-input"
-              [ngModel]="sharedTargetQuantity" [ngModelOptions]="{standalone: true}"
+              [ngModel]="normalizedTargetQuantity" [ngModelOptions]="{standalone: true}"
               min="0" step="0.01"
-              (ngModelChange)="onSharedTargetQuantityChange($event)"
+              (ngModelChange)="onNormalizedTargetQuantityChange($event)"
               (blur)="getRowGroup(0).get('targetProductQuantity')?.markAsTouched()">
             <span class="conversion-product-name conversion-product-target">{{ displayTargetProductName }}</span>
           </div>
-          <span class="inline-error" *ngIf="isSharedTargetInvalid()">
+          <span class="inline-error" *ngIf="isNormalizedTargetInvalid()">
             {{ getQuantityError(0, 'targetProductQuantity') }}
           </span>
         </div>
@@ -138,10 +138,8 @@
           <div class="requires-row" *ngFor="let row of itemsFormArray.controls; let i = index; trackBy: trackByIndex"
             [formGroup]="asFormGroup(row)">
             <div class="requires-row-main">
-              <div class="conversion-qty-row">
-                <input type="number" formControlName="sourceProductQuantity" class="form-input form-input-compact qty-input"
-                  min="0" step="0.01"
-                  (blur)="asFormGroup(row).get('sourceProductQuantity')?.markAsTouched()">
+              <div class="conversion-qty-row conversion-qty-row-inline">
+                <span class="qty-display">{{ asFormGroup(row).get('sourceProductQuantity')?.value }}</span>
                 <span class="conversion-product-name">{{ asFormGroup(row).get('sourceProductName')?.value }}</span>
               </div>
               <span class="inline-error" *ngIf="isFieldInvalid(i, 'sourceProductQuantity')">

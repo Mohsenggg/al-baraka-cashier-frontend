@@ -22,6 +22,12 @@ import {
   ValidatorFn
 } from '@angular/forms';
 import { positiveQuantityValidator } from '../../validators/product-material.validators';
+import {
+  ConversionRuleInput,
+  normalizeConversionRules,
+  scaleRulesToTargetQuantity,
+  updateRuleSourceQuantity
+} from './conversion-normalizer';
 
 /** UI-only mock catalog entry — replace with API catalog on backend integration. */
 interface ReplenishmentSourceProduct {
@@ -106,10 +112,10 @@ export class ProductReplenishmentTabComponent implements OnInit {
     return this.itemsFormArray.length > 1;
   }
 
-  get sharedTargetQuantity(): number | null {
+  /** Normalized target quantity shared by all rules after reduction. */
+  get normalizedTargetQuantity(): number | null {
     if (this.itemsFormArray.length === 0) return null;
-    const first = this.itemsFormArray.at(0).get('targetProductQuantity')?.value;
-    return first != null ? Number(first) : null;
+    return this.getRulesFromForm()[0]?.targetProductQuantity ?? null;
   }
 
   get displayTargetProductName(): string {
@@ -141,7 +147,7 @@ export class ProductReplenishmentTabComponent implements OnInit {
   openAddDialog(item: ReplenishmentSourceProduct): void {
     this.editingItemIndex = null;
     this.itemDialogForm.reset({
-      targetProductQuantity: this.sharedTargetQuantity ?? 1,
+      targetProductQuantity: this.normalizedTargetQuantity ?? 1,
       sourceProductId: item.id,
       sourceProductName: item.name,
       sourceProductQuantity: null
@@ -190,42 +196,56 @@ export class ProductReplenishmentTabComponent implements OnInit {
       return;
     }
 
-    const normalized = {
+    const pendingRule: ConversionRuleInput = {
       targetProductQuantity: Number(value.targetProductQuantity),
       sourceProductId,
       sourceProductName: value.sourceProductName as string,
       sourceProductQuantity: Number(value.sourceProductQuantity)
     };
 
+    const currentRules = this.getRulesFromForm();
+    let nextRules: ConversionRuleInput[];
+
     if (this.editingItemIndex !== null) {
-      (this.itemsFormArray.at(this.editingItemIndex) as FormGroup).patchValue(normalized);
+      nextRules = currentRules.map((rule, i) =>
+        i === this.editingItemIndex ? pendingRule : rule
+      );
     } else {
-      this.itemsFormArray.push(this.createItemFormGroup(normalized));
+      nextRules = [...currentRules, pendingRule];
     }
 
-    this.syncTargetQuantityAcrossRows(normalized.targetProductQuantity);
+    this.applyRulesToForm(normalizeConversionRules(nextRules));
     this.itemsFormArray.markAsDirty();
-    this.itemsFormArray.updateValueAndValidity();
     this.emitItemsCount();
     this.cdr.markForCheck();
     this.closeItemDialog();
   }
 
-  onSharedTargetQuantityChange(rawValue: string | number): void {
+  onNormalizedTargetQuantityChange(rawValue: string | number): void {
     const parsed = Number(rawValue);
     if (isNaN(parsed) || parsed <= 0) return;
-    this.syncTargetQuantityAcrossRows(parsed);
+
+    const scaled = scaleRulesToTargetQuantity(this.getRulesFromForm(), parsed);
+    this.applyRulesToForm(scaled);
     this.itemsFormArray.markAsDirty();
     this.cdr.markForCheck();
   }
 
-  onRowTargetQuantityChange(index: number): void {
+  onSingleRuleFieldBlur(): void {
+    this.applyRulesToForm(normalizeConversionRules(this.getRulesFromForm()));
+    this.itemsFormArray.markAsDirty();
+    this.cdr.markForCheck();
+  }
+
+  onNormalizedSourceQuantityBlur(index: number): void {
     const row = this.getRowGroup(index);
-    const qty = Number(row.get('targetProductQuantity')?.value);
-    if (!isNaN(qty) && qty > 0) {
-      this.syncTargetQuantityAcrossRows(qty);
-      this.cdr.markForCheck();
-    }
+    const parsed = Number(row.get('sourceProductQuantity')?.value);
+    if (isNaN(parsed) || parsed <= 0) return;
+
+    const updated = updateRuleSourceQuantity(this.getRulesFromForm(), index, parsed);
+    this.applyRulesToForm(updated);
+    this.itemsFormArray.markAsDirty();
+    this.cdr.markForCheck();
   }
 
   requestRemoveItem(index: number): void {
@@ -236,6 +256,7 @@ export class ProductReplenishmentTabComponent implements OnInit {
   confirmRemoveItem(): void {
     if (this.deleteTargetIndex !== null) {
       this.itemsFormArray.removeAt(this.deleteTargetIndex);
+      this.applyRulesToForm(normalizeConversionRules(this.getRulesFromForm()));
       this.itemsFormArray.markAsDirty();
       this.itemsFormArray.updateValueAndValidity();
       this.emitItemsCount();
@@ -266,7 +287,7 @@ export class ProductReplenishmentTabComponent implements OnInit {
     return !!(ctrl?.invalid && ctrl.touched);
   }
 
-  isSharedTargetInvalid(): boolean {
+  isNormalizedTargetInvalid(): boolean {
     if (this.itemsFormArray.length === 0) return false;
     return this.isFieldInvalid(0, 'targetProductQuantity');
   }
@@ -305,16 +326,16 @@ export class ProductReplenishmentTabComponent implements OnInit {
     return !!(ctrl?.invalid && ctrl.touched);
   }
 
-  /** Placeholder for future backend load — returns configured rows for save payload. */
+  /** Placeholder for future backend load — returns normalized rows for save payload. */
   getReplenishmentItemsForSave(): {
     targetProductQuantity: number;
     sourceProductId: number;
     sourceProductQuantity: number;
   }[] {
-    return this.itemsFormArray.controls.map(ctrl => ({
-      targetProductQuantity: Number(ctrl.get('targetProductQuantity')?.value),
-      sourceProductId: ctrl.get('sourceProductId')?.value as number,
-      sourceProductQuantity: Number(ctrl.get('sourceProductQuantity')?.value)
+    return normalizeConversionRules(this.getRulesFromForm()).map(rule => ({
+      targetProductQuantity: rule.targetProductQuantity,
+      sourceProductId: rule.sourceProductId,
+      sourceProductQuantity: rule.sourceProductQuantity
     }));
   }
 
@@ -336,10 +357,29 @@ export class ProductReplenishmentTabComponent implements OnInit {
     });
   }
 
-  private syncTargetQuantityAcrossRows(quantity: number): void {
-    this.itemsFormArray.controls.forEach(ctrl => {
-      ctrl.get('targetProductQuantity')?.setValue(quantity, { emitEvent: false });
+  private getRulesFromForm(): ConversionRuleInput[] {
+    return this.itemsFormArray.controls.map(ctrl => ({
+      targetProductQuantity: Number(ctrl.get('targetProductQuantity')?.value),
+      sourceProductId: ctrl.get('sourceProductId')?.value as number,
+      sourceProductName: ctrl.get('sourceProductName')?.value as string,
+      sourceProductQuantity: Number(ctrl.get('sourceProductQuantity')?.value)
+    }));
+  }
+
+  private applyRulesToForm(rules: ConversionRuleInput[]): void {
+    while (this.itemsFormArray.length > rules.length) {
+      this.itemsFormArray.removeAt(this.itemsFormArray.length - 1);
+    }
+
+    rules.forEach((rule, index) => {
+      if (index < this.itemsFormArray.length) {
+        (this.itemsFormArray.at(index) as FormGroup).patchValue(rule, { emitEvent: false });
+      } else {
+        this.itemsFormArray.push(this.createItemFormGroup(rule));
+      }
     });
+
+    this.itemsFormArray.updateValueAndValidity({ emitEvent: false });
   }
 
   private searchProducts(
