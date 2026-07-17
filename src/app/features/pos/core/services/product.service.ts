@@ -42,7 +42,7 @@ export class ProductService {
     return {
       id: dto.id,
       name: dto.name,
-      barcode: dto.code,
+      barcode: dto.barcode,
       costPrice: 0,
       sellingPrice: dto.price,
       stockQuantity: dto.stock,

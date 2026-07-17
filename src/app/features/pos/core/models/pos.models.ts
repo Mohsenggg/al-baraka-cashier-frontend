@@ -119,7 +119,7 @@ export interface Paginated<T> {
 
 export interface CashierProductDto {
   id: number;
-  code: string;
+  barcode: string;
   name: string;
   price: number;
   stock: number;

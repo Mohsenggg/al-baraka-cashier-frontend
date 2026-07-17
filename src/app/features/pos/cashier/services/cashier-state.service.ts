@@ -95,7 +95,7 @@ export class CashierStateService {
                   map(dtoList => dtoList.map(dto => this.seed.getPlaceholderProduct({
                         id: dto.id,
                         name: dto.name,
-                        barcode: dto.code,
+                        barcode: dto.barcode,
                         sellingPrice: dto.price,
                         stockQuantity: dto.stock
                   }))),
