@@ -49,16 +49,32 @@ export class ProductApiService {
             return this.http.get<NamedEntity[]>(`${this.lookupUrl}/categories`);
       }
 
+      public createCategory(name: string): Observable<NamedEntity> {
+            return this.http.post<NamedEntity>(`${this.lookupUrl}/categories`, { name });
+      }
+
       public getManufacturers(): Observable<NamedEntity[]> {
             return this.http.get<NamedEntity[]>(`${this.lookupUrl}/manufacturers`);
+      }
+
+      public createManufacturer(name: string): Observable<NamedEntity> {
+            return this.http.post<NamedEntity>(`${this.lookupUrl}/manufacturers`, { name });
       }
 
       public getSuppliers(): Observable<NamedEntity[]> {
             return this.http.get<NamedEntity[]>(`${this.lookupUrl}/suppliers`);
       }
 
+      public createSupplier(name: string): Observable<NamedEntity> {
+            return this.http.post<NamedEntity>(`${this.lookupUrl}/suppliers`, { name });
+      }
+
       public getAttributes(): Observable<ProductAttributeOption[]> {
             return this.http.get<ProductAttributeOption[]>(`${this.lookupUrl}/attributes`);
+      }
+
+      public createAttribute(name: string): Observable<ProductAttributeOption> {
+            return this.http.post<ProductAttributeOption>(`${this.lookupUrl}/attributes`, { name });
       }
 
       private buildHttpParams(params: ProductFilterParams): HttpParams {

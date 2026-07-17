@@ -420,23 +420,66 @@ export class ProductManageStateService {
       }
 
       addNewReferenceItem(type: 'category' | 'manufacturer' | 'supplier' | 'attribute', name: string): void {
-            if (!name.trim()) return;
+            const cleanName = name.trim();
+            if (!cleanName) return;
+
+            this.isPageLoading.set(true);
 
             if (type === 'category') {
-                  this.selectCategory(this.addCategory(name.trim()));
+                  this.api.createCategory(cleanName).subscribe({
+                        next: (res) => {
+                              this.categoriesSignal.update(list => [...list, res]);
+                              this.selectCategory(res);
+                              this.isPageLoading.set(false);
+                        },
+                        error: (err) => {
+                              this.saveError.set('فشل في إضافة الفئة');
+                              this.isPageLoading.set(false);
+                        }
+                  });
             } else if (type === 'manufacturer') {
-                  this.selectManufacturer(this.addManufacturer(name.trim()));
+                  this.api.createManufacturer(cleanName).subscribe({
+                        next: (res) => {
+                              this.manufacturersSignal.update(list => [...list, res]);
+                              this.selectManufacturer(res);
+                              this.isPageLoading.set(false);
+                        },
+                        error: (err) => {
+                              this.saveError.set('فشل في إضافة الشركة المصنعة');
+                              this.isPageLoading.set(false);
+                        }
+                  });
             } else if (type === 'supplier') {
-                  this.toggleSupplier(this.addSupplier(name.trim()));
+                  this.api.createSupplier(cleanName).subscribe({
+                        next: (res) => {
+                              this.suppliersSignal.update(list => [...list, res]);
+                              this.toggleSupplier(res);
+                              this.isPageLoading.set(false);
+                        },
+                        error: (err) => {
+                              this.saveError.set('فشل في إضافة المورد');
+                              this.isPageLoading.set(false);
+                        }
+                  });
             } else if (type === 'attribute') {
-                  this.selectPendingAttribute(this.addAttributeOption(name.trim()));
+                  this.api.createAttribute(cleanName).subscribe({
+                        next: (res) => {
+                              this.attributesSignal.update(list => [...list, res]);
+                              this.selectPendingAttribute(res);
+                              this.isPageLoading.set(false);
+                        },
+                        error: (err) => {
+                              this.saveError.set('فشل في إضافة السمة');
+                              this.isPageLoading.set(false);
+                        }
+                  });
             }
       }
 
       private initForm(): void {
             this.productForm = this.fb.group({
                   baseName: ['', Validators.required],
-                  status: ['active', Validators.required],
+                  status: ['active'],
                   attributes: this.fb.array([]),
                   barcodes: this.fb.array([]),
                   categoryId: [null],
@@ -511,33 +554,7 @@ export class ProductManageStateService {
             this.updateGeneratedName();
       }
 
-      private addCategory(name: string): NamedEntity {
-            const newItem = { id: this.generateId(), name };
-            this.categoriesSignal.update(list => [...list, newItem]);
-            return newItem;
-      }
 
-      private addManufacturer(name: string): NamedEntity {
-            const newItem = { id: this.generateId(), name };
-            this.manufacturersSignal.update(list => [...list, newItem]);
-            return newItem;
-      }
-
-      private addSupplier(name: string): NamedEntity {
-            const newItem = { id: this.generateId(), name };
-            this.suppliersSignal.update(list => [...list, newItem]);
-            return newItem;
-      }
-
-      private addAttributeOption(name: string): ProductAttributeOption {
-            const newItem = { id: this.generateId(), name };
-            this.attributesSignal.update(list => [...list, newItem]);
-            return newItem;
-      }
-
-      private generateId(): number {
-            return Math.floor(Math.random() * 1000) + 10;
-      }
 
       private extractErrorMessage(err: unknown): string {
             return (err as { error?: { message?: string }; message?: string })?.error?.message

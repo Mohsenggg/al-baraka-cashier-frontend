@@ -141,6 +141,25 @@ Expose only the four lookup APIs needed to populate the dropdowns on the UI scre
 ]
 ```
 
+**`POST /api/lookups/categories`**
+
+#### Request
+
+```json
+{
+  "name": "New Category"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": 2,
+  "name": "New Category"
+}
+```
+
 ### 7. Manufacturers
 
 **`GET /api/lookups/manufacturers`**
@@ -154,6 +173,25 @@ Expose only the four lookup APIs needed to populate the dropdowns on the UI scre
     "name": "ABC Company"
   }
 ]
+```
+
+**`POST /api/lookups/manufacturers`**
+
+#### Request
+
+```json
+{
+  "name": "New Manufacturer"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": 2,
+  "name": "New Manufacturer"
+}
 ```
 
 ### 8. Suppliers
@@ -171,6 +209,25 @@ Expose only the four lookup APIs needed to populate the dropdowns on the UI scre
 ]
 ```
 
+**`POST /api/lookups/suppliers`**
+
+#### Request
+
+```json
+{
+  "name": "New Supplier"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": 2,
+  "name": "New Supplier"
+}
+```
+
 ### 9. Attributes
 
 **`GET /api/lookups/attributes`**
@@ -186,6 +243,25 @@ Expose only the four lookup APIs needed to populate the dropdowns on the UI scre
 ]
 ```
 
+**`POST /api/lookups/attributes`**
+
+#### Request
+
+```json
+{
+  "name": "New Attribute"
+}
+```
+
+#### Response
+
+```json
+{
+  "id": 2,
+  "name": "New Attribute"
+}
+```
+
 ---
 
 ## Final Contract Summary
@@ -198,9 +274,13 @@ Expose only the four lookup APIs needed to populate the dropdowns on the UI scre
 | `PUT` | `/api/products/{id}` | Update product |
 | `DELETE` | `/api/products/{id}` | Delete product |
 | `GET` | `/api/lookups/categories` | Categories lookup |
+| `POST` | `/api/lookups/categories` | Create Category |
 | `GET` | `/api/lookups/manufacturers`| Manufacturers lookup |
+| `POST` | `/api/lookups/manufacturers`| Create Manufacturer |
 | `GET` | `/api/lookups/suppliers` | Suppliers lookup |
+| `POST` | `/api/lookups/suppliers` | Create Supplier |
 | `GET` | `/api/lookups/attributes` | Attributes lookup |
+| `POST` | `/api/lookups/attributes` | Create Attribute |
 
 ---
 
