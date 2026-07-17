@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, catchError, finalize, tap, throwError, forkJoin } from 'rxjs';
+import { Observable, catchError, finalize, tap, throwError, forkJoin, of } from 'rxjs';
 import { ProductApiService } from './product-api.service';
 import type {
       NamedEntity,
@@ -100,20 +100,16 @@ export class ProductManageStateService {
       private loadReferenceData(): void {
             this.isPageLoading.set(true);
             forkJoin({
-                  categories: this.api.getCategories(),
-                  manufacturers: this.api.getManufacturers(),
-                  suppliers: this.api.getSuppliers(),
-                  attributes: this.api.getAttributes()
+                  categories: this.api.getCategories().pipe(catchError(() => of([]))),
+                  manufacturers: this.api.getManufacturers().pipe(catchError(() => of([]))),
+                  suppliers: this.api.getSuppliers().pipe(catchError(() => of([]))),
+                  attributes: this.api.getAttributes().pipe(catchError(() => of([])))
             }).pipe(
                   tap(data => {
                         this.categoriesSignal.set(data.categories);
                         this.manufacturersSignal.set(data.manufacturers);
                         this.suppliersSignal.set(data.suppliers);
                         this.attributesSignal.set(data.attributes);
-                  }),
-                  catchError(err => {
-                        this.saveError.set('فشل في تحميل البيانات المرجعية');
-                        return throwError(() => err);
                   }),
                   finalize(() => this.isPageLoading.set(false))
             ).subscribe();
@@ -123,10 +119,10 @@ export class ProductManageStateService {
             this.isPageLoading.set(true);
 
             forkJoin({
-                  categories: this.api.getCategories(),
-                  manufacturers: this.api.getManufacturers(),
-                  suppliers: this.api.getSuppliers(),
-                  attributes: this.api.getAttributes(),
+                  categories: this.api.getCategories().pipe(catchError(() => of([]))),
+                  manufacturers: this.api.getManufacturers().pipe(catchError(() => of([]))),
+                  suppliers: this.api.getSuppliers().pipe(catchError(() => of([]))),
+                  attributes: this.api.getAttributes().pipe(catchError(() => of([]))),
                   product: this.api.getProductById(id)
             }).pipe(
                   tap(data => {
