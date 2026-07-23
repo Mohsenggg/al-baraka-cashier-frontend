@@ -113,6 +113,7 @@ export interface ProductAttributeFormValue {
 }
 
 export interface ProductBarcodeFormValue {
+      id?: number | null;
       barcode: string;
       sellingPrice: number;
       buyingPrice: number;

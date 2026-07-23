@@ -281,6 +281,7 @@ Expose only the four lookup APIs needed to populate the dropdowns on the UI scre
 | `POST` | `/api/lookups/suppliers` | Create Supplier |
 | `GET` | `/api/lookups/attributes` | Attributes lookup |
 | `POST` | `/api/lookups/attributes` | Create Attribute |
+| `GET` | `/api/products/all-products` | Lightweight product list for Cashier module |
 
 ---
 
@@ -305,7 +306,6 @@ These endpoints from the original backend contract do not match the current UI r
 - `/products/{id}/stock/adjust`
 - `/products/{id}/stock/movements`
 - `/products/{id}/stock/compound`
-- `/products/all-products`
 - Legacy `POST /api/products`
 - Legacy `PUT /api/products/{id}`
 - `PATCH /api/products/{id}/status`

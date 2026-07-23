@@ -303,6 +303,7 @@ export class ProductManageStateService {
 
       addBarcode(): void {
             this.barcodesFormArray.push(this.fb.group({
+                  id: [null],
                   barcode: [''],
                   sellingPrice: [0],
                   buyingPrice: [0],
@@ -516,6 +517,7 @@ export class ProductManageStateService {
             if (detail.barcodes && detail.barcodes.length) {
                   detail.barcodes.forEach(barcode => {
                         this.barcodesFormArray.push(this.fb.group({
+                              id: [barcode.id],
                               barcode: [barcode.barcode],
                               sellingPrice: [barcode.sellingPrice],
                               buyingPrice: [barcode.buyingPrice],
