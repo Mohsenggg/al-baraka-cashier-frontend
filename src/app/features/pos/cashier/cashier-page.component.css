@@ -1746,3 +1746,119 @@
             font-size: 0.72rem;
       }
 }
+
+/* ============================= */
+/* PAYMENT SCREEN OVERLAY */
+/* ============================= */
+
+.payment-overlay {
+      grid-column: 1 / -1;
+      min-height: 95px;
+      background: linear-gradient(180deg, #1e3a8a 0%, #172554 100%);
+      color: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      padding: 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      position: relative;
+}
+
+.payment-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 12px 20px;
+      position: relative;
+}
+
+.payment-stat:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 15%;
+      bottom: 15%;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.15);
+}
+
+.payment-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 6px;
+}
+
+.payment-stat.change .payment-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #4ade80;
+      line-height: 1;
+}
+
+.payment-stat.total .payment-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.2;
+}
+
+.payment-stat.paid .paid-amount-input {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #ef4444;
+      color: #ef4444;
+      font-size: 2.2rem;
+      font-weight: 800;
+      width: 100%;
+      max-width: 180px;
+      text-align: center;
+      outline: none;
+      padding: 0 4px 4px 4px;
+      line-height: 1;
+      transition: all 0.2s ease;
+}
+
+.payment-stat.paid .paid-amount-input:focus {
+      border-color: #f87171;
+}
+
+.payment-stat.paid .paid-amount-input::-webkit-outer-spin-button,
+.payment-stat.paid .paid-amount-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+}
+
+.payment-stat.paid .paid-amount-input[type=number] {
+      -moz-appearance: textfield;
+}
+
+.payment-close-btn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 2;
+}
+
+.payment-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+}
+
+.payment-close-btn .material-icons-outlined {
+      font-size: 16px;
+}

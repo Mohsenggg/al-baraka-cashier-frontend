@@ -8,8 +8,10 @@
             <div class="filter-container" [formGroup]="filterForm">
                   <div class="quick-search-bar">
                         <span class="material-icons-outlined search-icon">search</span>
-                        <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..." autocomplete="off" (keyup.enter)="onApplyFilters()">
-                        <button type="button" class="filter-toggle" (click)="toggleFilters()" [class.active]="showFilters">
+                        <input type="text" formControlName="code" placeholder="بحث برقم الفاتورة..." autocomplete="off"
+                              (keyup.enter)="onApplyFilters()">
+                        <button type="button" class="filter-toggle" (click)="toggleFilters()"
+                              [class.active]="showFilters">
                               <span class="material-icons-outlined">tune</span>
                         </button>
                   </div>
@@ -27,13 +29,16 @@
                               <div class="filter-field">
                                     <label>المبلغ (من - إلى)</label>
                                     <div class="dual-input">
-                                          <input type="number" formControlName="totalMin" placeholder="الأدنى" class="pos-compact-input">
-                                          <input type="number" formControlName="totalMax" placeholder="الأعلى" class="pos-compact-input">
+                                          <input type="number" formControlName="totalMin" placeholder="الأدنى"
+                                                class="pos-compact-input">
+                                          <input type="number" formControlName="totalMax" placeholder="الأعلى"
+                                                class="pos-compact-input">
                                     </div>
                               </div>
                               <div class="filter-field">
                                     <label>اسم العميل</label>
-                                    <input type="text" formControlName="customerName" placeholder="الاسم..." class="pos-compact-input">
+                                    <input type="text" formControlName="customerName" placeholder="الاسم..."
+                                          class="pos-compact-input">
                               </div>
                               <div class="filter-field">
                                     <label>طريقة الدفع</label>
@@ -67,10 +72,11 @@
 
       <div class="list-viewport">
             <div class="receipt-list-modern" *ngIf="!loading; else loader">
-                  <div class="receipt-card" *ngFor="let r of filteredReceipts" (click)="selectReceipt.emit(r.id)" [class.active]="selectedReceiptId === r.id">
+                  <div class="receipt-card" *ngFor="let r of filteredReceipts" (click)="selectReceipt.emit(r.id)"
+                        [class.active]="selectedReceiptId === r.id">
                         <div class="card-main">
                               <span class="receipt-id">#{{ r.receiptCode }}</span>
-                              <span class="receipt-total">{{ r.totalAmount | number:'1.2-2' }} ر.س</span>
+                              <span class="receipt-total">{{ r.totalAmount | number:'1.2-2' }} جنية</span>
                         </div>
                         <div class="card-sub">
                               <span class="receipt-time">{{ formatDate(r.receiptDate) }}</span>
