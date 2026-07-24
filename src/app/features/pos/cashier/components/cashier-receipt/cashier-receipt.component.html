@@ -62,11 +62,11 @@
                               </div>
                               <div class="inline-field" style="margin: 0; padding: 0;">
                                     <span class="label">هاتف:</span>
-                                    <span class="value" *ngIf="receiptMode === 'VIEW'">{{ receipt?.customer?.phone || '-------' }}</span>
+                                    <span class="value" *ngIf="receiptMode === 'VIEW'">{{ receipt?.customerPhone || receipt?.customer?.phone || '-------' }}</span>
                                     <input *ngIf="receiptMode !== 'VIEW'" type="text"
                                           class="pos-input"
                                           style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
-                                          [value]="receipt?.customer?.phone || ''"
+                                          [value]="receipt?.customerPhone || receipt?.customer?.phone || ''"
                                           (input)="onCustomerPhoneChange($event)"
                                           placeholder="-------">
                               </div>

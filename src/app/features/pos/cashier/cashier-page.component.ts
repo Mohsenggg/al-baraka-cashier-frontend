@@ -67,6 +67,7 @@ export class CashierPageComponent implements OnInit {
             const isEdit = this.receiptMode() === 'EDIT';
             const payload: CreateReceiptInput = {
                   customerName: receiptData?.customerName || receiptData?.customer?.name || 'Walk-in Customer',
+                  customerPhone: receiptData?.customerPhone || receiptData?.customer?.phone || '',
                   customerId: receiptData?.customerId || null,
                   cashierId: receiptData?.cashierId || 1,
                   paymentMethod: receiptData?.paymentMethod || 'CASH',

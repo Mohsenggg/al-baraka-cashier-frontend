@@ -12,6 +12,7 @@ export interface ReceiptItemInput {
 
 export interface CreateReceiptInput {
   customerName: string;
+  customerPhone?: string;
   customerId: number | null;
   cashierId: number;
   paymentMethod: PaymentMethod;
@@ -24,6 +25,7 @@ export interface CreateReceiptInput {
 
 export interface UpdateReceiptInput {
   customerName: string;
+  customerPhone?: string;
   customerId: number | null;
   cashierId: number;
   paymentMethod: PaymentMethod;
@@ -72,6 +74,7 @@ export interface ReceiptResponse {
   paymentMethod: PaymentMethod;
   receiptType: string;
   customerName: string;
+  customerPhone?: string;
   cashierId: number;
   cashierName: string;
   totalAmount: number;
@@ -161,6 +164,7 @@ export interface ReceiptListItemDto {
   totalAmount: number;
   paymentMethod: string;
   customerName?: string;
+  customerPhone?: string;
   status?: string;
   totalItems?: number;
   cashierName?: string;
