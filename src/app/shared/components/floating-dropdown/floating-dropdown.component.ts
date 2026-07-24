@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, HostListener, TemplateRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, HostListener, TemplateRef, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './floating-dropdown.component.css'
 })
 export class FloatingDropdownComponent implements OnInit, OnChanges {
+  constructor(private cdr: ChangeDetectorRef) {}
+
   @Input() isOpen: boolean = false;
   @Input() trigger?: HTMLElement;
   @Input() options: any[] = [];
@@ -138,5 +140,6 @@ export class FloatingDropdownComponent implements OnInit, OnChanges {
       '--floating-arrow-y': `${arrowY}px`
     };
     this.placement = placement;
+    this.cdr.detectChanges();
   }
 }
