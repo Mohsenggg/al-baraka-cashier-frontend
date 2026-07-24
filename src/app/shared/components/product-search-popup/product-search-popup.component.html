@@ -1,7 +1,7 @@
 <ng-container *ngIf="isOpen">
   <div class="psp-backdrop" (click)="close()" aria-hidden="true"></div>
 
-  <div #popupPanel class="psp-panel" [class.placement-above]="placement === 'above'"
+  <div #popupPanel class="psp-panel"
     [ngStyle]="overlayStyle" (click)="$event.stopPropagation()" dir="rtl" role="dialog"
     aria-modal="true" [attr.aria-label]="title">
 

@@ -4,8 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import type { Product } from '../../../features/pos/core/models/pos.models';
-import { ProductSearchService, ProductSearchFilters, StockFilter } from '../../services/product-search.service';
+import { ProductSearchService, ProductSearchFilters, StockFilter, SharedProduct } from '../../services/product-search.service';
 
 @Component({
   selector: 'app-product-search-popup',
@@ -15,18 +14,18 @@ import { ProductSearchService, ProductSearchFilters, StockFilter } from '../../s
   styleUrl: './product-search-popup.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductSearchPopupComponent implements OnChanges {
+export class ProductSearchPopupComponent<T extends SharedProduct> implements OnChanges {
   private searchService = inject(ProductSearchService);
   private cdr = inject(ChangeDetectorRef);
 
   @Input() isOpen = false;
-  @Input() products: Product[] = [];
+  @Input() products: T[] = [];
   @Input() trigger?: HTMLElement;
   @Input() initialQuery = '';
   @Input() title = 'بحث عن منتج';
   @Input() showAdvancedFilters = true;
 
-  @Output() productSelected = new EventEmitter<Product>();
+  @Output() productSelected = new EventEmitter<T>();
   @Output() closed = new EventEmitter<void>();
 
   @ViewChild('popupPanel') popupPanel?: ElementRef<HTMLElement>;
@@ -41,10 +40,9 @@ export class ProductSearchPopupComponent implements OnChanges {
   advPriceMax: number | null = null;
   advStockStatus: StockFilter = 'all';
 
-  filteredProducts: Product[] = [];
+  filteredProducts: T[] = [];
   highlightedIndex = 0;
   overlayStyle: Record<string, string> = {};
-  placement: 'above' | 'below' = 'below';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['initialQuery'] && this.isOpen) {
@@ -104,7 +102,7 @@ export class ProductSearchPopupComponent implements OnChanges {
     this.cdr.markForCheck();
   }
 
-  selectProduct(product: Product): void {
+  selectProduct(product: T): void {
     this.productSelected.emit(product);
     this.close();
   }
@@ -113,7 +111,7 @@ export class ProductSearchPopupComponent implements OnChanges {
     this.closed.emit();
   }
 
-  onRowDoubleClick(product: Product, event: MouseEvent): void {
+  onRowDoubleClick(product: T, event: MouseEvent): void {
     event.preventDefault();
     this.selectProduct(product);
   }
@@ -160,7 +158,7 @@ export class ProductSearchPopupComponent implements OnChanges {
     return index === this.highlightedIndex;
   }
 
-  trackByProductId(_index: number, product: Product): number {
+  trackByProductId(_index: number, product: T): number {
     return product.id;
   }
 
@@ -179,26 +177,16 @@ export class ProductSearchPopupComponent implements OnChanges {
   }
 
   private positionOverlay(): void {
-    if (!this.trigger) return;
-
-    const rect = this.trigger.getBoundingClientRect();
     const panelEl = this.popupPanel?.nativeElement;
     const pad = 12;
-    const gap = 8;
-    const width = Math.min(560, window.innerWidth - pad * 2);
+    const width = Math.min(600, window.innerWidth - pad * 2);
     const panelHeight = panelEl?.offsetHeight || 400;
     const vh = window.innerHeight;
     const vw = window.innerWidth;
 
-    const spaceBelow = vh - rect.bottom - pad;
-    const spaceAbove = rect.top - pad;
-    this.placement = spaceBelow >= Math.min(panelHeight, 280) || spaceBelow >= spaceAbove ? 'below' : 'above';
-
-    let top = this.placement === 'below' ? rect.bottom + gap : rect.top - panelHeight - gap;
-    top = Math.max(pad, Math.min(top, vh - panelHeight - pad));
-
-    let left = rect.left;
-    left = Math.max(pad, Math.min(left, vw - width - pad));
+    // Calculate center positions
+    const top = Math.max(pad, (vh - panelHeight) / 2);
+    const left = Math.max(pad, (vw - width) / 2);
 
     this.overlayStyle = {
       top: `${top}px`,
@@ -206,5 +194,7 @@ export class ProductSearchPopupComponent implements OnChanges {
       width: `${width}px`,
       maxHeight: `${Math.min(480, vh - pad * 2)}px`
     };
+
+    this.cdr.detectChanges();
   }
 }

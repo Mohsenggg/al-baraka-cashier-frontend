@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
-import type { Product } from '../../features/pos/core/models/pos.models';
 
 export type StockFilter = 'all' | 'in_stock' | 'out_of_stock';
+
+export interface SharedProduct {
+  id: number;
+  name: string;
+  barcode: string;
+  sellingPrice: number;
+  stockQuantity: number;
+  isActive?: boolean;
+}
 
 export interface ProductSearchFilters {
   query: string;
@@ -15,13 +23,13 @@ export interface ProductSearchFilters {
 @Injectable({ providedIn: 'root' })
 export class ProductSearchService {
 
-  findExactByCode(products: Product[], code: string): Product | undefined {
+  findExactByCode<T extends SharedProduct>(products: T[], code: string): T | undefined {
     const term = code.trim().toLowerCase();
     if (!term) return undefined;
     return products.find(p => p.barcode.toLowerCase() === term);
   }
 
-  filterProducts(products: Product[], filters: ProductSearchFilters): Product[] {
+  filterProducts<T extends SharedProduct>(products: T[], filters: ProductSearchFilters): T[] {
     let result = products.filter(p => p.isActive !== false);
 
     const query = filters.query.trim().toLowerCase();
@@ -59,7 +67,7 @@ export class ProductSearchService {
     return result;
   }
 
-  hasPartialMatches(products: Product[], query: string): boolean {
+  hasPartialMatches<T extends SharedProduct>(products: T[], query: string): boolean {
     const term = query.trim();
     if (!term) return false;
     if (this.findExactByCode(products, term)) return false;
