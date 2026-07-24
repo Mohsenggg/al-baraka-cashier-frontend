@@ -11,66 +11,99 @@
             </button>
 
             <!-- Receipt Cards Area -->
-            <div class="receipt-cards-area">
-                  <!-- Primary Card: Invoice Info -->
-                  <div class="compact-card primary-card">
-                        <div class="compact-header">
-                              <span class="material-icons-outlined icon">receipt_long</span>
-                              <span class="title">الفاتورة</span>
+            <div class="receipt-cards-area" style="position: relative;">
+                  <ng-container *ngIf="!showPaymentScreen">
+                        <!-- Primary Card: Invoice Info -->
+                        <div class="compact-card primary-card">
+                              <div class="compact-header">
+                                    <span class="material-icons-outlined icon">receipt_long</span>
+                                    <span class="title">الفاتورة</span>
+                              </div>
+                              <div class="inline-fields">
+                                    <div class="inline-field">
+                                          <span class="label">رقم:</span>
+                                          <span class="value fw-bold">{{ receipt?.receiptNumber || '-' }}</span>
+                                    </div>
+                                    <div class="inline-field">
+                                          <span class="label">تاريخ:</span>
+                                          <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) |
+                                                date:'yyyy/MM/dd HH:mm' }}</span>
+                                    </div>
+                                    <div class="inline-field">
+                                          <span class="label">دفع:</span>
+                                          <span class="value badge" *ngIf="receiptMode === 'VIEW'">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
+                                          <select *ngIf="receiptMode !== 'VIEW'" 
+                                                class="pos-input text-center" 
+                                                style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 80px;"
+                                                [value]="receipt?.paymentMethod || 'CASH'"
+                                                (change)="onPaymentMethodChange($event)">
+                                                <option value="CASH">نقدي</option>
+                                                <option value="TRANSFER">تحويل</option>
+                                          </select>
+                                    </div>
+                              </div>
                         </div>
-                        <div class="inline-fields">
-                              <div class="inline-field">
-                                    <span class="label">رقم:</span>
-                                    <span class="value fw-bold">{{ receipt?.receiptNumber || '-' }}</span>
-                              </div>
-                              <div class="inline-field">
-                                    <span class="label">تاريخ:</span>
-                                    <span class="value">{{ (receipt?.receiptDate || receipt?.createdAt || today) |
-                                          date:'yyyy/MM/dd HH:mm' }}</span>
-                              </div>
-                              <div class="inline-field">
-                                    <span class="label">دفع:</span>
-                                    <span class="value badge" *ngIf="receiptMode === 'VIEW'">{{ receipt?.paymentMethod === 'CASH' ? 'نقدي' : 'تحويل' }}</span>
-                                    <select *ngIf="receiptMode !== 'VIEW'" 
-                                          class="pos-input text-center" 
-                                          style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 80px;"
-                                          [value]="receipt?.paymentMethod || 'CASH'"
-                                          (change)="onPaymentMethodChange($event)">
-                                          <option value="CASH">نقدي</option>
-                                          <option value="TRANSFER">تحويل</option>
-                                    </select>
-                              </div>
-                        </div>
-                  </div>
 
-                  <!-- Secondary Card: Customer Info -->
-                  <div class="compact-card secondary-card">
-                        <div class="compact-header">
-                              <span class="material-icons-outlined icon">person</span>
-                              <span class="title">العميل</span>
-                        </div>
-                        <div class="inline-fields" style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; align-items: center;">
-                              <div class="inline-field" style="margin: 0; padding: 0;">
-                                    <span class="label">الاسم:</span>
-                                    <span class="value" *ngIf="receiptMode === 'VIEW'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">{{ receipt?.customerName || 'عميل نقدي' }}</span>
-                                    <input *ngIf="receiptMode !== 'VIEW'" type="text"
-                                          class="pos-input"
-                                          style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
-                                          [value]="receipt?.customerName || ''"
-                                          (input)="onCustomerNameChange($event)"
-                                          placeholder="عميل نقدي">
+                        <!-- Secondary Card: Customer Info -->
+                        <div class="compact-card secondary-card">
+                              <div class="compact-header">
+                                    <span class="material-icons-outlined icon">person</span>
+                                    <span class="title">العميل</span>
                               </div>
-                              <div class="inline-field" style="margin: 0; padding: 0;">
-                                    <span class="label">هاتف:</span>
-                                    <span class="value" *ngIf="receiptMode === 'VIEW'">{{ receipt?.customerPhone || receipt?.customer?.phone || '-------' }}</span>
-                                    <input *ngIf="receiptMode !== 'VIEW'" type="text"
-                                          class="pos-input"
-                                          style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
-                                          [value]="receipt?.customerPhone || receipt?.customer?.phone || ''"
-                                          (input)="onCustomerPhoneChange($event)"
-                                          placeholder="-------">
+                              <div class="inline-fields" style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; align-items: center;">
+                                    <div class="inline-field" style="margin: 0; padding: 0;">
+                                          <span class="label">الاسم:</span>
+                                          <span class="value" *ngIf="receiptMode === 'VIEW'" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">{{ receipt?.customerName || 'عميل نقدي' }}</span>
+                                          <input *ngIf="receiptMode !== 'VIEW'" type="text"
+                                                class="pos-input"
+                                                style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
+                                                [value]="receipt?.customerName || ''"
+                                                (input)="onCustomerNameChange($event)"
+                                                placeholder="عميل نقدي">
+                                    </div>
+                                    <div class="inline-field" style="margin: 0; padding: 0;">
+                                          <span class="label">هاتف:</span>
+                                          <span class="value" *ngIf="receiptMode === 'VIEW'">{{ receipt?.customerPhone || receipt?.customer?.phone || '-------' }}</span>
+                                          <input *ngIf="receiptMode !== 'VIEW'" type="text"
+                                                class="pos-input"
+                                                style="height: 24px; padding: 0 4px; border-radius: 4px; font-size: 0.9em; width: 85px;"
+                                                [value]="receipt?.customerPhone || receipt?.customer?.phone || ''"
+                                                (input)="onCustomerPhoneChange($event)"
+                                                placeholder="-------">
+                                    </div>
                               </div>
                         </div>
+                  </ng-container>
+
+                  <!-- Payment Screen Overlay -->
+                  <div *ngIf="showPaymentScreen" class="payment-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #0d6efd; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 10;">
+                        <!-- Right (Start in RTL): Paid -->
+                        <div class="payment-stat" style="text-align: right;">
+                              <div style="font-size: 14px; opacity: 0.8; margin-bottom: 4px;">المدفوع</div>
+                              <input type="number" 
+                                    #paidInput
+                                    class="paid-amount-input no-spinner"
+                                    style="background: transparent; border: none; border-bottom: 2px solid #ef4444; color: #ef4444; font-size: 40px; font-weight: bold; width: 160px; text-align: center; outline: none;"
+                                    [value]="paidAmount"
+                                    (input)="onPaidAmountChange($event)">
+                        </div>
+
+                        <!-- Center: Total -->
+                        <div class="payment-stat" style="text-align: center;">
+                              <div style="font-size: 14px; opacity: 0.8; margin-bottom: 4px;">الإجمالي</div>
+                              <div style="font-size: 28px; font-weight: bold; color: white;">{{ finalTotal | number:'1.2-2' }}</div>
+                        </div>
+
+                        <!-- Left (End in RTL): Change -->
+                        <div class="payment-stat" style="text-align: left;">
+                              <div style="font-size: 14px; opacity: 0.8; margin-bottom: 4px;">المتبقي (صرف)</div>
+                              <div style="font-size: 40px; font-weight: bold; color: #4ade80;">{{ changeAmount | number:'1.2-2' }}</div>
+                        </div>
+
+                        <!-- Close Button -->
+                        <button class="pos-btn-icon-only" style="position: absolute; top: 8px; left: 8px; color: white; background: rgba(255,255,255,0.2); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;" (click)="closePaymentScreen.emit()">
+                            <span class="material-icons-outlined" style="font-size: 18px;">close</span>
+                        </button>
                   </div>
             </div>
 

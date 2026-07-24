@@ -45,6 +45,38 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       @Output() updateCustomerName = new EventEmitter<string>();
       @Output() updateCustomerPhone = new EventEmitter<string>();
 
+      @Output() closePaymentScreen = new EventEmitter<void>();
+      
+      @ViewChild('paidInput') paidInput?: ElementRef<HTMLInputElement>;
+      
+      private _showPaymentScreen = false;
+      @Input() set showPaymentScreen(value: boolean) {
+            this._showPaymentScreen = value;
+            if (value) {
+                  this.paidAmount = 0;
+                  setTimeout(() => {
+                        if (this.paidInput) {
+                              this.paidInput.nativeElement.focus();
+                              this.paidInput.nativeElement.select();
+                        }
+                  }, 50);
+            }
+      }
+      get showPaymentScreen(): boolean {
+            return this._showPaymentScreen;
+      }
+
+      paidAmount: number = 0;
+
+      get changeAmount(): number {
+            return Math.max(0, this.paidAmount - this.finalTotal);
+      }
+
+      onPaidAmountChange(event: Event) {
+            const val = (event.target as HTMLInputElement).value;
+            this.paidAmount = parseFloat(val) || 0;
+      }
+
       inputForm!: FormGroup;
       popupOpen = false;
       popupInitialQuery = '';

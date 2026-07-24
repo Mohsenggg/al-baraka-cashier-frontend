@@ -51,6 +51,8 @@ export class CashierPageComponent implements OnInit {
       hasStockErrors = this.state.hasStockErrors;
       products = this.state.products;
 
+      showPaymentScreen = signal(false);
+
       ngOnInit() {
             this.state.loadAllProducts().subscribe();
             // Initial fetch to populate sidebar
@@ -62,6 +64,12 @@ export class CashierPageComponent implements OnInit {
             const items = this.cartItems();
             if (items.length === 0) return;
             if (this.hasStockErrors()) return;
+            
+            if (!this.showPaymentScreen()) {
+                  this.showPaymentScreen.set(true);
+                  return;
+            }
+
             const receiptData = this.currentReceipt();
 
             const isEdit = this.receiptMode() === 'EDIT';

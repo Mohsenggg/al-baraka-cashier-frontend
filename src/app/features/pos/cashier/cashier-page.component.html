@@ -55,7 +55,9 @@
                   (addItem)="onAddItem($event)"
                   (updatePaymentMethod)="onUpdatePaymentMethod($event)"
                   (updateCustomerName)="onUpdateCustomerName($event)"
-                  (updateCustomerPhone)="onUpdateCustomerPhone($event)">
+                  (updateCustomerPhone)="onUpdateCustomerPhone($event)"
+                  [showPaymentScreen]="showPaymentScreen()"
+                  (closePaymentScreen)="showPaymentScreen.set(false)">
             </app-cashier-receipt>
 
       </main>
