@@ -352,18 +352,13 @@
                 <tbody formArrayName="conversions">
                   <tr *ngFor="let row of conversionsFormArray.controls; let i = index" [formGroupName]="i">
                     <td>
-                      <div class="search-bar-wrapper" style="position: relative;">
+                      <div class="search-bar-wrapper">
                         <input type="text" class="form-input form-input-compact" 
                           placeholder="ابحث عن منتج..."
-                          [value]="row.get('parentProductId')?.value ? 'Product ID: ' + row.get('parentProductId')?.value : ''"
-                          (input)="onProductSearchInput($event, 'conversion', i)">
-                        <div class="search-autocomplete" *ngIf="activeSearchContext?.type === 'conversion' && activeSearchContext?.index === i && productSearchResults().length > 0" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">
-                          <button type="button" class="autocomplete-item" style="width: 100%; text-align: right; padding: 0.5rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #eee;"
-                            *ngFor="let item of productSearchResults()"
-                            (click)="selectProductFromSearch(item)">
-                            {{ item.name }} ({{ item.code }})
-                          </button>
-                        </div>
+                          [value]="row.get('parentProductName')?.value || (row.get('parentProductId')?.value ? 'Product ID: ' + row.get('parentProductId')?.value : '')"
+                          readonly
+                          style="cursor: pointer;"
+                          (click)="openProductPopup('conversion', i)">
                       </div>
                     </td>
                     <td>
@@ -427,18 +422,13 @@
                 <tbody formArrayName="composition">
                   <tr *ngFor="let row of compositionFormArray.controls; let i = index" [formGroupName]="i">
                     <td>
-                      <div class="search-bar-wrapper" style="position: relative;">
+                      <div class="search-bar-wrapper">
                         <input type="text" class="form-input form-input-compact" 
                           placeholder="ابحث عن مادة..."
                           [value]="row.get('materialName')?.value || ''"
-                          (input)="onProductSearchInput($event, 'composition', i)">
-                        <div class="search-autocomplete" *ngIf="activeSearchContext?.type === 'composition' && activeSearchContext?.index === i && productSearchResults().length > 0" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 100; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">
-                          <button type="button" class="autocomplete-item" style="width: 100%; text-align: right; padding: 0.5rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #eee;"
-                            *ngFor="let item of productSearchResults()"
-                            (click)="selectProductFromSearch(item)">
-                            {{ item.name }}
-                          </button>
-                        </div>
+                          readonly
+                          style="cursor: pointer;"
+                          (click)="openProductPopup('composition', i)">
                       </div>
                     </td>
                     <td>
@@ -544,3 +534,10 @@
     </div>
   </div>
 </div>
+
+<app-product-search-popup
+  [isOpen]="popupOpen()"
+  [products]="allProducts()"
+  (productSelected)="selectProductFromSearch($event)"
+  (closed)="onPopupClosed()">
+</app-product-search-popup>

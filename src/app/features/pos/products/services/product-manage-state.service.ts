@@ -333,6 +333,7 @@ export class ProductManageStateService {
       addConversion(): void {
             this.conversionsFormArray.push(this.fb.group({
                   parentProductId: [null, Validators.required],
+                  parentProductName: [''],
                   parentQuantity: [1, [Validators.required, Validators.min(0.01)]],
                   childQuantity: [1, [Validators.required, Validators.min(0.01)]]
             }));
@@ -534,6 +535,7 @@ export class ProductManageStateService {
                   detail.conversions.forEach(conv => {
                         this.conversionsFormArray.push(this.fb.group({
                               parentProductId: [conv.parentProductId, Validators.required],
+                              parentProductName: [conv.parentProductName || ''],
                               parentQuantity: [conv.parentQuantity, [Validators.required, Validators.min(0.01)]],
                               childQuantity: [conv.childQuantity, [Validators.required, Validators.min(0.01)]]
                         }));

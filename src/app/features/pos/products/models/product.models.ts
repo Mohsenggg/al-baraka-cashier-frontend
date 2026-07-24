@@ -123,6 +123,7 @@ export interface ProductBarcodeFormValue {
 
 export interface ProductConversionDto {
       parentProductId: number;
+      parentProductName?: string;
       parentQuantity: number;
       childQuantity: number;
 }

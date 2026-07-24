@@ -15,6 +15,7 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { SidebarComponent } from '../../../../../shared/components/sidebar/sidebar.component';
 import { ProductManageStateService } from '../../services/product-manage-state.service';
 import { FloatingDropdownComponent } from '../../../../../shared/components/floating-dropdown/floating-dropdown.component';
+import { ProductSearchPopupComponent } from '../../../../../shared/components/product-search-popup/product-search-popup.component';
 import type { NamedEntity, ProductAttributeOption, ProductListItemDto } from '../../models/product.models';
 import { calculateProfitMargin } from '../../models/product.models';
 import { ProductApiService } from '../../services/product-api.service';
@@ -22,7 +23,7 @@ import { ProductApiService } from '../../services/product-api.service';
 @Component({
       selector: 'app-manage-product',
       standalone: true,
-      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, FloatingDropdownComponent],
+      imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, SidebarComponent, FloatingDropdownComponent, ProductSearchPopupComponent],
       templateUrl: './manage-product.component.html',
       styleUrl: './manage-product.component.css',
       changeDetection: ChangeDetectionStrategy.OnPush
@@ -61,11 +62,9 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       readonly calculateProfitMargin = calculateProfitMargin;
 
       // Product search state for composition/conversions
-      productSearchQuery = signal('');
-      productSearchResults = signal<ProductListItemDto[]>([]);
-      isSearchingProducts = signal(false);
-      private searchSubject = new Subject<string>();
-      activeSearchContext: { type: 'composition' | 'conversion', index: number } | null = null;
+      allProducts = signal<any[]>([]);
+      popupOpen = signal(false);
+      activeSearchContext = signal<{ type: 'composition' | 'conversion', index: number } | null>(null);
 
       get productForm() {
             return this.state.productForm;
@@ -121,28 +120,6 @@ export class ManageProductComponent implements OnInit, OnDestroy {
                   this.state.onFormValueChanged();
             });
             this.resolveEditMode();
-
-            this.searchSubject.pipe(
-                  takeUntil(this.destroy$),
-                  debounceTime(300),
-                  distinctUntilChanged()
-            ).subscribe(query => {
-                  if (!query.trim()) {
-                        this.productSearchResults.set([]);
-                        return;
-                  }
-                  this.isSearchingProducts.set(true);
-                  this.api.listProducts({ query, size: 5 }).subscribe({
-                        next: (res) => {
-                              this.productSearchResults.set(res.content);
-                              this.isSearchingProducts.set(false);
-                        },
-                        error: () => {
-                              this.productSearchResults.set([]);
-                              this.isSearchingProducts.set(false);
-                        }
-                  });
-            });
       }
 
       ngOnDestroy(): void {
@@ -244,11 +221,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
 
       closeDropdowns(): void {
             this.activeDropdown = null;
-            this.activeSearchContext = null;
       }
 
       onFormBodyScroll(): void {
-            if (this.activeDropdown || this.activeSearchContext) {
+            if (this.activeDropdown) {
                   this.closeDropdowns();
             }
       }
@@ -303,34 +279,48 @@ export class ManageProductComponent implements OnInit, OnDestroy {
             }
       }
 
-      onProductSearchInput(event: Event, type: 'composition' | 'conversion', index: number): void {
-            const query = (event.target as HTMLInputElement).value;
-            this.productSearchQuery.set(query);
-            this.activeSearchContext = { type, index };
-            this.searchSubject.next(query);
+      openProductPopup(type: 'composition' | 'conversion', index: number): void {
+            this.activeSearchContext.set({ type, index });
+            this.popupOpen.set(true);
+
+            if (this.allProducts().length === 0) {
+                  this.api.listProducts({ size: 1000 }).subscribe(res => {
+                        const mapped = res.content.map(p => ({
+                              ...p,
+                              barcode: p.code,
+                              stockQuantity: p.stock
+                        }));
+                        this.allProducts.set(mapped);
+                  });
+            }
       }
 
-      selectProductFromSearch(product: ProductListItemDto): void {
-            if (!this.activeSearchContext) return;
-            const { type, index } = this.activeSearchContext;
+      onPopupClosed(): void {
+            this.popupOpen.set(false);
+            this.activeSearchContext.set(null);
+      }
+
+      selectProductFromSearch(product: any): void {
+            const context = this.activeSearchContext();
+            if (!context) return;
+            const { type, index } = context;
 
             if (type === 'composition') {
                   const ctrl = this.compositionFormArray.at(index);
                   ctrl.patchValue({
                         materialId: product.id,
                         materialName: product.name,
-                        costPerUnit: product.sellingPrice // simplified mapping
+                        costPerUnit: product.sellingPrice
                   });
             } else if (type === 'conversion') {
                   const ctrl = this.conversionsFormArray.at(index);
                   ctrl.patchValue({
-                        parentProductId: product.id
+                        parentProductId: product.id,
+                        parentProductName: product.name
                   });
             }
 
-            this.productSearchQuery.set('');
-            this.productSearchResults.set([]);
-            this.activeSearchContext = null;
+            this.onPopupClosed();
       }
 
       onCancel(): void {
