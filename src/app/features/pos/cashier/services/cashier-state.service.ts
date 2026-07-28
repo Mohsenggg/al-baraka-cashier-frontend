@@ -580,6 +580,42 @@ export class CashierStateService {
             }
       }
 
+      public updateCartItemField(productId: number, field: 'price' | 'quantity' | 'total', newValue: number) {
+            const items = [...this.draftItemsSignal()];
+            const existingIdx = items.findIndex(i => i.productId === productId);
+            const mode = this.receiptModeSignal();
+
+            if (existingIdx > -1) {
+                  const item = { ...items[existingIdx] };
+
+                  if (field === 'price') {
+                        item.price = newValue;
+                        item.total = Number((item.quantity * item.price).toFixed(3));
+                  } else if (field === 'quantity') {
+                        item.quantity = newValue;
+                        item.total = Number((item.quantity * item.price).toFixed(3));
+                  } else if (field === 'total') {
+                        item.total = newValue;
+                        if (item.price && item.price > 0) {
+                              item.quantity = Number((item.total / item.price).toFixed(3));
+                        }
+                  }
+
+                  if (item.quantity <= 0) {
+                        items.splice(existingIdx, 1);
+                  } else {
+                        if (mode === 'EDIT' && item.originalQuantity != null && item.currentRemainingStock != null) {
+                              item.remainingStock = item.currentRemainingStock + item.originalQuantity - item.quantity;
+                        } else {
+                              item.remainingStock = item.product.stockQuantity - item.quantity;
+                        }
+                        item.stockError = validateCartItemStock(item, mode) ?? undefined;
+                        items[existingIdx] = item;
+                  }
+                  this.draftItemsSignal.set(items);
+            }
+      }
+
       public updateDraftReceiptData(partial: Partial<ReceiptResponse>) {
             const current = this.currentSavedReceiptSignal() || {} as ReceiptResponse;
             this.currentSavedReceiptSignal.set({ ...current, ...partial });

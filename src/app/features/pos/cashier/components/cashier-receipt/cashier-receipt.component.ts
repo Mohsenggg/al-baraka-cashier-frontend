@@ -194,21 +194,32 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             setTimeout(() => this.focusAddedRowQuantity(), 80);
       }
 
-      onInlineQuantityChange(item: CartItem, event: Event) {
+      @Output() updateItemField = new EventEmitter<{ item: CartItem, field: 'price' | 'quantity' | 'total', value: number }>();
+
+      onInlineFieldChange(item: CartItem, field: 'price' | 'quantity' | 'total', event: Event) {
             const input = event.target as HTMLInputElement;
-            const newQty = parseInt(input.value, 10);
-            if (!isNaN(newQty) && newQty > 0) {
-                  const delta = newQty - item.quantity;
-                  if (delta !== 0) {
-                        this.updateQuantity.emit({ item, delta });
+            let newValue = parseFloat(input.value);
+
+            if (!isNaN(newValue) && newValue >= 0) {
+                  if (field === 'quantity' && newValue <= 0) {
+                        input.value = String(item.quantity);
+                        return;
                   }
+                  
+                  // Prevent division by zero if editing total
+                  if (field === 'total' && (item.price === 0 || !item.price)) {
+                        input.value = String(item.total);
+                        return;
+                  }
+
+                  this.updateItemField.emit({ item, field, value: newValue });
             } else {
-                  input.value = String(item.quantity);
+                  input.value = String(item[field]);
             }
       }
 
-      onInlineQuantityEnter(item: CartItem, event: Event) {
-            this.onInlineQuantityChange(item, event);
+      onInlineFieldEnter(item: CartItem, field: 'price' | 'quantity' | 'total', event: Event) {
+            this.onInlineFieldChange(item, field, event);
             this.focusBarcodeScanner();
       }
 

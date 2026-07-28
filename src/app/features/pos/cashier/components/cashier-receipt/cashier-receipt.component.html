@@ -140,7 +140,14 @@
                                                 }}</span>
                                     </div>
                               </div>
-                              <div class="td-cell price-col">{{ item.price | number:'1.2-2' }}</div>
+                              <div class="td-cell price-col">
+                                    <input type="number" *ngIf="receiptMode !== 'VIEW'"
+                                          class="pos-input text-center no-spinner qty-input"
+                                          [value]="item.price" (input)="onInlineFieldChange(item, 'price', $event)"
+                                          (keyup.enter)="onInlineFieldEnter(item, 'price', $event)"
+                                          style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; appearance: none; -moz-appearance: textfield;">
+                                    <div *ngIf="receiptMode === 'VIEW'">{{ item.price | number:'1.2-2' }}</div>
+                              </div>
 
                               <div class="td-cell qty-col">
                                     <div class="qty-stepper" [class.qty-error]="!!item.stockError">
@@ -148,8 +155,8 @@
                                                 (click)="updateQuantity.emit({item: item, delta: -1})">-</button>
                                           <input type="number" *ngIf="receiptMode !== 'VIEW'"
                                                 class="pos-input text-center no-spinner qty-input"
-                                                [value]="item.quantity" (change)="onInlineQuantityChange(item, $event)"
-                                                (keyup.enter)="onInlineQuantityEnter(item, $event)"
+                                                [value]="item.quantity" (input)="onInlineFieldChange(item, 'quantity', $event)"
+                                                (keyup.enter)="onInlineFieldEnter(item, 'quantity', $event)"
                                                 [attr.data-product-id]="item.productId" #rowQtyInput
                                                 style="width: 60px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; appearance: none; -moz-appearance: textfield;">
                                           <div class="qty-value" *ngIf="receiptMode === 'VIEW'">{{ item.quantity }}
@@ -159,7 +166,15 @@
                                     </div>
                               </div>
 
-                              <div class="td-cell total-col fw-bold">{{ item.total | number:'1.2-2' }}</div>
+                              <div class="td-cell total-col fw-bold">
+                                    <input type="number" *ngIf="receiptMode !== 'VIEW'"
+                                          class="pos-input text-center no-spinner qty-input"
+                                          [value]="item.total" (input)="onInlineFieldChange(item, 'total', $event)"
+                                          (keyup.enter)="onInlineFieldEnter(item, 'total', $event)"
+                                          [readonly]="!item.price"
+                                          style="width: 80px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; appearance: none; -moz-appearance: textfield;">
+                                    <div *ngIf="receiptMode === 'VIEW'">{{ item.total | number:'1.2-2' }}</div>
+                              </div>
                               <div class="td-cell balance-col" *ngIf="receiptMode !== 'VIEW'">{{ item.remainingStock }}
                               </div>
 

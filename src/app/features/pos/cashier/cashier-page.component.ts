@@ -164,6 +164,10 @@ export class CashierPageComponent implements OnInit {
             this.state.updateItemQuantity(event.item.productId, event.delta);
       }
 
+      onUpdateItemField(event: { item: CartItem, field: 'price' | 'quantity' | 'total', value: number }) {
+            this.state.updateCartItemField(event.item.productId, event.field, event.value);
+      }
+
       onAddItem(event: { product: Product, quantity: number }) {
             this.state.addCartItem(event.product, event.quantity);
       }
