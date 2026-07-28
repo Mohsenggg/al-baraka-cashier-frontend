@@ -3,7 +3,8 @@ export type PaymentMethod = "CASH" | "TRANSFER";
 
 export interface ReceiptItemInput {
   productCode: string;
-  price: number;
+  sellingPrice: number;
+  buyingPrice: number;
   quantity: number;
   total: number;
   remainingStock: number;
@@ -61,7 +62,8 @@ export interface ReceiptItemResponse {
   productCode: string;
   productName: string;
   quantity: number;
-  unitPrice: number;
+  sellingPrice: number;
+  buyingPrice: number;
   totalPrice: number;
   remainingStock: number;
   currentRemainingStock?: number;
@@ -104,6 +106,7 @@ export interface Product {
   barcode: string;
   costPrice: number;
   sellingPrice: number;
+  buyingPrice: number;
   stockQuantity: number;
   isActive: boolean;
   createdAt: string;
@@ -124,7 +127,8 @@ export interface CashierProductDto {
   id: number;
   barcode: string;
   name: string;
-  price: number;
+  sellingPrice: number;
+  buyingPrice: number;
   stock: number;
 }
 
@@ -132,7 +136,8 @@ export interface CartItem {
   productId: number;
   productName: string;
   quantity: number;
-  price: number;
+  sellingPrice: number;
+  buyingPrice: number;
   discount: number;
   total: number;
   remainingStock: number;

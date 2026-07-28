@@ -126,7 +126,8 @@ export class ReceiptService {
                                     productId: 0, 
                                     productName: i.productName,
                                     quantity: i.quantity,
-                                    price: i.unitPrice,
+                                    sellingPrice: i.sellingPrice,
+                                    buyingPrice: i.buyingPrice,
                                     discount: 0,
                                     total: i.totalPrice,
                                     remainingStock: i.remainingStock,
@@ -135,7 +136,8 @@ export class ReceiptService {
                                           name: i.productName,
                                           barcode: i.productCode,
                                           costPrice: 0,
-                                          sellingPrice: i.unitPrice,
+                                          sellingPrice: i.sellingPrice,
+                                          buyingPrice: i.buyingPrice,
                                           stockQuantity: i.remainingStock + i.quantity,
                                           isActive: true,
                                           createdAt: '',
@@ -240,14 +242,15 @@ export class ReceiptService {
 
             if (existingIdx > -1) {
                   items[existingIdx].quantity += quantity;
-                  items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+                  items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].sellingPrice;
                   items[existingIdx].remainingStock = product.stockQuantity - items[existingIdx].quantity;
             } else {
                   items.push({
                         productId: product.id,
                         productName: product.name,
                         quantity,
-                        price: product.sellingPrice,
+                        sellingPrice: product.sellingPrice,
+                        buyingPrice: product.buyingPrice,
                         discount: 0,
                         total: product.sellingPrice * quantity,
                         remainingStock: product.stockQuantity - quantity,
@@ -283,7 +286,7 @@ export class ReceiptService {
                   const newQty = items[existingIdx].quantity + delta;
                   if (newQty > 0) {
                         items[existingIdx].quantity = newQty;
-                        items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+                        items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].sellingPrice;
                         items[existingIdx].remainingStock = items[existingIdx].product.stockQuantity - newQty;
                   } else {
                         items.splice(existingIdx, 1);

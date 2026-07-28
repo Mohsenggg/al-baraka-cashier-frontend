@@ -97,7 +97,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             this.inputForm = this.fb.group({
                   barcode: ['', Validators.required],
                   quantity: [1, [Validators.required, Validators.min(1)]],
-                  price: [{ value: 0, disabled: true }]
+                  sellingPrice: [{ value: 0, disabled: true }]
             });
 
             this.inputForm.get('barcode')?.valueChanges.pipe(
@@ -187,16 +187,16 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             const quantity = this.inputForm.get('quantity')?.value || 1;
             this.lastAddedProductId = product.id;
             this.addItem.emit({ product, quantity });
-            this.inputForm.patchValue({ barcode: '', quantity: 1, price: 0 });
+            this.inputForm.patchValue({ barcode: '', quantity: 1, sellingPrice: 0 });
             this.popupOpen = false;
             this.cdr.markForCheck();
 
             setTimeout(() => this.focusAddedRowQuantity(), 80);
       }
 
-      @Output() updateItemField = new EventEmitter<{ item: CartItem, field: 'price' | 'quantity' | 'total', value: number }>();
+      @Output() updateItemField = new EventEmitter<{ item: CartItem, field: 'sellingPrice' | 'quantity' | 'total', value: number }>();
 
-      onInlineFieldChange(item: CartItem, field: 'price' | 'quantity' | 'total', event: Event) {
+      onInlineFieldChange(item: CartItem, field: 'sellingPrice' | 'quantity' | 'total', event: Event) {
             const input = event.target as HTMLInputElement;
             let newValue = parseFloat(input.value);
 
@@ -207,7 +207,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
                   }
                   
                   // Prevent division by zero if editing total
-                  if (field === 'total' && (item.price === 0 || !item.price)) {
+                  if (field === 'total' && (item.sellingPrice === 0 || !item.sellingPrice)) {
                         input.value = String(item.total);
                         return;
                   }
@@ -218,7 +218,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             }
       }
 
-      onInlineFieldEnter(item: CartItem, field: 'price' | 'quantity' | 'total', event: Event) {
+      onInlineFieldEnter(item: CartItem, field: 'sellingPrice' | 'quantity' | 'total', event: Event) {
             this.onInlineFieldChange(item, field, event);
             this.focusBarcodeScanner();
       }

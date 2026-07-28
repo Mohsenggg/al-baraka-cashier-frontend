@@ -14,6 +14,7 @@ export class CashierSeedService {
       barcode: '000000',
       costPrice: 0,
       sellingPrice: 0,
+      buyingPrice: 0,
       stockQuantity: 0,
       isActive: true,
       createdAt: new Date().toISOString(),

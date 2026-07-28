@@ -84,7 +84,8 @@ export class CashierPageComponent implements OnInit {
                   items: items.map(item => ({
                         productCode: item.product.barcode,
                         productName: item.product.name,
-                        price: item.price,
+                        sellingPrice: item.sellingPrice,
+                        buyingPrice: item.buyingPrice,
                         quantity: item.quantity,
                         total: item.total,
                         remainingStock: item.remainingStock,
@@ -164,7 +165,7 @@ export class CashierPageComponent implements OnInit {
             this.state.updateItemQuantity(event.item.productId, event.delta);
       }
 
-      onUpdateItemField(event: { item: CartItem, field: 'price' | 'quantity' | 'total', value: number }) {
+      onUpdateItemField(event: { item: CartItem, field: 'sellingPrice' | 'quantity' | 'total', value: number }) {
             this.state.updateCartItemField(event.item.productId, event.field, event.value);
       }
 

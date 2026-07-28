@@ -198,7 +198,8 @@ export class ReceiptFormComponent implements OnInit {
       tax: this.localTax,
       items: draftItems.map(i => ({
         productCode: i.product.barcode || '',
-        price: i.price,
+        sellingPrice: i.sellingPrice,
+        buyingPrice: i.buyingPrice,
         quantity: i.quantity,
         total: i.total,
         remainingStock: i.remainingStock

@@ -96,7 +96,8 @@ export class CashierStateService {
                         id: dto.id,
                         name: dto.name,
                         barcode: dto.barcode,
-                        sellingPrice: dto.price,
+                        sellingPrice: dto.sellingPrice,
+                        buyingPrice: dto.buyingPrice,
                         stockQuantity: dto.stock
                   }))),
                   tap((mappedProducts) => {
@@ -208,7 +209,8 @@ export class CashierStateService {
                               productId: uniqueId,
                               productName: i.productName,
                               quantity: i.quantity,
-                              price: i.unitPrice,
+                              sellingPrice: i.sellingPrice,
+                              buyingPrice: i.buyingPrice,
                               discount: 0,
                               total: i.totalPrice,
                               remainingStock: currentLiveStock,
@@ -216,7 +218,8 @@ export class CashierStateService {
                                     id: uniqueId,
                                     name: i.productName,
                                     barcode: i.productCode,
-                                    sellingPrice: i.unitPrice,
+                                    sellingPrice: i.sellingPrice,
+                                    buyingPrice: i.buyingPrice,
                                     stockQuantity: currentLiveStock
                               }),
                               originalQuantity: i.quantity,
@@ -518,7 +521,7 @@ export class CashierStateService {
             if (existingIdx > -1) {
                   items[existingIdx] = { ...items[existingIdx] };
                   items[existingIdx].quantity += quantity;
-                  items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+                  items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].sellingPrice;
                   if (mode === 'EDIT' && items[existingIdx].originalQuantity != null && items[existingIdx].currentRemainingStock != null) {
                         items[existingIdx].remainingStock = items[existingIdx].currentRemainingStock! + items[existingIdx].originalQuantity! - items[existingIdx].quantity;
                   } else {
@@ -530,7 +533,8 @@ export class CashierStateService {
                         productId: product.id,
                         productName: product.name,
                         quantity,
-                        price: product.sellingPrice,
+                        sellingPrice: product.sellingPrice,
+                        buyingPrice: product.buyingPrice,
                         discount: 0,
                         total: product.sellingPrice * quantity,
                         remainingStock: product.stockQuantity - quantity,
@@ -566,7 +570,7 @@ export class CashierStateService {
                   if (newQty > 0) {
                         items[existingIdx] = { ...items[existingIdx] };
                         items[existingIdx].quantity = newQty;
-                        items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].price;
+                        items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].sellingPrice;
                         if (mode === 'EDIT' && items[existingIdx].originalQuantity != null && items[existingIdx].currentRemainingStock != null) {
                               items[existingIdx].remainingStock = items[existingIdx].currentRemainingStock! + items[existingIdx].originalQuantity! - newQty;
                         } else {
@@ -580,7 +584,7 @@ export class CashierStateService {
             }
       }
 
-      public updateCartItemField(productId: number, field: 'price' | 'quantity' | 'total', newValue: number) {
+      public updateCartItemField(productId: number, field: 'sellingPrice' | 'quantity' | 'total', newValue: number) {
             const items = [...this.draftItemsSignal()];
             const existingIdx = items.findIndex(i => i.productId === productId);
             const mode = this.receiptModeSignal();
@@ -588,16 +592,16 @@ export class CashierStateService {
             if (existingIdx > -1) {
                   const item = { ...items[existingIdx] };
 
-                  if (field === 'price') {
-                        item.price = newValue;
-                        item.total = Number((item.quantity * item.price).toFixed(3));
+                  if (field === 'sellingPrice') {
+                        item.sellingPrice = newValue;
+                        item.total = Number((item.quantity * item.sellingPrice).toFixed(3));
                   } else if (field === 'quantity') {
                         item.quantity = newValue;
-                        item.total = Number((item.quantity * item.price).toFixed(3));
+                        item.total = Number((item.quantity * item.sellingPrice).toFixed(3));
                   } else if (field === 'total') {
                         item.total = newValue;
-                        if (item.price && item.price > 0) {
-                              item.quantity = Number((item.total / item.price).toFixed(3));
+                        if (item.sellingPrice && item.sellingPrice > 0) {
+                              item.quantity = Number((item.total / item.sellingPrice).toFixed(3));
                         }
                   }
 

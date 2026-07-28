@@ -143,10 +143,10 @@
                               <div class="td-cell price-col">
                                     <input type="number" *ngIf="receiptMode !== 'VIEW'"
                                           class="pos-input text-center no-spinner qty-input"
-                                          [value]="item.price" (input)="onInlineFieldChange(item, 'price', $event)"
-                                          (keyup.enter)="onInlineFieldEnter(item, 'price', $event)"
+                                          [value]="item.sellingPrice" (input)="onInlineFieldChange(item, 'sellingPrice', $event)"
+                                          (keyup.enter)="onInlineFieldEnter(item, 'sellingPrice', $event)"
                                           style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; appearance: none; -moz-appearance: textfield;">
-                                    <div *ngIf="receiptMode === 'VIEW'">{{ item.price | number:'1.2-2' }}</div>
+                                    <div *ngIf="receiptMode === 'VIEW'">{{ item.sellingPrice | number:'1.2-2' }}</div>
                               </div>
 
                               <div class="td-cell qty-col">
@@ -171,7 +171,7 @@
                                           class="pos-input text-center no-spinner qty-input"
                                           [value]="item.total" (input)="onInlineFieldChange(item, 'total', $event)"
                                           (keyup.enter)="onInlineFieldEnter(item, 'total', $event)"
-                                          [readonly]="!item.price"
+                                          [readonly]="!item.sellingPrice"
                                           style="width: 80px; padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; appearance: none; -moz-appearance: textfield;">
                                     <div *ngIf="receiptMode === 'VIEW'">{{ item.total | number:'1.2-2' }}</div>
                               </div>
@@ -223,7 +223,7 @@
 
                   <!-- Price Column -->
                   <div class="input-cell price-cell">
-                        <input type="number" formControlName="price"
+                        <input type="number" formControlName="sellingPrice"
                               class="pos-input text-center no-spinner readonly-input" readonly placeholder="0.00">
                   </div>
 

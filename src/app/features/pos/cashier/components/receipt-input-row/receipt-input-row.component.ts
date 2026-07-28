@@ -11,7 +11,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
       changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReceiptInputRowComponent implements OnInit {
-      @Output() add = new EventEmitter<{ barcode: string, quantity: number, price?: number }>();
+      @Output() add = new EventEmitter<{ barcode: string, quantity: number, sellingPrice?: number }>();
       @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
       inputForm!: FormGroup;
@@ -22,7 +22,7 @@ export class ReceiptInputRowComponent implements OnInit {
             this.inputForm = this.fb.group({
                   barcode: ['', Validators.required],
                   quantity: [1, [Validators.required, Validators.min(1)]],
-                  price: [{ value: 0, disabled: true }]
+                  sellingPrice: [{ value: 0, disabled: true }]
             });
       }
 
@@ -41,7 +41,7 @@ export class ReceiptInputRowComponent implements OnInit {
       submit() {
             if (this.inputForm.valid) {
                   this.add.emit(this.inputForm.getRawValue());
-                  this.inputForm.reset({ quantity: 1, price: 0, barcode: '' });
+                  this.inputForm.reset({ quantity: 1, sellingPrice: 0, barcode: '' });
                   this.focusSearch();
             }
       }
