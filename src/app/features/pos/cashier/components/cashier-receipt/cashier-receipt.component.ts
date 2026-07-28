@@ -46,6 +46,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       @Output() updateCustomerPhone = new EventEmitter<string>();
 
       @Output() closePaymentScreen = new EventEmitter<void>();
+      @Output() confirmPayment = new EventEmitter<void>();
       
       @ViewChild('paidInput') paidInput?: ElementRef<HTMLInputElement>;
       
@@ -75,6 +76,11 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       onPaidAmountChange(event: Event) {
             const val = (event.target as HTMLInputElement).value;
             this.paidAmount = parseFloat(val) || 0;
+      }
+
+      onPaymentInputEnter(event: Event) {
+            this.onPaidAmountChange(event);
+            this.confirmPayment.emit();
       }
 
       inputForm!: FormGroup;

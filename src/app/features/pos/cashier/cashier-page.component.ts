@@ -94,10 +94,12 @@ export class CashierPageComponent implements OnInit {
 
             if (this.receiptMode() === 'EDIT' && receiptData?.id) {
                   this.state.updateReceipt(receiptData.id, payload).subscribe(() => {
+                        this.showPaymentScreen.set(false);
                         this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
                   });
             } else {
                   this.state.createReceipt(payload).subscribe(() => {
+                        this.showPaymentScreen.set(false);
                         this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
                   });
             }

@@ -81,7 +81,9 @@
                         <div class="payment-stat paid">
                               <div class="payment-label">المدفوع نقداً</div>
                               <input type="number" #paidInput class="paid-amount-input no-spinner"
-                                    [value]="paidAmount || ''" (input)="onPaidAmountChange($event)">
+                                    [value]="paidAmount || ''" 
+                                    (input)="onPaidAmountChange($event)"
+                                    (keyup.enter)="onPaymentInputEnter($event)">
                         </div>
 
                         <!-- Center: Total -->
