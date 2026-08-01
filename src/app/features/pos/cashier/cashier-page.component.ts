@@ -175,10 +175,42 @@ export class CashierPageComponent implements OnInit {
       showRefillDialog = signal(false);
       showPricingDialog = signal(false);
       refillProduct: Product | null = null;
-      refillRequestedQuantity: number = 1;
+      /** How many units of the PARENT product to transfer */
+      refillParentUnits: number = 1;
       refillSelectedParentId: number | null = null;
       isRefillLoading = signal(false);
       pricingValidation: import('../core/models/pos.models').RefillValidateResponse | null = null;
+
+      /** The conversion option currently selected */
+      get selectedRefillOption() {
+            return this.refillProduct?.refillOptions?.find(o => o.parentProductId === this.refillSelectedParentId) ?? null;
+      }
+
+      /** Units that will be added to the child product */
+      get refillChildUnitsAdded(): number {
+            const opt = this.selectedRefillOption;
+            if (!opt || opt.parentQuantity === 0) return 0;
+            return Math.floor(this.refillParentUnits * (opt.childQuantity / opt.parentQuantity));
+      }
+
+      /** Remaining parent stock after the transfer */
+      get refillParentRemainingAfter(): number {
+            const opt = this.selectedRefillOption;
+            if (!opt) return 0;
+            return (opt.parentStock ?? 0) - this.refillParentUnits;
+      }
+
+      /** Max parent units the cashier can transfer (limited by available parent stock) */
+      get refillParentMaxUnits(): number {
+            const opt = this.selectedRefillOption;
+            return opt ? (opt.parentStock ?? 0) : 0;
+      }
+
+      onRefillParentSelect(parentId: number) {
+            this.refillSelectedParentId = parentId;
+            // Reset to 1 when switching parent
+            this.refillParentUnits = 1;
+      }
 
       async onAddItem(event: { product: Product, quantity: number }) {
             const currentItem = this.cartItems().find(i => i.productId === event.product.id);
@@ -189,8 +221,7 @@ export class CashierPageComponent implements OnInit {
                         const fullProduct = await this.state.getProductByBarcodeAsync(event.product.barcode);
                         if (fullProduct.refillOptions && fullProduct.refillOptions.length > 0) {
                               this.refillProduct = fullProduct;
-                              this.refillRequestedQuantity = totalRequested - fullProduct.stockQuantity;
-                              if (this.refillRequestedQuantity < 1) this.refillRequestedQuantity = 1;
+                              this.refillParentUnits = 1;
                               
                               const defaultParent = fullProduct.refillOptions.find(o => o.isDefault);
                               if (defaultParent) {
@@ -209,14 +240,15 @@ export class CashierPageComponent implements OnInit {
       }
 
       async confirmRefill() {
-            if (!this.refillProduct || !this.refillSelectedParentId || this.refillRequestedQuantity < 1) return;
+            const childQty = this.refillChildUnitsAdded;
+            if (!this.refillProduct || !this.refillSelectedParentId || childQty < 1) return;
             
             this.isRefillLoading.set(true);
             try {
                   const response = await this.state.validateRefill({
                         childBarcode: this.refillProduct.barcode,
                         parentProductId: this.refillSelectedParentId,
-                        requestedChildQuantity: this.refillRequestedQuantity
+                        requestedChildQuantity: childQty
                   });
                   
                   this.pricingValidation = response;
@@ -226,14 +258,15 @@ export class CashierPageComponent implements OnInit {
                   } else {
                         await this.executeRefill(false);
                   }
-            } catch (err) {
-                  // Handled by service
+            } catch (err: any) {
+                  this.notifications.error(err?.error?.message || 'فشل التحقق من إعادة التعبئة');
             } finally {
                   this.isRefillLoading.set(false);
             }
       }
 
       async executeRefill(acceptPricingChange: boolean = true) {
+            const childQty = this.refillChildUnitsAdded;
             if (!this.refillProduct || !this.refillSelectedParentId || !this.pricingValidation) return;
             
             this.isRefillLoading.set(true);
@@ -241,7 +274,7 @@ export class CashierPageComponent implements OnInit {
                   const updatedProduct = await this.state.executeRefill({
                         childBarcode: this.refillProduct.barcode,
                         parentProductId: this.refillSelectedParentId,
-                        requestedChildQuantity: this.refillRequestedQuantity,
+                        requestedChildQuantity: childQty,
                         acceptPricingChange: acceptPricingChange,
                         expectedNewBuyingPrice: this.pricingValidation.newBuyingPrice,
                         expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice
@@ -250,11 +283,13 @@ export class CashierPageComponent implements OnInit {
                   this.showPricingDialog.set(false);
                   this.showRefillDialog.set(false);
                   
-                  // Now add to cart using the updated product
-                  this.state.addCartItem(updatedProduct, this.refillRequestedQuantity);
+                  // Add the newly available child units to the cart
+                  this.state.addCartItem(updatedProduct, childQty);
                   this.refillProduct = null;
-            } catch (err) {
-                  // Handled by service
+                  this.pricingValidation = null;
+                  this.notifications.success('تمت إعادة التعبئة بنجاح');
+            } catch (err: any) {
+                  this.notifications.error(err?.error?.message || 'فشل تنفيذ إعادة التعبئة');
             } finally {
                   this.isRefillLoading.set(false);
             }
@@ -264,6 +299,7 @@ export class CashierPageComponent implements OnInit {
             this.showRefillDialog.set(false);
             this.showPricingDialog.set(false);
             this.refillProduct = null;
+            this.pricingValidation = null;
       }
 
       onUpdatePaymentMethod(method: PaymentMethod) {

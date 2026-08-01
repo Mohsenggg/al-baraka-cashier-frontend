@@ -65,66 +65,195 @@
             <!-- ============================= -->
             <!-- REFILL MODALS -->
             <!-- ============================= -->
-            <!-- Refill Selection Modal -->
-            <div class="modal-overlay" *ngIf="showRefillDialog()">
-                  <div class="modal-content">
-                        <h3 class="text-danger mb-sm">نفاد المخزون - إعادة التعبئة</h3>
-                        <p class="mb-sm">الصنف <strong>{{refillProduct?.name}}</strong> غير متوفر بالكمية المطلوبة. هل تريد تعبئته؟</p>
-                        
-                        <div class="mb-md">
-                        <label class="font-bold">الكمية المطلوبة للتعبئة (بالوحدة الصغرى):</label>
-                        <input type="number" [(ngModel)]="refillRequestedQuantity" min="1" class="input w-full mt-xs"/>
+
+            <!-- ── Step 1: Refill Selection Modal ── -->
+            <div class="refill-overlay" *ngIf="showRefillDialog()">
+                  <div class="refill-dialog" role="dialog" aria-modal="true">
+
+                        <!-- Header -->
+                        <div class="refill-dialog__header">
+                              <div class="refill-dialog__header-icon">
+                                    <span class="material-icons-outlined">inventory_2</span>
+                              </div>
+                              <div>
+                                    <h2 class="refill-dialog__title">إعادة تعبئة المخزون</h2>
+                                    <p class="refill-dialog__subtitle">الرصيد غير كافٍ لإتمام عملية البيع</p>
+                              </div>
+                              <button class="refill-dialog__close" (click)="cancelRefill()" aria-label="إغلاق">
+                                    <span class="material-icons-outlined">close</span>
+                              </button>
                         </div>
-                        
-                        <label class="font-bold">اختر المنتج الأب (المصدر):</label>
-                        <div class="options-list mt-xs mb-md border-radius border p-sm">
-                        <div *ngFor="let opt of refillProduct?.refillOptions" class="radio-option flex items-center gap-sm mb-xs">
-                              <input type="radio" [value]="opt.parentProductId" [(ngModel)]="refillSelectedParentId" [id]="'opt_'+opt.parentProductId"/>
-                              <label [for]="'opt_'+opt.parentProductId">
-                              {{opt.parentProductName}} (المتوفر: {{opt.parentStock}}) - المعدل: {{opt.parentQuantity}} مصدر &#x2192; {{opt.childQuantity}} وحدة
+
+                        <!-- Products Info Row -->
+                        <div class="refill-products-row">
+                              <!-- Parent selector (if multiple options) -->
+                              <div class="refill-product-card refill-product-card--parent">
+                                    <span class="refill-product-card__badge">مصدر التعبئة</span>
+                                    <ng-container *ngIf="(refillProduct?.refillOptions?.length ?? 0) === 1; else multiParent">
+                                          <p class="refill-product-card__name">{{ selectedRefillOption?.parentProductName }}</p>
+                                          <p class="refill-product-card__stock">
+                                                <span class="material-icons-outlined" style="font-size:0.9rem">warehouse</span>
+                                                رصيد: {{ selectedRefillOption?.parentStock ?? 0 }}
+                                          </p>
+                                    </ng-container>
+                                    <ng-template #multiParent>
+                                          <select class="refill-select"
+                                                  [ngModel]="refillSelectedParentId"
+                                                  (ngModelChange)="onRefillParentSelect($event)">
+                                                <option *ngFor="let opt of refillProduct?.refillOptions"
+                                                        [value]="opt.parentProductId">
+                                                      {{ opt.parentProductName }} (متوفر: {{ opt.parentStock }})
+                                                </option>
+                                          </select>
+                                    </ng-template>
+                              </div>
+
+                              <!-- Arrow -->
+                              <div class="refill-arrow">
+                                    <span class="material-icons-outlined">arrow_back</span>
+                              </div>
+
+                              <!-- Child product -->
+                              <div class="refill-product-card refill-product-card--child">
+                                    <span class="refill-product-card__badge refill-product-card__badge--child">المنتج المطلوب</span>
+                                    <p class="refill-product-card__name">{{ refillProduct?.name }}</p>
+                                    <p class="refill-product-card__stock">
+                                          <span class="material-icons-outlined" style="font-size:0.9rem">inventory</span>
+                                          رصيد: {{ refillProduct?.stockQuantity ?? 0 }}
+                                    </p>
+                              </div>
+                        </div>
+
+                        <!-- Conversion Ratio Badge -->
+                        <div class="refill-ratio-row" *ngIf="selectedRefillOption">
+                              <span class="refill-ratio-badge">
+                                    <span class="material-icons-outlined">sync_alt</span>
+                                    معدل التحويل:
+                                    {{ selectedRefillOption.parentQuantity }} وحدة أب
+                                    &nbsp;→&nbsp;
+                                    {{ selectedRefillOption.childQuantity }} وحدة صغرى
+                              </span>
+                        </div>
+
+                        <!-- Quantity Input -->
+                        <div class="refill-qty-section">
+                              <label class="refill-qty-label">
+                                    كم وحدة من
+                                    <strong>{{ selectedRefillOption?.parentProductName }}</strong>
+                                    تريد نقلها؟
                               </label>
+                              <div class="refill-qty-stepper">
+                                    <button class="refill-qty-btn"
+                                            (click)="refillParentUnits = refillParentUnits > 1 ? refillParentUnits - 1 : 1"
+                                            [disabled]="refillParentUnits <= 1">
+                                          <span class="material-icons-outlined">remove</span>
+                                    </button>
+                                    <input class="refill-qty-input"
+                                           type="number"
+                                           [(ngModel)]="refillParentUnits"
+                                           [min]="1"
+                                           [max]="refillParentMaxUnits"/>
+                                    <button class="refill-qty-btn"
+                                            (click)="refillParentUnits = refillParentUnits + 1"
+                                            [disabled]="refillParentUnits >= refillParentMaxUnits">
+                                          <span class="material-icons-outlined">add</span>
+                                    </button>
+                              </div>
                         </div>
+
+                        <!-- Live Preview -->
+                        <div class="refill-preview">
+                              <div class="refill-preview__item refill-preview__item--add">
+                                    <span class="material-icons-outlined">add_circle</span>
+                                    <div>
+                                          <p class="refill-preview__item-label">سيُضاف إلى المخزون</p>
+                                          <p class="refill-preview__item-value">{{ refillChildUnitsAdded }} وحدة من {{ refillProduct?.name }}</p>
+                                    </div>
+                              </div>
+                              <div class="refill-preview__item refill-preview__item--remain"
+                                   [class.refill-preview__item--warn]="refillParentRemainingAfter < 0">
+                                    <span class="material-icons-outlined">
+                                          {{ refillParentRemainingAfter < 0 ? 'warning' : 'remove_circle' }}
+                                    </span>
+                                    <div>
+                                          <p class="refill-preview__item-label">رصيد {{ selectedRefillOption?.parentProductName }} بعد النقل</p>
+                                          <p class="refill-preview__item-value">{{ refillParentRemainingAfter }} وحدة</p>
+                                    </div>
+                              </div>
                         </div>
-                        
-                        <div class="flex gap-sm justify-end">
-                        <button class="btn btn-outline" (click)="cancelRefill()">إلغاء</button>
-                        <button class="btn btn-primary" (click)="confirmRefill()" [disabled]="!refillSelectedParentId || isRefillLoading()">
-                              {{isRefillLoading() ? 'جاري التحقق...' : 'متابعة'}}
-                        </button>
+
+                        <!-- Footer Actions -->
+                        <div class="refill-dialog__footer">
+                              <button class="refill-btn refill-btn--cancel" (click)="cancelRefill()">إلغاء</button>
+                              <button class="refill-btn refill-btn--confirm"
+                                      (click)="confirmRefill()"
+                                      [disabled]="refillChildUnitsAdded < 1 || refillParentRemainingAfter < 0 || isRefillLoading()">
+                                    <span class="material-icons-outlined" *ngIf="!isRefillLoading()">check_circle</span>
+                                    <span class="refill-spinner" *ngIf="isRefillLoading()"></span>
+                                    {{ isRefillLoading() ? 'جاري التحقق...' : 'تأكيد وتعبئة' }}
+                              </button>
                         </div>
+
                   </div>
             </div>
 
-            <!-- Refill Pricing Confirmation Modal -->
-            <div class="modal-overlay" *ngIf="showPricingDialog()">
-                  <div class="modal-content">
-                        <h3 class="mb-sm">تأكيد تسعير إعادة التعبئة</h3>
-                        <div class="alert alert-warning mb-md">
-                        سيؤدي هذا الإجراء إلى تغيير تسعير المنتج ({{refillProduct?.name}}).
+            <!-- ── Step 2: Pricing Confirmation Modal ── -->
+            <div class="refill-overlay" *ngIf="showPricingDialog()">
+                  <div class="refill-dialog refill-dialog--pricing" role="dialog" aria-modal="true">
+
+                        <!-- Header -->
+                        <div class="refill-dialog__header refill-dialog__header--warning">
+                              <div class="refill-dialog__header-icon refill-dialog__header-icon--warning">
+                                    <span class="material-icons-outlined">price_change</span>
+                              </div>
+                              <div>
+                                    <h2 class="refill-dialog__title">تغيُّر في السعر</h2>
+                                    <p class="refill-dialog__subtitle">يتطلب هذا الإجراء موافقتك على تعديل التسعير</p>
+                              </div>
                         </div>
-                        <table class="table mb-md w-full text-right">
-                        <thead>
-                              <tr><th></th><th>السعر الحالي</th><th>السعر الجديد</th></tr>
-                        </thead>
-                        <tbody>
-                              <tr>
-                              <td class="font-bold">سعر الشراء</td>
-                              <td>{{pricingValidation?.currentBuyingPrice}}</td>
-                              <td class="text-danger font-bold">{{pricingValidation?.newBuyingPrice}}</td>
-                              </tr>
-                              <tr>
-                              <td class="font-bold">سعر البيع</td>
-                              <td>{{pricingValidation?.currentSellingPrice}}</td>
-                              <td>{{pricingValidation?.proposedSellingPrice}}</td>
-                              </tr>
-                        </tbody>
-                        </table>
-                        <div class="flex gap-sm justify-end">
-                        <button class="btn btn-outline" (click)="cancelRefill()">إلغاء</button>
-                        <button class="btn btn-primary" (click)="executeRefill()" [disabled]="isRefillLoading()">
-                              {{isRefillLoading() ? 'جاري التنفيذ...' : 'موافق وتنفيذ'}}
-                        </button>
+
+                        <!-- Pricing Table -->
+                        <div class="pricing-change-table">
+                              <div class="pricing-change-table__row pricing-change-table__row--header">
+                                    <span></span>
+                                    <span>الحالي</span>
+                                    <span>الجديد</span>
+                              </div>
+                              <div class="pricing-change-table__row">
+                                    <span class="pricing-change-table__label">
+                                          <span class="material-icons-outlined">shopping_cart</span>
+                                          سعر الشراء
+                                    </span>
+                                    <span class="pricing-change-table__current">{{ pricingValidation?.currentBuyingPrice }}</span>
+                                    <span class="pricing-change-table__new">{{ pricingValidation?.newBuyingPrice }}</span>
+                              </div>
+                              <div class="pricing-change-table__row">
+                                    <span class="pricing-change-table__label">
+                                          <span class="material-icons-outlined">sell</span>
+                                          سعر البيع
+                                    </span>
+                                    <span class="pricing-change-table__current">{{ pricingValidation?.currentSellingPrice }}</span>
+                                    <span class="pricing-change-table__new pricing-change-table__new--neutral">{{ pricingValidation?.proposedSellingPrice }}</span>
+                              </div>
                         </div>
+
+                        <p class="refill-pricing-note">
+                              <span class="material-icons-outlined">info</span>
+                              سعر البيع لن يتغير. فقط سعر الشراء سيتم تحديثه بناءً على تكلفة التعبئة.
+                        </p>
+
+                        <!-- Footer Actions -->
+                        <div class="refill-dialog__footer">
+                              <button class="refill-btn refill-btn--cancel" (click)="cancelRefill()">إلغاء</button>
+                              <button class="refill-btn refill-btn--confirm"
+                                      (click)="executeRefill(true)"
+                                      [disabled]="isRefillLoading()">
+                                    <span class="material-icons-outlined" *ngIf="!isRefillLoading()">done_all</span>
+                                    <span class="refill-spinner" *ngIf="isRefillLoading()"></span>
+                                    {{ isRefillLoading() ? 'جاري التنفيذ...' : 'موافق وتنفيذ' }}
+                              </button>
+                        </div>
+
                   </div>
             </div>
 
