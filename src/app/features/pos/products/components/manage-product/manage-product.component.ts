@@ -195,6 +195,10 @@ export class ManageProductComponent implements OnInit, OnDestroy {
             this.state.removeConversion(index);
       }
 
+      setDefaultConversion(index: number): void {
+            this.state.setDefaultConversion(index);
+      }
+
       addCompositionRow(): void {
             this.state.addCompositionRow();
       }
@@ -333,7 +337,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
                   if (this.state.saveError()) {
                         if (this.productForm.get('composition')?.invalid && this.productForm.get('hasComposition')?.value) {
                               this.activeTab = 'composition';
-                        } else if (this.productForm.get('conversions')?.invalid && this.productForm.get('hasConversions')?.value) {
+                        } else if (this.productForm.get('conversions')?.invalid && this.productForm.get('hasConversion')?.value) {
                               this.activeTab = 'conversions';
                         } else {
                               this.activeTab = 'basic';

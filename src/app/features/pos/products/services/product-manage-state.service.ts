@@ -185,8 +185,8 @@ export class ProductManageStateService {
                   categoryId: formValue.categoryId,
                   manufacturerId: formValue.manufacturerId,
                   supplierIds: formValue.supplierIds,
-                  hasConversions: formValue.hasConversions,
-                  conversions: formValue.hasConversions ? formValue.conversions : [],
+                  hasConversion: formValue.hasConversion,
+                  conversions: formValue.hasConversion ? formValue.conversions : [],
                   hasComposition: formValue.hasComposition,
                   composition: formValue.hasComposition ? formValue.composition : []
             };
@@ -335,12 +335,26 @@ export class ProductManageStateService {
                   parentProductId: [null, Validators.required],
                   parentProductName: [''],
                   parentQuantity: [1, [Validators.required, Validators.min(0.01)]],
-                  childQuantity: [1, [Validators.required, Validators.min(0.01)]]
+                  childQuantity: [1, [Validators.required, Validators.min(0.01)]],
+                  isDefault: [false]
             }));
+            
+            if (this.conversionsFormArray.length === 1) {
+                  this.setDefaultConversion(0);
+            }
       }
 
       removeConversion(index: number): void {
             this.conversionsFormArray.removeAt(index);
+            if (this.conversionsFormArray.length > 0 && !this.conversionsFormArray.value.some((c: any) => c.isDefault)) {
+                  this.setDefaultConversion(0);
+            }
+      }
+
+      setDefaultConversion(index: number): void {
+            this.conversionsFormArray.controls.forEach((control, i) => {
+                  control.get('isDefault')?.setValue(i === index, { emitEvent: false });
+            });
       }
 
       addCompositionRow(): void {
@@ -487,7 +501,7 @@ export class ProductManageStateService {
                   categoryId: [null],
                   manufacturerId: [null],
                   supplierIds: [[]],
-                  hasConversions: [false],
+                  hasConversion: [false],
                   conversions: this.fb.array([]),
                   hasComposition: [false],
                   composition: this.fb.array([])
@@ -501,7 +515,7 @@ export class ProductManageStateService {
                   categoryId: detail.categoryId,
                   manufacturerId: detail.manufacturerId,
                   supplierIds: detail.supplierIds,
-                  hasConversions: detail.hasConversions,
+                  hasConversion: detail.hasConversion,
                   hasComposition: detail.hasComposition
             });
 
@@ -537,7 +551,8 @@ export class ProductManageStateService {
                               parentProductId: [conv.parentProductId, Validators.required],
                               parentProductName: [conv.parentProductName || ''],
                               parentQuantity: [conv.parentQuantity, [Validators.required, Validators.min(0.01)]],
-                              childQuantity: [conv.childQuantity, [Validators.required, Validators.min(0.01)]]
+                              childQuantity: [conv.childQuantity, [Validators.required, Validators.min(0.01)]],
+                              isDefault: [conv.isDefault]
                         }));
                   });
             }

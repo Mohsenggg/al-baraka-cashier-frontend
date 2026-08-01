@@ -126,6 +126,7 @@ export interface ProductConversionDto {
       parentProductName?: string;
       parentQuantity: number;
       childQuantity: number;
+      isDefault: boolean;
 }
 
 export interface ProductManagePayload {
@@ -138,7 +139,7 @@ export interface ProductManagePayload {
       categoryId: number | null;
       manufacturerId: number | null;
       supplierIds: number[];
-      hasConversions: boolean;
+      hasConversion: boolean;
       conversions: ProductConversionDto[];
       hasComposition: boolean;
       composition: ProductCompositionDto[];

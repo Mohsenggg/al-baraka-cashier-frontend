@@ -327,13 +327,13 @@
                 </div>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" formControlName="hasConversions">
+                <input type="checkbox" formControlName="hasConversion">
                 <span class="toggle-slider"></span>
                 <span class="toggle-label">تفعيل التحويلات لهذا المنتج</span>
               </label>
             </div>
 
-            <div class="card-body table-scroll" *ngIf="productForm.get('hasConversions')?.value">
+            <div class="card-body table-scroll" *ngIf="productForm.get('hasConversion')?.value">
               <div class="card-header-actions" style="margin-bottom: 1rem; justify-content: flex-end;">
                 <button type="button" class="btn-add-barcode" (click)="addConversion()">
                   <span class="material-icons-outlined">add</span>
@@ -343,9 +343,10 @@
               <table class="barcodes-table">
                 <thead>
                   <tr>
-                    <th>المنتج الأساسي (بحث بالاسم)</th>
-                    <th>الكمية الأساسية</th>
-                    <th>كمية التحويل (هذا المنتج)</th>
+                    <th>المنتج الجملة</th>
+                    <th>كمية منتج الجملة</th>
+                    <th>عدد قطع التجزئة</th>
+                    <th class="col-default">افتراضي</th>
                     <th class="col-actions"></th>
                   </tr>
                 </thead>
@@ -366,6 +367,13 @@
                     </td>
                     <td>
                       <input type="number" formControlName="childQuantity" class="form-input form-input-compact" min="0" step="0.01">
+                    </td>
+                    <td class="col-default">
+                      <label class="default-radio">
+                        <input type="radio" name="defaultConversion" [checked]="row.get('isDefault')?.value"
+                          (change)="setDefaultConversion(i)">
+                        <span class="default-tag" *ngIf="row.get('isDefault')?.value">افتراضي</span>
+                      </label>
                     </td>
                     <td class="col-actions">
                       <button type="button" class="btn-row-delete"
