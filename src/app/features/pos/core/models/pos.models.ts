@@ -149,6 +149,8 @@ export interface RefillExecuteRequest {
   expectedProposedSellingPrice: number;
   /** Preserved markup % — used for stale-check on the execute endpoint */
   expectedMarkupPercentage: number;
+  /** How many parent units were consumed — used to update the parent's local cache after the refill */
+  parentUnitsUsed: number;
 }
 
 export interface Paginated<T> {

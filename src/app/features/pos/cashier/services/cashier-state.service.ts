@@ -653,21 +653,56 @@ export class CashierStateService {
                         if (product.stock !== undefined) {
                               product.stockQuantity = product.stock;
                         }
-                        
-                        // Update cache
+
                         const currentProducts = [...this.productsSignal()];
-                        const pIdx = currentProducts.findIndex(p => p.barcode === product.barcode);
-                        if (pIdx > -1) {
-                              currentProducts[pIdx] = { ...currentProducts[pIdx], stockQuantity: product.stockQuantity, buyingPrice: product.buyingPrice };
+
+                        // 1. Update child (target) product
+                        const childIdx = currentProducts.findIndex(p => p.barcode === product.barcode);
+                        if (childIdx > -1) {
+                              currentProducts[childIdx] = {
+                                    ...currentProducts[childIdx],
+                                    stockQuantity: product.stockQuantity,
+                                    buyingPrice: product.buyingPrice
+                              };
                         } else {
                               currentProducts.push(product);
                         }
-                        this.productsSignal.set(currentProducts);
-                        
+
+                        // 2. Update parent (source) product by deducting the consumed units locally.
+                        //    The backend returns only the child; we derive the parent's new stock
+                        //    from the known parentUnitsUsed without a second API call.
+                        const parentIdx = currentProducts.findIndex(p => p.id === payload.parentProductId);
+                        if (parentIdx > -1) {
+                              const oldParentStock = currentProducts[parentIdx].stockQuantity ?? 0;
+                              const newParentStock = Math.max(0, oldParentStock - payload.parentUnitsUsed);
+
+                              // Also update parentStock inside any product's refillOptions that reference this parent
+                              const updatedProducts = currentProducts.map((p, i) => {
+                                    if (i === parentIdx) {
+                                          return { ...p, stockQuantity: newParentStock };
+                                    }
+                                    if (p.refillOptions?.some(o => o.parentProductId === payload.parentProductId)) {
+                                          return {
+                                                ...p,
+                                                refillOptions: p.refillOptions!.map(o =>
+                                                      o.parentProductId === payload.parentProductId
+                                                            ? { ...o, parentStock: newParentStock }
+                                                            : o
+                                                )
+                                          };
+                                    }
+                                    return p;
+                              });
+                              this.productsSignal.set(updatedProducts);
+                        } else {
+                              this.productsSignal.set(currentProducts);
+                        }
+
                         return product;
                   })
             ));
       }
+
 
       // --------- Internal Helper Methods ---------
 

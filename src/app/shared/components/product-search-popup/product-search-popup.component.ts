@@ -19,7 +19,18 @@ export class ProductSearchPopupComponent<T extends SharedProduct> implements OnC
   private cdr = inject(ChangeDetectorRef);
 
   @Input() isOpen = false;
-  @Input() products: T[] = [];
+  private _products: T[] = [];
+  @Input()
+  set products(value: T[]) {
+    this._products = value ?? [];
+    if (this.isOpen) {
+      this.applyFilter();
+    }
+  }
+  get products(): T[] {
+    return this._products;
+  }
+
   @Input() trigger?: HTMLElement;
   @Input() initialQuery = '';
   @Input() title = 'بحث عن منتج';
