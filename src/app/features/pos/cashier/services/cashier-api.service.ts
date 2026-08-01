@@ -67,8 +67,8 @@ export class CashierApiService {
     return this.http.post<import('../../core/models/pos.models').RefillValidateResponse>(`${this.apiUrl}/refill/validate`, payload);
   }
   
-  public executeRefill(payload: import('../../core/models/pos.models').RefillExecuteRequest): Observable<Product> {
-    return this.http.post<Product>(`${this.apiUrl}/refill/execute`, payload);
+  public executeRefill(payload: import('../../core/models/pos.models').RefillExecuteRequest): Observable<import('../../core/models/pos.models').RefillExecuteResponse> {
+    return this.http.post<import('../../core/models/pos.models').RefillExecuteResponse>(`${this.apiUrl}/refill/execute`, payload);
   }
 
   // --------- Product API ---------

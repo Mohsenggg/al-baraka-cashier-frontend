@@ -153,6 +153,13 @@ export interface RefillExecuteRequest {
   parentUnitsUsed: number;
 }
 
+export interface RefillExecuteResponse extends Product {
+  /** The backend may optionally return a full child product with updated details */
+  childProduct?: Product;
+  /** The backend may optionally echo the child barcode if the primary response shape omits it */
+  childBarcode?: string;
+}
+
 export interface Paginated<T> {
   data?: T[];
   content?: T[];

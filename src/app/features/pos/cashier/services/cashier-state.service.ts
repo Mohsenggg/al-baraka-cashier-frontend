@@ -526,9 +526,11 @@ export class CashierStateService {
 
             if (existingIdx > -1) {
                   items[existingIdx] = { ...items[existingIdx] };
+                  items[existingIdx].sellingPrice = product.sellingPrice;
+                  items[existingIdx].buyingPrice = product.buyingPrice;
+                  items[existingIdx].product = product; // Keep product reference current (critical after a refill)
                   items[existingIdx].quantity += quantity;
                   items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].sellingPrice;
-                  items[existingIdx].product = product; // Keep product reference current (critical after a refill)
                   if (mode === 'EDIT' && items[existingIdx].originalQuantity != null && items[existingIdx].currentRemainingStock != null) {
                         items[existingIdx].remainingStock = items[existingIdx].currentRemainingStock! + items[existingIdx].originalQuantity! - items[existingIdx].quantity;
                   } else {
@@ -627,9 +629,83 @@ export class CashierStateService {
             }
       }
 
+      private syncProductInCartItems(updatedProduct: Product): void {
+            const items = [...this.draftItemsSignal()];
+            let didUpdate = false;
+
+            const updatedItems = items.map(item => {
+                  if (item.productId === updatedProduct.id || item.product?.barcode === updatedProduct.barcode) {
+                        didUpdate = true;
+                        const newItem = { ...item };
+                        newItem.product = { ...newItem.product, ...updatedProduct };
+                        newItem.sellingPrice = updatedProduct.sellingPrice;
+                        newItem.buyingPrice = updatedProduct.buyingPrice;
+                        newItem.total = Number((newItem.quantity * updatedProduct.sellingPrice).toFixed(3));
+                        if (newItem.originalQuantity != null && newItem.currentRemainingStock != null && this.receiptModeSignal() === 'EDIT') {
+                              newItem.remainingStock = newItem.currentRemainingStock + newItem.originalQuantity - newItem.quantity;
+                        } else {
+                              newItem.remainingStock = updatedProduct.stockQuantity - newItem.quantity;
+                        }
+                        newItem.stockError = validateCartItemStock(newItem, this.receiptModeSignal()) ?? undefined;
+                        return newItem;
+                  }
+                  return item;
+            });
+
+            if (didUpdate) {
+                  this.draftItemsSignal.set(updatedItems);
+            }
+      }
+
+      private syncProductInNavigationCache(updatedProduct: Product): void {
+            if (this.navigationCache.length === 0) return;
+
+            this.navigationCache = this.navigationCache.map(receipt => ({
+                  ...receipt,
+                  items: receipt.items.map(item => {
+                        if (item.productCode === updatedProduct.barcode) {
+                              return {
+                                    ...item,
+                                    sellingPrice: updatedProduct.sellingPrice,
+                                    buyingPrice: updatedProduct.buyingPrice,
+                                    remainingStock: Math.min(item.remainingStock, updatedProduct.stockQuantity),
+                                    currentRemainingStock: updatedProduct.stockQuantity
+                              };
+                        }
+                        return item;
+                  })
+            }));
+      }
+
       public updateDraftReceiptData(partial: Partial<ReceiptResponse>) {
             const current = this.currentSavedReceiptSignal() || {} as ReceiptResponse;
             this.currentSavedReceiptSignal.set({ ...current, ...partial });
+      }
+
+      private syncProductInCurrentReceipt(updatedProduct: Product): void {
+            const current = this.currentSavedReceiptSignal();
+            if (!current?.id) return;
+
+            const updatedItems = current.items.map(item => {
+                  if (item.productCode === updatedProduct.barcode) {
+                        return {
+                              ...item,
+                              sellingPrice: updatedProduct.sellingPrice,
+                              buyingPrice: updatedProduct.buyingPrice,
+                              totalPrice: Number((item.quantity * updatedProduct.sellingPrice).toFixed(3)),
+                              currentRemainingStock: updatedProduct.stockQuantity
+                        };
+                  }
+                  return item;
+            });
+
+            this.currentSavedReceiptSignal.set({ ...current, items: updatedItems });
+      }
+
+      private syncUpdatedProductAcrossState(updatedProduct: Product): void {
+            this.syncProductInCartItems(updatedProduct);
+            this.syncProductInCurrentReceipt(updatedProduct);
+            this.syncProductInNavigationCache(updatedProduct);
       }
 
       public getProductByBarcodeAsync(barcode: string): Promise<Product> {
@@ -649,35 +725,31 @@ export class CashierStateService {
       
       public executeRefill(payload: import('../../core/models/pos.models').RefillExecuteRequest): Promise<Product> {
             return firstValueFrom(this.api.executeRefill(payload).pipe(
-                  map(product => {
-                        if (product.stock !== undefined) {
-                              product.stockQuantity = product.stock;
-                        }
+                  map(response => {
+                        const updatedProduct = this.normalizeRefillExecuteResponse(response, payload);
 
                         const currentProducts = [...this.productsSignal()];
+                        const existingChildIdx = currentProducts.findIndex(p => p.barcode === updatedProduct.barcode);
+                        let finalProducts = [...currentProducts];
 
-                        // 1. Update child (target) product
-                        const childIdx = currentProducts.findIndex(p => p.barcode === product.barcode);
-                        if (childIdx > -1) {
-                              currentProducts[childIdx] = {
-                                    ...currentProducts[childIdx],
-                                    stockQuantity: product.stockQuantity,
-                                    buyingPrice: product.buyingPrice
+                        if (existingChildIdx > -1) {
+                              finalProducts[existingChildIdx] = {
+                                    ...finalProducts[existingChildIdx],
+                                    stockQuantity: updatedProduct.stockQuantity,
+                                    buyingPrice: updatedProduct.buyingPrice,
+                                    sellingPrice: updatedProduct.sellingPrice,
+                                    name: updatedProduct.name
                               };
                         } else {
-                              currentProducts.push(product);
+                              finalProducts.push(updatedProduct);
                         }
 
-                        // 2. Update parent (source) product by deducting the consumed units locally.
-                        //    The backend returns only the child; we derive the parent's new stock
-                        //    from the known parentUnitsUsed without a second API call.
-                        const parentIdx = currentProducts.findIndex(p => p.id === payload.parentProductId);
+                        const parentIdx = finalProducts.findIndex(p => p.id === payload.parentProductId);
                         if (parentIdx > -1) {
-                              const oldParentStock = currentProducts[parentIdx].stockQuantity ?? 0;
+                              const oldParentStock = finalProducts[parentIdx].stockQuantity ?? 0;
                               const newParentStock = Math.max(0, oldParentStock - payload.parentUnitsUsed);
 
-                              // Also update parentStock inside any product's refillOptions that reference this parent
-                              const updatedProducts = currentProducts.map((p, i) => {
+                              finalProducts = finalProducts.map((p, i) => {
                                     if (i === parentIdx) {
                                           return { ...p, stockQuantity: newParentStock };
                                     }
@@ -693,14 +765,56 @@ export class CashierStateService {
                                     }
                                     return p;
                               });
-                              this.productsSignal.set(updatedProducts);
-                        } else {
-                              this.productsSignal.set(currentProducts);
                         }
 
-                        return product;
+                        this.productsSignal.set(finalProducts);
+                        this.syncUpdatedProductAcrossState(updatedProduct);
+
+                        return updatedProduct;
                   })
             ));
+      }
+
+      private normalizeRefillExecuteResponse(
+            response: import('../../core/models/pos.models').RefillExecuteResponse,
+            payload: import('../../core/models/pos.models').RefillExecuteRequest
+      ): Product {
+            const childProduct = response.childProduct ?? response;
+            const barcode = childProduct.barcode || response.childBarcode || payload.childBarcode;
+            const currentProduct = this.productsSignal().find(p => p.barcode === barcode);
+
+            const normalized: Product = {
+                  id: childProduct.id ?? currentProduct?.id ?? 0,
+                  name: childProduct.name || currentProduct?.name || '',
+                  barcode,
+                  costPrice: childProduct.costPrice ?? currentProduct?.costPrice ?? 0,
+                  sellingPrice: childProduct.sellingPrice ?? this.pricingFallbackSellingPrice(response, payload),
+                  buyingPrice: childProduct.buyingPrice ?? this.pricingFallbackBuyingPrice(response, payload),
+                  stockQuantity: childProduct.stockQuantity ?? childProduct.stock ?? currentProduct?.stockQuantity ?? 0,
+                  stock: childProduct.stock ?? childProduct.stockQuantity,
+                  refillOptions: childProduct.refillOptions ?? currentProduct?.refillOptions,
+                  isActive: childProduct.isActive ?? currentProduct?.isActive ?? true,
+                  createdAt: childProduct.createdAt ?? currentProduct?.createdAt ?? '',
+                  updatedAt: childProduct.updatedAt ?? currentProduct?.updatedAt ?? ''
+            };
+
+            return normalized;
+      }
+
+      private pricingFallbackSellingPrice(
+            response: import('../../core/models/pos.models').RefillExecuteResponse,
+            payload: import('../../core/models/pos.models').RefillExecuteRequest
+      ): number {
+            if (response.sellingPrice != null) return response.sellingPrice;
+            return payload.expectedProposedSellingPrice;
+      }
+
+      private pricingFallbackBuyingPrice(
+            response: import('../../core/models/pos.models').RefillExecuteResponse,
+            payload: import('../../core/models/pos.models').RefillExecuteRequest
+      ): number {
+            if (response.buyingPrice != null) return response.buyingPrice;
+            return payload.expectedNewBuyingPrice;
       }
 
 
