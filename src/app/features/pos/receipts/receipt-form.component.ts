@@ -227,6 +227,19 @@ export class ReceiptFormComponent implements OnInit {
   refillSelectedParentId: number | null = null;
   isRefillLoading: boolean = false;
   pricingValidation: import('../core/models/pos.models').RefillValidateResponse | null = null;
+
+  get selectedRefillOption() {
+    return this.refillProduct?.refillOptions?.find(opt => opt.parentProductId === this.refillSelectedParentId) ?? null;
+  }
+
+  get refillParentUnitsUsed(): number {
+    const option = this.selectedRefillOption;
+    if (!option || option.parentQuantity <= 0 || option.childQuantity <= 0) {
+      return 0;
+    }
+    const ratio = option.childQuantity / option.parentQuantity;
+    return Math.max(1, Math.ceil(this.refillRequestedQuantity / ratio));
+  }
   
   // Assuming a cashierId exists from Auth/Login
   // Hardcoded for demo/example purposes.
@@ -312,7 +325,8 @@ export class ReceiptFormComponent implements OnInit {
            acceptPricingChange: acceptPricingChange,
            expectedNewBuyingPrice: this.pricingValidation.newBuyingPrice,
            expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice,
-           expectedMarkupPercentage: this.pricingValidation.currentMarkupPercentage
+           expectedMarkupPercentage: this.pricingValidation.currentMarkupPercentage,
+           parentUnitsUsed: this.refillParentUnitsUsed
        });
        
        this.showPricingDialog = false;
