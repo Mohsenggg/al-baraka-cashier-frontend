@@ -40,6 +40,8 @@
 
             </div>
 
+            <!-- TODO: re-enable draft section later when draft mode UX is finalized -->
+            <!--
             <div class="drafts-section" (click)="drafts.emit()">
                   <div class="drafts-card">
                         <div class="badge" *ngIf="draftsCount > 0">{{ draftsCount }}</div>
@@ -49,6 +51,7 @@
                         </div>
                   </div>
             </div>
+            -->
 
             <button class="btn-delete" (click)="refundReceipt.emit()" *ngIf="receipt?.id && receiptMode !== 'NEW'">
                   <span class="material-icons-outlined">undo</span>
