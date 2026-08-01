@@ -2455,3 +2455,30 @@
   font-weight: 800;
   color: #1e3a8a;
 }
+
+/* Shortage context banner inside refill dialog */
+.refill-shortage-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 20px 0;
+  padding: 10px 14px;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.refill-shortage-banner .material-icons-outlined {
+  font-size: 1.1rem;
+  color: #ea580c;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.refill-shortage-banner strong {
+  color: #c2410c;
+  font-weight: 800;
+}

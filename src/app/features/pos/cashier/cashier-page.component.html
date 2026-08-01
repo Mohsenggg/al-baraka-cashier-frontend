@@ -135,6 +135,17 @@
                               </span>
                         </div>
 
+                        <!-- Shortage Context Banner -->
+                        <div class="refill-shortage-banner" *ngIf="refillMissingChildQty > 0">
+                              <span class="material-icons-outlined">warning_amber</span>
+                              <span>
+                                    النقص الحالي:
+                                    <strong>{{ refillMissingChildQty }} وحدة</strong>
+                                    من {{ refillProduct?.name }}
+                                    — الحد الأدنى للتعبئة موضّح في الحقل أدناه
+                              </span>
+                        </div>
+
                         <!-- Quantity Input -->
                         <div class="refill-qty-section">
                               <label class="refill-qty-label">
