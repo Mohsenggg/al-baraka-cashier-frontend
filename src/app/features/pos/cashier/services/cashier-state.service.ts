@@ -1,5 +1,5 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
-import { BehaviorSubject, Observable, tap, finalize, catchError, throwError, EMPTY, map, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, finalize, catchError, throwError, EMPTY, map, switchMap, firstValueFrom } from 'rxjs';
 import { CashierApiService } from './cashier-api.service';
 import { CashierSeedService } from './cashier-seed.service';
 import type {
@@ -623,6 +623,43 @@ export class CashierStateService {
       public updateDraftReceiptData(partial: Partial<ReceiptResponse>) {
             const current = this.currentSavedReceiptSignal() || {} as ReceiptResponse;
             this.currentSavedReceiptSignal.set({ ...current, ...partial });
+      }
+
+      public getProductByBarcodeAsync(barcode: string): Promise<Product> {
+            return firstValueFrom(this.api.getProductByBarcode(barcode).pipe(
+                  map(product => {
+                        if (product.stock !== undefined) {
+                              product.stockQuantity = product.stock;
+                        }
+                        return product;
+                  })
+            ));
+      }
+      
+      public validateRefill(payload: import('../../core/models/pos.models').RefillValidateRequest) {
+            return firstValueFrom(this.api.validateRefill(payload));
+      }
+      
+      public executeRefill(payload: import('../../core/models/pos.models').RefillExecuteRequest): Promise<Product> {
+            return firstValueFrom(this.api.executeRefill(payload).pipe(
+                  map(product => {
+                        if (product.stock !== undefined) {
+                              product.stockQuantity = product.stock;
+                        }
+                        
+                        // Update cache
+                        const currentProducts = [...this.productsSignal()];
+                        const pIdx = currentProducts.findIndex(p => p.barcode === product.barcode);
+                        if (pIdx > -1) {
+                              currentProducts[pIdx] = { ...currentProducts[pIdx], stockQuantity: product.stockQuantity, buyingPrice: product.buyingPrice };
+                        } else {
+                              currentProducts.push(product);
+                        }
+                        this.productsSignal.set(currentProducts);
+                        
+                        return product;
+                  })
+            ));
       }
 
       // --------- Internal Helper Methods ---------

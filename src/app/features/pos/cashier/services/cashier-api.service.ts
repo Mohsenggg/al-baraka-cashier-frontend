@@ -61,6 +61,16 @@ export class CashierApiService {
     return this.http.delete<DeleteReceiptResponse>(`${this.apiUrl}/${id}`);
   }
 
+  // --------- Refill API ---------
+  
+  public validateRefill(payload: import('../../core/models/pos.models').RefillValidateRequest): Observable<import('../../core/models/pos.models').RefillValidateResponse> {
+    return this.http.post<import('../../core/models/pos.models').RefillValidateResponse>(`${this.apiUrl}/refill/validate`, payload);
+  }
+  
+  public executeRefill(payload: import('../../core/models/pos.models').RefillExecuteRequest): Observable<Product> {
+    return this.http.post<Product>(`${this.apiUrl}/refill/execute`, payload);
+  }
+
   // --------- Product API ---------
 
   public getAllProducts(): Observable<CashierProductDto[]> {

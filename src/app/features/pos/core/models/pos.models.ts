@@ -100,6 +100,15 @@ export interface DeleteReceiptResponse {
   isDeleted: boolean;
 }
 
+export interface RefillOption {
+  parentProductId: number;
+  parentProductName: string;
+  parentQuantity: number;
+  childQuantity: number;
+  parentStock: number;
+  isDefault: boolean;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -108,9 +117,35 @@ export interface Product {
   sellingPrice: number;
   buyingPrice: number;
   stockQuantity: number;
+  stock?: number;
+  refillOptions?: RefillOption[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RefillValidateRequest {
+  childBarcode: string;
+  parentProductId: number;
+  requestedChildQuantity: number;
+}
+
+export interface RefillValidateResponse {
+  isValid: boolean;
+  pricingChangeRequired: boolean;
+  currentBuyingPrice: number;
+  newBuyingPrice: number;
+  currentSellingPrice: number;
+  proposedSellingPrice: number;
+}
+
+export interface RefillExecuteRequest {
+  childBarcode: string;
+  parentProductId: number;
+  requestedChildQuantity: number;
+  acceptPricingChange: boolean;
+  expectedNewBuyingPrice: number;
+  expectedProposedSellingPrice: number;
 }
 
 export interface Paginated<T> {

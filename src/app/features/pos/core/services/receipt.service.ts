@@ -207,6 +207,40 @@ export class ReceiptService {
       public getProductByBarcode(barcode: string): Promise<Product> {
             return firstValueFrom(
                   this.http.get<Product>(`${this.productsApiUrl}/barcode/${barcode}`).pipe(
+                        map(product => {
+                              if (product.stock !== undefined) {
+                                    product.stockQuantity = product.stock;
+                              }
+                              return product;
+                        }),
+                        catchError(err => {
+                              this.handleError(err);
+                              throw err;
+                        })
+                  )
+            );
+      }
+
+      public validateRefill(payload: import('../models/pos.models').RefillValidateRequest): Promise<import('../models/pos.models').RefillValidateResponse> {
+            return firstValueFrom(
+                  this.http.post<import('../models/pos.models').RefillValidateResponse>(`${this.apiUrl}/refill/validate`, payload).pipe(
+                        catchError(err => {
+                              this.handleError(err);
+                              throw err;
+                        })
+                  )
+            );
+      }
+
+      public executeRefill(payload: import('../models/pos.models').RefillExecuteRequest): Promise<Product> {
+            return firstValueFrom(
+                  this.http.post<Product>(`${this.apiUrl}/refill/execute`, payload).pipe(
+                        map(product => {
+                              if (product.stock !== undefined) {
+                                    product.stockQuantity = product.stock;
+                              }
+                              return product;
+                        }),
                         catchError(err => {
                               this.handleError(err);
                               throw err;
@@ -263,9 +297,32 @@ export class ReceiptService {
       public async addItemToDraftByBarcode(barcode: string, quantity: number = 1) {
             try {
                   const product = await this.getProductByBarcode(barcode);
+                  
+                  // Check current quantity in cart
+                  const currentCartItem = this.draftItemsSignal().find(i => i.productId === product.id);
+                  const totalRequested = (currentCartItem?.quantity || 0) + quantity;
+                  
+                  if (product.stockQuantity < totalRequested) {
+                        if (product.refillOptions && product.refillOptions.length > 0) {
+                              throw {
+                                    type: 'REFILL_REQUIRED',
+                                    product: product,
+                                    requestedChildQuantity: totalRequested - product.stockQuantity // Need to refill at least the missing amount, or let cashier choose
+                              };
+                        } else {
+                              throw new Error(`Insufficient stock for product ${product.name}. Available: ${product.stockQuantity}`);
+                        }
+                  }
+                  
                   this.addCartItem(product, quantity);
-            } catch (err) {
+            } catch (err: any) {
+                  if (err && err.type === 'REFILL_REQUIRED') {
+                        throw err; // Re-throw for component to catch
+                  }
                   // Error is caught and set in the handleError method
+                  if (!err.type) {
+                        // Avoid hiding all errors if they are already handled
+                  }
             }
       }
 

@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 // New dumb components
 import { CashierActionsComponent } from './components/cashier-actions/cashier-actions.component';
@@ -17,6 +18,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
       standalone: true,
       imports: [
             CommonModule,
+            FormsModule,
             CashierActionsComponent,
             CashierSidebarComponent,
             CashierReceiptComponent,
@@ -169,8 +171,99 @@ export class CashierPageComponent implements OnInit {
             this.state.updateCartItemField(event.item.productId, event.field, event.value);
       }
 
-      onAddItem(event: { product: Product, quantity: number }) {
+      // Refill state
+      showRefillDialog = signal(false);
+      showPricingDialog = signal(false);
+      refillProduct: Product | null = null;
+      refillRequestedQuantity: number = 1;
+      refillSelectedParentId: number | null = null;
+      isRefillLoading = signal(false);
+      pricingValidation: import('../core/models/pos.models').RefillValidateResponse | null = null;
+
+      async onAddItem(event: { product: Product, quantity: number }) {
+            const currentItem = this.cartItems().find(i => i.productId === event.product.id);
+            const totalRequested = (currentItem?.quantity || 0) + event.quantity;
+
+            if (event.product.stockQuantity < totalRequested) {
+                  try {
+                        const fullProduct = await this.state.getProductByBarcodeAsync(event.product.barcode);
+                        if (fullProduct.refillOptions && fullProduct.refillOptions.length > 0) {
+                              this.refillProduct = fullProduct;
+                              this.refillRequestedQuantity = totalRequested - fullProduct.stockQuantity;
+                              if (this.refillRequestedQuantity < 1) this.refillRequestedQuantity = 1;
+                              
+                              const defaultParent = fullProduct.refillOptions.find(o => o.isDefault);
+                              if (defaultParent) {
+                                    this.refillSelectedParentId = defaultParent.parentProductId;
+                              } else {
+                                    this.refillSelectedParentId = fullProduct.refillOptions[0].parentProductId;
+                              }
+                              this.showRefillDialog.set(true);
+                              return;
+                        }
+                  } catch (e) {
+                        // ignore and fall through to standard error
+                  }
+            }
             this.state.addCartItem(event.product, event.quantity);
+      }
+
+      async confirmRefill() {
+            if (!this.refillProduct || !this.refillSelectedParentId || this.refillRequestedQuantity < 1) return;
+            
+            this.isRefillLoading.set(true);
+            try {
+                  const response = await this.state.validateRefill({
+                        childBarcode: this.refillProduct.barcode,
+                        parentProductId: this.refillSelectedParentId,
+                        requestedChildQuantity: this.refillRequestedQuantity
+                  });
+                  
+                  this.pricingValidation = response;
+                  if (response.pricingChangeRequired) {
+                        this.showRefillDialog.set(false);
+                        this.showPricingDialog.set(true);
+                  } else {
+                        await this.executeRefill(false);
+                  }
+            } catch (err) {
+                  // Handled by service
+            } finally {
+                  this.isRefillLoading.set(false);
+            }
+      }
+
+      async executeRefill(acceptPricingChange: boolean = true) {
+            if (!this.refillProduct || !this.refillSelectedParentId || !this.pricingValidation) return;
+            
+            this.isRefillLoading.set(true);
+            try {
+                  const updatedProduct = await this.state.executeRefill({
+                        childBarcode: this.refillProduct.barcode,
+                        parentProductId: this.refillSelectedParentId,
+                        requestedChildQuantity: this.refillRequestedQuantity,
+                        acceptPricingChange: acceptPricingChange,
+                        expectedNewBuyingPrice: this.pricingValidation.newBuyingPrice,
+                        expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice
+                  });
+                  
+                  this.showPricingDialog.set(false);
+                  this.showRefillDialog.set(false);
+                  
+                  // Now add to cart using the updated product
+                  this.state.addCartItem(updatedProduct, this.refillRequestedQuantity);
+                  this.refillProduct = null;
+            } catch (err) {
+                  // Handled by service
+            } finally {
+                  this.isRefillLoading.set(false);
+            }
+      }
+
+      cancelRefill() {
+            this.showRefillDialog.set(false);
+            this.showPricingDialog.set(false);
+            this.refillProduct = null;
       }
 
       onUpdatePaymentMethod(method: PaymentMethod) {

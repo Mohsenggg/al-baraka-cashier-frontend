@@ -105,6 +105,69 @@ import type { CreateReceiptInput, PaymentMethod } from '../core/models/pos.model
           {{ (receiptService.loading$ | async) ? 'جاري الحفظ...' : (isEditing ? 'تحديث الفاتورة' : 'إنشاء وحفظ') }}
         </button>
       </div>
+
+      <!-- Refill Selection Modal -->
+      <div class="modal-overlay" *ngIf="showRefillDialog">
+        <div class="modal-content">
+           <h3 class="text-danger mb-sm">نفاد المخزون - إعادة التعبئة</h3>
+           <p class="mb-sm">الصنف <strong>{{refillProduct?.name}}</strong> غير متوفر بالكمية المطلوبة. هل تريد تعبئته؟</p>
+           
+           <div class="mb-md">
+             <label class="font-bold">الكمية المطلوبة للتعبئة (بالوحدة الصغرى):</label>
+             <input type="number" [(ngModel)]="refillRequestedQuantity" min="1" class="input w-full mt-xs"/>
+           </div>
+           
+           <label class="font-bold">اختر المنتج الأب (المصدر):</label>
+           <div class="options-list mt-xs mb-md border-radius border p-sm">
+             <div *ngFor="let opt of refillProduct?.refillOptions" class="radio-option flex items-center gap-sm mb-xs">
+               <input type="radio" [value]="opt.parentProductId" [(ngModel)]="refillSelectedParentId" [id]="'opt_'+opt.parentProductId"/>
+               <label [for]="'opt_'+opt.parentProductId">
+                 {{opt.parentProductName}} (المتوفر: {{opt.parentStock}}) - المعدل: {{opt.parentQuantity}} مصدر &#x2192; {{opt.childQuantity}} وحدة
+               </label>
+             </div>
+           </div>
+           
+           <div class="flex gap-sm justify-end">
+             <button class="btn btn-outline" (click)="cancelRefill()">إلغاء</button>
+             <button class="btn btn-primary" (click)="confirmRefill()" [disabled]="!refillSelectedParentId || isRefillLoading">
+               {{isRefillLoading ? 'جاري التحقق...' : 'متابعة'}}
+             </button>
+           </div>
+        </div>
+      </div>
+
+      <!-- Refill Pricing Confirmation Modal -->
+      <div class="modal-overlay" *ngIf="showPricingDialog">
+        <div class="modal-content">
+           <h3 class="mb-sm">تأكيد تسعير إعادة التعبئة</h3>
+           <div class="alert alert-warning mb-md">
+             سيؤدي هذا الإجراء إلى تغيير تسعير المنتج ({{refillProduct?.name}}).
+           </div>
+           <table class="table mb-md">
+             <thead>
+               <tr><th></th><th>السعر الحالي</th><th>السعر الجديد</th></tr>
+             </thead>
+             <tbody>
+               <tr>
+                 <td class="font-bold">سعر الشراء</td>
+                 <td>{{pricingValidation?.currentBuyingPrice}}</td>
+                 <td class="text-danger font-bold">{{pricingValidation?.newBuyingPrice}}</td>
+               </tr>
+               <tr>
+                 <td class="font-bold">سعر البيع</td>
+                 <td>{{pricingValidation?.currentSellingPrice}}</td>
+                 <td>{{pricingValidation?.proposedSellingPrice}}</td>
+               </tr>
+             </tbody>
+           </table>
+           <div class="flex gap-sm justify-end">
+             <button class="btn btn-outline" (click)="cancelRefill()">إلغاء</button>
+             <button class="btn btn-primary" (click)="executeRefill()" [disabled]="isRefillLoading">
+               {{isRefillLoading ? 'جاري التنفيذ...' : 'موافق وتنفيذ'}}
+             </button>
+           </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -133,6 +196,16 @@ import type { CreateReceiptInput, PaymentMethod } from '../core/models/pos.model
     .text-primary { color: #0ea5e9; }
     .text-lg { font-size: 18px; }
     .px-lg { padding-left: 24px; padding-right: 24px; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; padding: 24px; border-radius: 8px; width: 100%; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .border { border: 1px solid #e2e8f0; }
+    .mt-xs { margin-top: 4px; }
+    .mb-xs { margin-bottom: 4px; }
+    .gap-sm { gap: 8px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-end { justify-content: flex-end; }
+    .font-bold { font-weight: bold; }
   `]
 })
 export class ReceiptFormComponent implements OnInit {
@@ -145,6 +218,15 @@ export class ReceiptFormComponent implements OnInit {
   localPaymentMethod: PaymentMethod = 'CASH';
   localDiscount: number = 0;
   localTax: number = 0;
+  
+  // Refill state
+  showRefillDialog: boolean = false;
+  showPricingDialog: boolean = false;
+  refillProduct: import('../core/models/pos.models').Product | null = null;
+  refillRequestedQuantity: number = 1;
+  refillSelectedParentId: number | null = null;
+  isRefillLoading: boolean = false;
+  pricingValidation: import('../core/models/pos.models').RefillValidateResponse | null = null;
   
   // Assuming a cashierId exists from Auth/Login
   // Hardcoded for demo/example purposes.
@@ -169,12 +251,92 @@ export class ReceiptFormComponent implements OnInit {
     if (!this.newItemBarcode.trim()) return;
     
     // We await the addition which uses IPC to fetch product info and push to draft array
-    await this.receiptService.addItemToDraftByBarcode(this.newItemBarcode.trim(), 1);
+    try {
+       await this.receiptService.addItemToDraftByBarcode(this.newItemBarcode.trim(), 1);
+    } catch (err: any) {
+       if (err && err.type === 'REFILL_REQUIRED') {
+          this.refillProduct = err.product;
+          this.refillRequestedQuantity = err.requestedChildQuantity > 0 ? err.requestedChildQuantity : 1;
+          // Pre-select default parent if exists
+          const defaultParent = this.refillProduct?.refillOptions?.find(o => o.isDefault);
+          if (defaultParent) {
+             this.refillSelectedParentId = defaultParent.parentProductId;
+          } else if (this.refillProduct?.refillOptions?.length) {
+             this.refillSelectedParentId = this.refillProduct.refillOptions[0].parentProductId;
+          }
+          this.showRefillDialog = true;
+          return; // Stop the input clearing so cashier doesn't lose context
+       }
+    }
     
     this.newItemBarcode = '';
     setTimeout(() => {
        if (this.barcodeInput) this.barcodeInput.nativeElement.focus();
     }, 100);
+  }
+
+  async confirmRefill() {
+    if (!this.refillProduct || !this.refillSelectedParentId || this.refillRequestedQuantity < 1) return;
+    
+    this.isRefillLoading = true;
+    try {
+      const response = await this.receiptService.validateRefill({
+         childBarcode: this.refillProduct.barcode,
+         parentProductId: this.refillSelectedParentId,
+         requestedChildQuantity: this.refillRequestedQuantity
+      });
+      
+      this.pricingValidation = response;
+      if (response.pricingChangeRequired) {
+         this.showRefillDialog = false;
+         this.showPricingDialog = true;
+      } else {
+         await this.executeRefill(false);
+      }
+    } catch (err) {
+      // Error handled by service
+    } finally {
+      this.isRefillLoading = false;
+    }
+  }
+  
+  async executeRefill(acceptPricingChange: boolean = true) {
+    if (!this.refillProduct || !this.refillSelectedParentId || !this.pricingValidation) return;
+    
+    this.isRefillLoading = true;
+    try {
+       const updatedProduct = await this.receiptService.executeRefill({
+           childBarcode: this.refillProduct.barcode,
+           parentProductId: this.refillSelectedParentId,
+           requestedChildQuantity: this.refillRequestedQuantity,
+           acceptPricingChange: acceptPricingChange,
+           expectedNewBuyingPrice: this.pricingValidation.newBuyingPrice,
+           expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice
+       });
+       
+       this.showPricingDialog = false;
+       this.showRefillDialog = false;
+       
+       // Now add to cart using the updated product
+       this.receiptService.addCartItem(updatedProduct, this.refillRequestedQuantity);
+       
+       this.newItemBarcode = '';
+       this.refillProduct = null;
+       setTimeout(() => {
+          if (this.barcodeInput) this.barcodeInput.nativeElement.focus();
+       }, 100);
+    } catch (err) {
+       // Error handled by service
+    } finally {
+       this.isRefillLoading = false;
+    }
+  }
+  
+  cancelRefill() {
+    this.showRefillDialog = false;
+    this.showPricingDialog = false;
+    this.refillProduct = null;
+    this.newItemBarcode = '';
   }
 
   removeItem(productId: number) {
