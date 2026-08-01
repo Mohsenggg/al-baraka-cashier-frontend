@@ -124,21 +124,21 @@ export class CashierPageComponent implements OnInit {
       onEdit() {
             this.state.setReceiptMode('EDIT');
       }
-      onDelete() {
+      onRefund() {
             const receipt = this.currentReceipt();
             if (!receipt?.id) {
-                  this.notifications.warning('لا توجد فاتورة محددة للحذف');
+                  this.notifications.warning('لا توجد فاتورة محددة للاسترجاع');
                   return;
             }
-            if (!confirm('هل أنت متأكد من حذف هذه الفاتورة؟ سيتم استرجاع رصيد الأصناف إلى المخزون.')) return;
+            if (!confirm('هل أنت متأكد من استرجاع هذه الفاتورة؟ سيتم استعادة المخزون وحذف سجل الفاتورة.')) return;
 
             this.state.deleteReceipt(receipt.id).subscribe({
                   next: () => {
-                        this.notifications.success('تم حذف الفاتورة واسترجاع المخزون بنجاح');
+                        this.notifications.success('تم استرجاع الفاتورة واستعادة المخزون بنجاح');
                         this.state.filterReceipts({ page: 0, size: 20 });
                   },
                   error: (err) => {
-                        const message = err?.error?.message || 'فشل حذف الفاتورة';
+                        const message = err?.error?.message || 'فشل استرجاع الفاتورة';
                         this.notifications.error(message);
                   }
             });
@@ -398,10 +398,10 @@ export class CashierPageComponent implements OnInit {
             switch (event.key) {
                   case 'F1': event.preventDefault(); this.onNew(); break;
                   case 'F2': event.preventDefault(); this.onEdit(); break;
+                  case 'F5': event.preventDefault(); this.onRefund(); break;
                   case 'F8': event.preventDefault(); this.onReturn(); break;
                   case 'F11': event.preventDefault(); this.onSave(); break;
                   case 'F12': event.preventDefault(); this.onSaveAndPrint(); break;
-                  case 'F5': event.preventDefault(); this.onDelete(); break;
             }
       }
 }

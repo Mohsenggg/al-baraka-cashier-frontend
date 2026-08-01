@@ -19,9 +19,10 @@ export class CashierActionsComponent {
       @Output() toggleRightSidebar = new EventEmitter<void>();
       @Output() saveAndPrint = new EventEmitter<void>();
       @Output() save = new EventEmitter<void>();
+      @Output() print = new EventEmitter<void>();
       @Output() edit = new EventEmitter<void>();
       @Output() newReceipt = new EventEmitter<void>();
       @Output() returnReceipt = new EventEmitter<void>();
       @Output() drafts = new EventEmitter<void>();
-      @Output() deleteReceipt = new EventEmitter<void>();
+      @Output() refundReceipt = new EventEmitter<void>();
 }

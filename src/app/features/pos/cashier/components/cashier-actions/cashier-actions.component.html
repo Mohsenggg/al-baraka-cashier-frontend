@@ -7,20 +7,20 @@
       </div>
 
       <div class="main-actions-bar">
-            <button class="btn-main-action" (click)="saveAndPrint.emit()">
+            <button class="btn-main-action" (click)="receiptMode === 'VIEW' ? print.emit() : saveAndPrint.emit()">
                   <div class="btn-content">
                         <span class="material-icons-outlined">print</span>
-                        <ng-container *ngIf="receiptMode !== 'VIEW'">
-                              <span class="text">حفظ وطباعة <span class="shortcut">(F12)</span></span>
-                        </ng-container>
                         <ng-container *ngIf="receiptMode === 'VIEW'">
                               <span class="text">طباعة <span class="shortcut">(F12)</span></span>
+                        </ng-container>
+                        <ng-container *ngIf="receiptMode !== 'VIEW'">
+                              <span class="text">حفظ وطباعة <span class="shortcut">(F12)</span></span>
                         </ng-container>
                   </div>
             </button>
 
             <div class="middle-group">
-                  <button class="btn-outline" (click)="save.emit()" [disabled]="receiptMode === 'VIEW' || hasStockErrors">
+                  <button class="btn-outline" (click)="save.emit()" *ngIf="receiptMode !== 'VIEW'" [disabled]="hasStockErrors">
                         <span class="text">حفظ</span>
                         <span class="material-icons-outlined">save</span>
                         <span class="shortcut">(F11)</span>
@@ -55,9 +55,9 @@
                   </div>
             </div>
 
-            <button class="btn-delete" (click)="deleteReceipt.emit()" [disabled]="!receipt?.id">
-                  <span class="material-icons-outlined">delete_outline</span>
-                  <span class="text">حذف</span>
+            <button class="btn-delete" (click)="refundReceipt.emit()" *ngIf="receipt?.id && receiptMode !== 'NEW'">
+                  <span class="material-icons-outlined">undo</span>
+                  <span class="text">استرجاع</span>
             </button>
       </div>
 
