@@ -205,8 +205,12 @@
                         <input #searchInput type="text" formControlName="barcode"
                               class="pos-input search-input" placeholder="مسح باركود أو كتابة اسم/كود الصنف"
                               autofocus (keydown)="onSearchKeyDown($event)"
-                              (dblclick)="onSearchDoubleClick($event)" autocomplete="off">
-                        <span class="material-icons-outlined search-icon">search</span>
+                              (dblclick)="onSearchDoubleClick($event)"
+                              autocomplete="off">
+                        <button type="button" class="search-icon-button" (click)="onSearchClicked()"
+                              [disabled]="!searchTerm" aria-label="بحث">
+                              <span class="material-icons-outlined">search</span>
+                        </button>
                   </div>
 
                   <!-- <div class="quantity-field-wrapper">

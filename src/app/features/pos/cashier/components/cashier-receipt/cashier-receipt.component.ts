@@ -86,6 +86,7 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
       inputForm!: FormGroup;
       popupOpen = false;
       popupInitialQuery = '';
+      searchTerm = '';
       private lastAddedProductId: number | null = null;
 
       get today() { return new Date(); }
@@ -104,7 +105,11 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
                   takeUntil(this.destroy$),
                   debounceTime(80)
             ).subscribe(value => {
-                  this.evaluateSearchInput(typeof value === 'string' ? value : '');
+                  this.searchTerm = typeof value === 'string' ? value.trim() : '';
+                  if (!this.searchTerm) {
+                        this.popupOpen = false;
+                  }
+                  this.cdr.markForCheck();
             });
       }
 
@@ -156,6 +161,14 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
             if (matches.length > 1) {
                   this.openProductPopup(term);
             }
+      }
+
+      onSearchClicked(): void {
+            const term = (this.inputForm.get('barcode')?.value || '').trim();
+            if (!term) {
+                  return;
+            }
+            this.submitInputRow();
       }
 
       onSearchDoubleClick(event: MouseEvent): void {
@@ -244,13 +257,8 @@ export class CashierReceiptComponent implements OnInit, OnDestroy {
                   return;
             }
 
-            const matches = this.productSearch.filterProducts(this.products, { query: term });
-            if (matches.length > 0) {
-                  this.popupInitialQuery = term;
-                  this.popupOpen = true;
-            } else {
-                  this.popupOpen = false;
-            }
+            // When typing manually, do not open popup until search is explicitly triggered.
+            this.popupOpen = false;
             this.cdr.markForCheck();
       }
 
