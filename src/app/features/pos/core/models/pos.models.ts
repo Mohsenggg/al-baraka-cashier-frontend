@@ -168,6 +168,7 @@ export interface CashierProductDto {
   sellingPrice: number;
   buyingPrice: number;
   stock: number;
+  refillOptions?: RefillOption[];
 }
 
 export interface CartItem {

@@ -92,14 +92,20 @@ export class CashierStateService {
       public loadAllProducts(): Observable<Product[]> {
             this.setLoading(true);
             return this.api.getAllProducts().pipe(
-                  map(dtoList => dtoList.map(dto => this.seed.getPlaceholderProduct({
-                        id: dto.id,
-                        name: dto.name,
-                        barcode: dto.barcode,
-                        sellingPrice: dto.sellingPrice,
-                        buyingPrice: dto.buyingPrice,
-                        stockQuantity: dto.stock
-                  }))),
+                  map(dtoList => dtoList.map(dto => {
+                        const product = this.seed.getPlaceholderProduct({
+                              id: dto.id,
+                              name: dto.name,
+                              barcode: dto.barcode,
+                              sellingPrice: dto.sellingPrice,
+                              buyingPrice: dto.buyingPrice,
+                              stockQuantity: dto.stock
+                        });
+                        if (dto.refillOptions) {
+                              product.refillOptions = dto.refillOptions;
+                        }
+                        return product;
+                  })),
                   tap((mappedProducts) => {
                         this.productsSignal.set(mappedProducts);
                         this.refreshNavigationCacheStock();
@@ -522,6 +528,7 @@ export class CashierStateService {
                   items[existingIdx] = { ...items[existingIdx] };
                   items[existingIdx].quantity += quantity;
                   items[existingIdx].total = items[existingIdx].quantity * items[existingIdx].sellingPrice;
+                  items[existingIdx].product = product; // Keep product reference current (critical after a refill)
                   if (mode === 'EDIT' && items[existingIdx].originalQuantity != null && items[existingIdx].currentRemainingStock != null) {
                         items[existingIdx].remainingStock = items[existingIdx].currentRemainingStock! + items[existingIdx].originalQuantity! - items[existingIdx].quantity;
                   } else {

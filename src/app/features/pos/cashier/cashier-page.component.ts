@@ -246,49 +246,45 @@ export class CashierPageComponent implements OnInit {
             const totalRequested = (currentItem?.quantity || 0) + event.quantity;
 
             if (event.product.stockQuantity < totalRequested) {
-                  try {
-                        const fullProduct = await this.state.getProductByBarcodeAsync(event.product.barcode);
-                        const options = fullProduct.refillOptions;
+                  const options = event.product.refillOptions;
 
-                        if (options && options.length > 0) {
-                              // How many child units are still missing after current stock
-                              const missingChildQty = totalRequested - fullProduct.stockQuantity;
+                  if (options && options.length > 0) {
+                        // How many child units are still missing after current stock
+                        const missingChildQty = totalRequested - event.product.stockQuantity;
 
-                              this.refillProduct = fullProduct;
-                              this.refillOriginalSaleQuantity = event.quantity;
+                        this.refillProduct = event.product;
+                        this.refillOriginalSaleQuantity = event.quantity;
 
-                              // Choose the default parent (or first option)
-                              const preferredParent = options.find(o => o.isDefault) ?? options[0];
+                        // Choose the default parent (or first option)
+                        const preferredParent = options.find(o => o.isDefault) ?? options[0];
 
-                              // Check if the preferred parent can cover the shortage
-                              // If not, find another parent that can (with the most stock)
-                              const capableParent = options
-                                    .filter(o => o.parentStock > 0)
-                                    .sort((a, b) => b.parentStock - a.parentStock)
-                                    .find(o => {
-                                          // max child units this parent can provide
-                                          const maxChild = o.parentStock * (o.childQuantity / o.parentQuantity);
-                                          return maxChild >= missingChildQty;
-                                    });
+                        // Check if the preferred parent can cover the shortage
+                        // If not, find another parent that can (with the most stock)
+                        const capableParent = options
+                              .filter(o => o.parentStock > 0)
+                              .sort((a, b) => b.parentStock - a.parentStock)
+                              .find(o => {
+                                    // max child units this parent can provide
+                                    const maxChild = o.parentStock * (o.childQuantity / o.parentQuantity);
+                                    return maxChild >= missingChildQty;
+                              });
 
-                              const selectedParent = capableParent ?? preferredParent;
-                              this.refillSelectedParentId = selectedParent.parentProductId;
+                        const selectedParent = capableParent ?? preferredParent;
+                        this.refillSelectedParentId = selectedParent.parentProductId;
 
-                              // Pre-fill stepper with the MINIMUM parent units needed to cover the shortage
-                              // minParentUnits = ceil(missingChildQty / (childQty / parentQty))
-                              //                = ceil(missingChildQty * parentQty / childQty)
-                              const ratio = selectedParent.childQuantity / selectedParent.parentQuantity;
-                              const minParentUnits = ratio > 0
-                                    ? Math.ceil(missingChildQty / ratio)
-                                    : 1;
+                        // Pre-fill stepper with the MINIMUM parent units needed to cover the shortage
+                        const ratio = selectedParent.childQuantity / selectedParent.parentQuantity;
+                        const minParentUnits = ratio > 0
+                              ? Math.ceil(missingChildQty / ratio)
+                              : 1;
 
-                              this.refillParentUnits = Math.max(1, Math.min(minParentUnits, selectedParent.parentStock));
+                        this.refillParentUnits = Math.max(1, Math.min(minParentUnits, selectedParent.parentStock));
 
-                              this.showRefillDialog.set(true);
-                              return;
-                        }
-                  } catch (e) {
-                        // ignore and fall through to standard stock error
+                        this.showRefillDialog.set(true);
+                        return;
+                  } else {
+                        // Show insufficient stock message as a toast, and allow it to be added to cart with error state
+                        this.notifications.warning(`الكمية المطلوبة (${totalRequested}) تتجاوز الرصيد المتاح (${event.product.stockQuantity})`);
                   }
             }
             this.state.addCartItem(event.product, event.quantity);
