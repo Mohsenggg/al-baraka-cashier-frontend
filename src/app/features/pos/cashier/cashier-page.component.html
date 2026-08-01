@@ -69,142 +69,116 @@
             <!-- ── Step 1: Refill Selection Modal ── -->
             <div class="refill-overlay" *ngIf="showRefillDialog()">
                   <div class="refill-dialog" role="dialog" aria-modal="true">
-
-                        <!-- Header -->
                         <div class="refill-dialog__header">
-                              <div class="refill-dialog__header-icon">
-                                    <span class="material-icons-outlined">inventory_2</span>
-                              </div>
                               <div>
+                                    <p class="refill-dialog__eyebrow">نفاد المخزون</p>
                                     <h2 class="refill-dialog__title">إعادة تعبئة المخزون</h2>
-                                    <p class="refill-dialog__subtitle">الرصيد غير كافٍ لإتمام عملية البيع</p>
                               </div>
                               <button class="refill-dialog__close" (click)="cancelRefill()" aria-label="إغلاق">
                                     <span class="material-icons-outlined">close</span>
                               </button>
                         </div>
 
-                        <!-- Products Info Row -->
-                        <div class="refill-products-row">
-                              <!-- Parent selector (if multiple options) -->
-                              <div class="refill-product-card refill-product-card--parent">
-                                    <span class="refill-product-card__badge">مصدر التعبئة</span>
-                                    <ng-container *ngIf="(refillProduct?.refillOptions?.length ?? 0) === 1; else multiParent">
-                                          <p class="refill-product-card__name">{{ selectedRefillOption?.parentProductName }}</p>
-                                          <p class="refill-product-card__stock">
-                                                <span class="material-icons-outlined" style="font-size:0.9rem">warehouse</span>
-                                                رصيد: {{ selectedRefillOption?.parentStock ?? 0 }}
-                                          </p>
-                                    </ng-container>
-                                    <ng-template #multiParent>
-                                          <select class="refill-select"
-                                                  [ngModel]="refillSelectedParentId"
-                                                  (ngModelChange)="onRefillParentSelect($event)">
-                                                <option *ngFor="let opt of refillProduct?.refillOptions"
-                                                        [value]="opt.parentProductId">
-                                                      {{ opt.parentProductName }} (متوفر: {{ opt.parentStock }})
-                                                </option>
-                                          </select>
-                                    </ng-template>
-                              </div>
-
-                              <!-- Arrow -->
-                              <div class="refill-arrow">
-                                    <span class="material-icons-outlined">arrow_back</span>
-                              </div>
-
-                              <!-- Child product -->
-                              <div class="refill-product-card refill-product-card--child">
-                                    <span class="refill-product-card__badge refill-product-card__badge--child">المنتج المطلوب</span>
-                                    <p class="refill-product-card__name">{{ refillProduct?.name }}</p>
-                                    <p class="refill-product-card__stock">
-                                          <span class="material-icons-outlined" style="font-size:0.9rem">inventory</span>
-                                          رصيد: {{ refillProduct?.stockQuantity ?? 0 }}
-                                    </p>
-                              </div>
-                        </div>
-
-                        <!-- Conversion Ratio Badge -->
-                        <div class="refill-ratio-row" *ngIf="selectedRefillOption">
-                              <span class="refill-ratio-badge">
-                                    <span class="material-icons-outlined">sync_alt</span>
-                                    معدل التحويل:
-                                    {{ selectedRefillOption.parentQuantity }} وحدة أب
-                                    &nbsp;→&nbsp;
-                                    {{ selectedRefillOption.childQuantity }} وحدة صغرى
-                              </span>
-                        </div>
-
-                        <!-- Shortage Context Banner -->
-                        <div class="refill-shortage-banner" *ngIf="refillMissingChildQty > 0">
-                              <span class="material-icons-outlined">warning_amber</span>
-                              <span>
-                                    النقص الحالي:
-                                    <strong>{{ refillMissingChildQty }} وحدة</strong>
-                                    من {{ refillProduct?.name }}
-                                    — الحد الأدنى للتعبئة موضّح في الحقل أدناه
-                              </span>
-                        </div>
-
-                        <!-- Quantity Input -->
-                        <div class="refill-qty-section">
-                              <label class="refill-qty-label">
-                                    كم وحدة من
-                                    <strong>{{ selectedRefillOption?.parentProductName }}</strong>
-                                    تريد نقلها؟
-                              </label>
-                              <div class="refill-qty-stepper">
-                                    <button class="refill-qty-btn"
-                                            (click)="refillParentUnits = refillParentUnits > 1 ? refillParentUnits - 1 : 1"
-                                            [disabled]="refillParentUnits <= 1">
-                                          <span class="material-icons-outlined">remove</span>
-                                    </button>
-                                    <input class="refill-qty-input"
-                                           type="number"
-                                           [(ngModel)]="refillParentUnits"
-                                           [min]="1"
-                                           [max]="refillParentMaxUnits"/>
-                                    <button class="refill-qty-btn"
-                                            (click)="refillParentUnits = refillParentUnits + 1"
-                                            [disabled]="refillParentUnits >= refillParentMaxUnits">
-                                          <span class="material-icons-outlined">add</span>
-                                    </button>
-                              </div>
-                        </div>
-
-                        <!-- Live Preview -->
-                        <div class="refill-preview">
-                              <div class="refill-preview__item refill-preview__item--add">
-                                    <span class="material-icons-outlined">add_circle</span>
-                                    <div>
-                                          <p class="refill-preview__item-label">سيُضاف إلى المخزون</p>
-                                          <p class="refill-preview__item-value">{{ refillChildUnitsAdded }} وحدة من {{ refillProduct?.name }}</p>
+                        <div class="refill-dialog__content">
+                              <section class="refill-section refill-section--summary">
+                                    <div class="refill-summary-grid">
+                                          <div>
+                                                <div class="refill-summary-label">الكمية المطلوبة</div>
+                                                <div class="refill-summary-value">{{ refillOriginalSaleQuantity }} وحدة</div>
+                                          </div>
+                                          <div>
+                                                <div class="refill-summary-label">الرصيد الحالي</div>
+                                                <div class="refill-summary-value">{{ refillProduct?.stockQuantity ?? 0 }} وحدة</div>
+                                          </div>
                                     </div>
-                              </div>
-                              <div class="refill-preview__item refill-preview__item--remain"
-                                   [class.refill-preview__item--warn]="refillParentRemainingAfter < 0">
-                                    <span class="material-icons-outlined">
-                                          {{ refillParentRemainingAfter < 0 ? 'warning' : 'remove_circle' }}
-                                    </span>
-                                    <div>
-                                          <p class="refill-preview__item-label">رصيد {{ selectedRefillOption?.parentProductName }} بعد النقل</p>
-                                          <p class="refill-preview__item-value">{{ refillParentRemainingAfter }} وحدة</p>
+                                    <p class="refill-summary-note">الكمية المطلوبة تتجاوز الرصيد المتاح. يلزم نقل وحدات من المنتج المصدر لإكمال الطلب.</p>
+                              </section>
+
+                              <section class="refill-section refill-section--conversion" *ngIf="selectedRefillOption">
+                                    <div class="refill-conversion-row">
+                                          <span class="refill-conversion-label">قانون التحويل</span>
+                                          <strong class="refill-conversion-value">
+                                                {{ selectedRefillOption.parentQuantity }} {{ selectedRefillOption.parentProductName }} = {{ selectedRefillOption.childQuantity }} {{ refillProduct?.name }}
+                                          </strong>
                                     </div>
+                              </section>
+
+                              <section class="refill-section refill-section--products">
+                                    <div class="refill-product-compact">
+                                          <div class="refill-product-compact__title">مصدر</div>
+                                          <div class="refill-product-compact__name">{{ selectedRefillOption?.parentProductName }}</div>
+                                          <div class="refill-product-compact__stock">{{ selectedRefillOption?.parentStock ?? 0 }} وحدة متاحة</div>
+                                    </div>
+                                    <div class="refill-product-compact">
+                                          <div class="refill-product-compact__title">المنتج</div>
+                                          <div class="refill-product-compact__name">{{ refillProduct?.name }}</div>
+                                          <div class="refill-product-compact__stock">{{ refillProduct?.stockQuantity ?? 0 }} وحدة حالياً</div>
+                                    </div>
+                              </section>
+
+                              <section class="refill-section refill-section--transfer">
+                                    <div class="refill-transfer-header">
+                                          <div>
+                                                <div class="refill-transfer-label">كم وحدة تريد نقلها من المنتج المصدر؟</div>
+                                                <div class="refill-transfer-hint">الحد الأقصى المتاح: {{ refillParentMaxUnits }} وحدة</div>
+                                          </div>
+                                    </div>
+
+                                    <div class="refill-transfer-stepper">
+                                          <button class="refill-stepper-btn" type="button"
+                                                  (click)="refillParentUnits = refillParentUnits > 1 ? refillParentUnits - 1 : 1"
+                                                  [disabled]="refillParentUnits <= 1">
+                                                <span class="material-icons-outlined">remove</span>
+                                          </button>
+                                          <input class="refill-stepper-input"
+                                                 type="number"
+                                                 [(ngModel)]="refillParentUnits"
+                                                 [min]="1"
+                                                 [max]="refillParentMaxUnits" />
+                                          <button class="refill-stepper-btn" type="button"
+                                                  (click)="refillParentUnits = refillParentUnits >= refillParentMaxUnits ? refillParentMaxUnits : refillParentUnits + 1"
+                                                  [disabled]="refillParentUnits >= refillParentMaxUnits">
+                                                <span class="material-icons-outlined">add</span>
+                                          </button>
+                                    </div>
+                              </section>
+
+                              <!-- <section class="refill-section refill-section--preview">
+                                    <div class="refill-preview-grid">
+                                          <div class="refill-preview-card">
+                                                <div class="refill-preview-card__label">المصدر يُخصم</div>
+                                                <div class="refill-preview-card__value">-{{ refillParentUnits }} وحدة</div>
+                                          </div>
+                                          <div class="refill-preview-card">
+                                                <div class="refill-preview-card__label">الهدف يُضاف إليه</div>
+                                                <div class="refill-preview-card__value">+{{ refillChildUnitsAdded }} وحدة</div>
+                                          </div>
+                                          <div class="refill-preview-card">
+                                                <div class="refill-preview-card__label">رصيد المصدر بعد النقل</div>
+                                                <div class="refill-preview-card__value">{{ refillParentRemainingAfter }} وحدة</div>
+                                          </div>
+                                          <div class="refill-preview-card">
+                                                <div class="refill-preview-card__label">رصيد الهدف بعد النقل</div>
+                                                <div class="refill-preview-card__value">{{ (refillProduct?.stockQuantity ?? 0) + refillChildUnitsAdded }} وحدة</div>
+                                          </div>
+                                    </div>
+                              </section> -->
+
+                              <div *ngIf="refillParentRemainingAfter < 0" class="refill-warning-text">
+                                    كمية النقل أكبر من الرصيد المتاح للمصدر.
                               </div>
                         </div>
 
-                        <!-- Footer Actions -->
                         <div class="refill-dialog__footer">
                               <button class="refill-btn refill-btn--cancel" (click)="cancelRefill()">إلغاء</button>
                               <button class="refill-btn refill-btn--confirm"
                                       (click)="confirmRefill()"
                                       [disabled]="refillChildUnitsAdded < 1 || refillParentRemainingAfter < 0 || isRefillLoading()">
-                                    <span class="material-icons-outlined" *ngIf="!isRefillLoading()">check_circle</span>
+                                    <span *ngIf="!isRefillLoading()" class="material-icons-outlined">check_circle</span>
                                     <span class="refill-spinner" *ngIf="isRefillLoading()"></span>
                                     {{ isRefillLoading() ? 'جاري التحقق...' : 'تأكيد وتعبئة' }}
                               </button>
                         </div>
-
                   </div>
             </div>
 
