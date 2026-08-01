@@ -22,7 +22,6 @@ export class CashierActionsComponent {
       @Output() print = new EventEmitter<void>();
       @Output() edit = new EventEmitter<void>();
       @Output() newReceipt = new EventEmitter<void>();
-      @Output() returnReceipt = new EventEmitter<void>();
       @Output() drafts = new EventEmitter<void>();
       @Output() refundReceipt = new EventEmitter<void>();
 }
