@@ -237,9 +237,16 @@
                               </div>
                         </div>
 
+                        <!-- Markup Preserved Badge -->
+                        <div class="refill-markup-badge">
+                              <span class="material-icons-outlined">percent</span>
+                              هامش الربح المحفوظ:
+                              <strong>{{ pricingValidation?.currentMarkupPercentage }}%</strong>
+                        </div>
+
                         <p class="refill-pricing-note">
                               <span class="material-icons-outlined">info</span>
-                              سعر البيع لن يتغير. فقط سعر الشراء سيتم تحديثه بناءً على تكلفة التعبئة.
+                              يتم تحديث سعر الشراء بناءً على تكلفة التعبئة، مع الحفاظ على نسبة هامش الربح الحالية ({{ pricingValidation?.currentMarkupPercentage }}%).
                         </p>
 
                         <!-- Footer Actions -->

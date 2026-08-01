@@ -311,7 +311,8 @@ export class ReceiptFormComponent implements OnInit {
            requestedChildQuantity: this.refillRequestedQuantity,
            acceptPricingChange: acceptPricingChange,
            expectedNewBuyingPrice: this.pricingValidation.newBuyingPrice,
-           expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice
+           expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice,
+           expectedMarkupPercentage: this.pricingValidation.currentMarkupPercentage
        });
        
        this.showPricingDialog = false;

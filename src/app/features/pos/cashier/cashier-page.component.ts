@@ -277,7 +277,8 @@ export class CashierPageComponent implements OnInit {
                         requestedChildQuantity: childQty,
                         acceptPricingChange: acceptPricingChange,
                         expectedNewBuyingPrice: this.pricingValidation.newBuyingPrice,
-                        expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice
+                        expectedProposedSellingPrice: this.pricingValidation.proposedSellingPrice,
+                        expectedMarkupPercentage: this.pricingValidation.currentMarkupPercentage
                   });
                   
                   this.showPricingDialog.set(false);

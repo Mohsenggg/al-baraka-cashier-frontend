@@ -137,6 +137,7 @@ export interface RefillValidateResponse {
   newBuyingPrice: number;
   currentSellingPrice: number;
   proposedSellingPrice: number;
+  currentMarkupPercentage: number;
 }
 
 export interface RefillExecuteRequest {
@@ -146,6 +147,8 @@ export interface RefillExecuteRequest {
   acceptPricingChange: boolean;
   expectedNewBuyingPrice: number;
   expectedProposedSellingPrice: number;
+  /** Preserved markup % — used for stale-check on the execute endpoint */
+  expectedMarkupPercentage: number;
 }
 
 export interface Paginated<T> {

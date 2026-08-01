@@ -2427,3 +2427,31 @@
 .refill-dialog--pricing .refill-dialog__footer {
   margin-top: 16px;
 }
+
+/* Markup preserved badge inside pricing dialog */
+.refill-markup-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px 20px 0;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #93c5fd;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  color: #1e40af;
+  font-weight: 600;
+  text-align: center;
+}
+
+.refill-markup-badge .material-icons-outlined {
+  font-size: 1rem;
+  color: #1d4ed8;
+}
+
+.refill-markup-badge strong {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e3a8a;
+}
