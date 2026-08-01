@@ -80,41 +80,9 @@
                         </div>
 
                         <div class="refill-dialog__content">
-                              <section class="refill-section refill-section--summary">
-                                    <div class="refill-summary-grid">
-                                          <div>
-                                                <div class="refill-summary-label">الكمية المطلوبة</div>
-                                                <div class="refill-summary-value">{{ refillOriginalSaleQuantity }} وحدة</div>
-                                          </div>
-                                          <div>
-                                                <div class="refill-summary-label">الرصيد الحالي</div>
-                                                <div class="refill-summary-value">{{ refillProduct?.stockQuantity ?? 0 }} وحدة</div>
-                                          </div>
-                                    </div>
-                                    <p class="refill-summary-note">الكمية المطلوبة تتجاوز الرصيد المتاح. يلزم نقل وحدات من المنتج المصدر لإكمال الطلب.</p>
-                              </section>
-
-                              <section class="refill-section refill-section--conversion" *ngIf="selectedRefillOption">
-                                    <div class="refill-conversion-row">
-                                          <span class="refill-conversion-label">قانون التحويل</span>
-                                          <strong class="refill-conversion-value">
-                                                {{ selectedRefillOption.parentQuantity }} {{ selectedRefillOption.parentProductName }} = {{ selectedRefillOption.childQuantity }} {{ refillProduct?.name }}
-                                          </strong>
-                                    </div>
-                              </section>
-
-                              <section class="refill-section refill-section--products">
-                                    <div class="refill-product-compact">
-                                          <div class="refill-product-compact__title">مصدر</div>
-                                          <div class="refill-product-compact__name">{{ selectedRefillOption?.parentProductName }}</div>
-                                          <div class="refill-product-compact__stock">{{ selectedRefillOption?.parentStock ?? 0 }} وحدة متاحة</div>
-                                    </div>
-                                    <div class="refill-product-compact">
-                                          <div class="refill-product-compact__title">المنتج</div>
-                                          <div class="refill-product-compact__name">{{ refillProduct?.name }}</div>
-                                          <div class="refill-product-compact__stock">{{ refillProduct?.stockQuantity ?? 0 }} وحدة حالياً</div>
-                                    </div>
-                              </section>
+                              <p class="refill-problem-note">
+                                    الكمية المطلوبة {{ refillOriginalSaleQuantity }} وحدة تتجاوز الرصيد الحالي {{ refillProduct?.stockQuantity ?? 0 }} وحدة. يلزم نقل وحدات من المنتج المصدر لإكمال الطلب.
+                              </p>
 
                               <section class="refill-section refill-section--transfer">
                                     <div class="refill-transfer-header">
@@ -143,26 +111,34 @@
                                     </div>
                               </section>
 
-                              <!-- <section class="refill-section refill-section--preview">
-                                    <div class="refill-preview-grid">
-                                          <div class="refill-preview-card">
-                                                <div class="refill-preview-card__label">المصدر يُخصم</div>
-                                                <div class="refill-preview-card__value">-{{ refillParentUnits }} وحدة</div>
-                                          </div>
-                                          <div class="refill-preview-card">
-                                                <div class="refill-preview-card__label">الهدف يُضاف إليه</div>
-                                                <div class="refill-preview-card__value">+{{ refillChildUnitsAdded }} وحدة</div>
-                                          </div>
-                                          <div class="refill-preview-card">
-                                                <div class="refill-preview-card__label">رصيد المصدر بعد النقل</div>
-                                                <div class="refill-preview-card__value">{{ refillParentRemainingAfter }} وحدة</div>
-                                          </div>
-                                          <div class="refill-preview-card">
-                                                <div class="refill-preview-card__label">رصيد الهدف بعد النقل</div>
-                                                <div class="refill-preview-card__value">{{ (refillProduct?.stockQuantity ?? 0) + refillChildUnitsAdded }} وحدة</div>
-                                          </div>
+                              <section class="refill-section refill-section--preview">
+                                    <div class="refill-preview-simple">
+                                          <span class="refill-preview-simple__label">ستستلم</span>
+                                          <strong class="refill-preview-simple__value">+{{ refillChildUnitsAdded }} {{ refillProduct?.name }}</strong>
+                                    </div>
+                              </section>
+
+                              <!-- <section class="refill-section refill-section--products">
+                                    <div class="refill-product-compact">
+                                          <div class="refill-product-compact__title">مصدر</div>
+                                          <div class="refill-product-compact__name">{{ selectedRefillOption?.parentProductName }}</div>
+                                          <div class="refill-product-compact__stock">{{ selectedRefillOption?.parentStock ?? 0 }} وحدة متاحة</div>
+                                    </div>
+                                    <div class="refill-product-compact">
+                                          <div class="refill-product-compact__title">المنتج</div>
+                                          <div class="refill-product-compact__name">{{ refillProduct?.name }}</div>
+                                          <div class="refill-product-compact__stock">{{ refillProduct?.stockQuantity ?? 0 }} وحدة حالياً</div>
                                     </div>
                               </section> -->
+
+                              <section class="refill-section refill-section--conversion" *ngIf="selectedRefillOption">
+                                    <div class="refill-conversion-helper">
+                                          <span class="refill-conversion-label">معدل التحويل:</span>
+                                          <span class="refill-conversion-value">
+                                                {{ selectedRefillOption.parentQuantity }} {{ selectedRefillOption.parentProductName }} = {{ selectedRefillOption.childQuantity }} {{ refillProduct?.name }}
+                                          </span>
+                                    </div>
+                              </section>
 
                               <div *ngIf="refillParentRemainingAfter < 0" class="refill-warning-text">
                                     كمية النقل أكبر من الرصيد المتاح للمصدر.
