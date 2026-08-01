@@ -180,6 +180,12 @@ export class CashierPageComponent implements OnInit {
       refillSelectedParentId: number | null = null;
       isRefillLoading = signal(false);
       pricingValidation: import('../core/models/pos.models').RefillValidateResponse | null = null;
+      /**
+       * The quantity the cashier originally tried to sell (e.g. 1 piece).
+       * Preserved across the refill dialog so the cart row reflects the sale,
+       * not the inventory refill amount.
+       */
+      refillOriginalSaleQuantity: number = 1;
 
       /** The conversion option currently selected */
       get selectedRefillOption() {
@@ -222,6 +228,8 @@ export class CashierPageComponent implements OnInit {
                         if (fullProduct.refillOptions && fullProduct.refillOptions.length > 0) {
                               this.refillProduct = fullProduct;
                               this.refillParentUnits = 1;
+                              // ← preserve the sale quantity so the cart row is correct after refill
+                              this.refillOriginalSaleQuantity = event.quantity;
                               
                               const defaultParent = fullProduct.refillOptions.find(o => o.isDefault);
                               if (defaultParent) {
@@ -284,10 +292,13 @@ export class CashierPageComponent implements OnInit {
                   this.showPricingDialog.set(false);
                   this.showRefillDialog.set(false);
                   
-                  // Add the newly available child units to the cart
-                  this.state.addCartItem(updatedProduct, childQty);
+                  // Add the originally requested SALE quantity to the cart.
+                  // refillChildUnitsAdded is an inventory operation and must never
+                  // replace the cashier's requested sale quantity.
+                  this.state.addCartItem(updatedProduct, this.refillOriginalSaleQuantity);
                   this.refillProduct = null;
                   this.pricingValidation = null;
+                  this.refillOriginalSaleQuantity = 1;
                   this.notifications.success('تمت إعادة التعبئة بنجاح');
             } catch (err: any) {
                   this.notifications.error(err?.error?.message || 'فشل تنفيذ إعادة التعبئة');
