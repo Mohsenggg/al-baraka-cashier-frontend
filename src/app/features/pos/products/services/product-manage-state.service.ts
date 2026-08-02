@@ -81,6 +81,7 @@ export class ProductManageStateService {
 
       onFormValueChanged(): void {
             this.updateGeneratedName();
+            this.syncConversionState();
             this.saveSuccess.set(false);
             this.saveError.set(null);
       }
@@ -175,6 +176,7 @@ export class ProductManageStateService {
 
       buildProductPayload(): ProductManagePayload {
             const formValue = this.productForm.value;
+            const hasConversion = this.hasConversionRules();
 
             return {
                   baseName: formValue.baseName,
@@ -185,8 +187,8 @@ export class ProductManageStateService {
                   categoryId: formValue.categoryId,
                   manufacturerId: formValue.manufacturerId,
                   supplierIds: formValue.supplierIds,
-                  hasConversion: formValue.hasConversion,
-                  conversions: formValue.hasConversion ? formValue.conversions : [],
+                  hasConversion,
+                  conversions: hasConversion ? formValue.conversions : [],
                   hasComposition: formValue.hasComposition,
                   composition: formValue.hasComposition ? formValue.composition : []
             };
@@ -342,6 +344,7 @@ export class ProductManageStateService {
             if (this.conversionsFormArray.length === 1) {
                   this.setDefaultConversion(0);
             }
+            this.syncConversionState();
       }
 
       removeConversion(index: number): void {
@@ -349,6 +352,7 @@ export class ProductManageStateService {
             if (this.conversionsFormArray.length > 0 && !this.conversionsFormArray.value.some((c: any) => c.isDefault)) {
                   this.setDefaultConversion(0);
             }
+            this.syncConversionState();
       }
 
       setDefaultConversion(index: number): void {
@@ -515,7 +519,7 @@ export class ProductManageStateService {
                   categoryId: detail.categoryId,
                   manufacturerId: detail.manufacturerId,
                   supplierIds: detail.supplierIds,
-                  hasConversion: detail.hasConversion,
+                  hasConversion: detail.hasConversion || !!detail.conversions?.length,
                   hasComposition: detail.hasComposition
             });
 
@@ -571,9 +575,25 @@ export class ProductManageStateService {
             }
 
             this.updateGeneratedName();
+            this.syncConversionState();
       }
 
+      private hasConversionRules(): boolean {
+            return this.conversionsFormArray.controls.some(control => {
+                  const parentProductId = control.get('parentProductId')?.value;
+                  const parentProductName = control.get('parentProductName')?.value;
+                  return !!(parentProductId != null && parentProductId !== '')
+                        || !!(typeof parentProductName === 'string' && parentProductName.trim());
+            });
+      }
 
+      private syncConversionState(): void {
+            const hasConversion = this.hasConversionRules();
+            const control = this.productForm.get('hasConversion');
+            if (control?.value !== hasConversion) {
+                  control?.setValue(hasConversion, { emitEvent: false });
+            }
+      }
 
       private extractErrorMessage(err: unknown): string {
             return (err as { error?: { message?: string }; message?: string })?.error?.message

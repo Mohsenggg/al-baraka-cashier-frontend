@@ -318,7 +318,7 @@
         <!-- CONVERSIONS TAB -->
         <div *ngIf="activeTab === 'conversions'" class="form-sections">
           <section class="form-card">
-            <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
               <div class="card-header-text">
                 <span class="material-icons-outlined card-icon">transform</span>
                 <div>
@@ -326,20 +326,15 @@
                   <p class="card-desc">حدد إذا كان هذا المنتج يمكن تحويله من منتجات أخرى</p>
                 </div>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" formControlName="hasConversion">
-                <span class="toggle-slider"></span>
-                <span class="toggle-label">تفعيل التحويلات لهذا المنتج</span>
-              </label>
-            </div>
-
-            <div class="card-body table-scroll" *ngIf="productForm.get('hasConversion')?.value">
-              <div class="card-header-actions" style="margin-bottom: 1rem; justify-content: flex-end;">
+              <div class="card-header-actions" style="margin: 0;">
                 <button type="button" class="btn-add-barcode" (click)="addConversion()">
                   <span class="material-icons-outlined">add</span>
                   إضافة تحويل
                 </button>
               </div>
+            </div>
+
+            <div class="card-body table-scroll">
               <table class="barcodes-table">
                 <thead>
                   <tr>
