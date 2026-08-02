@@ -45,6 +45,7 @@
       align-items: center;
       gap: 20px;
       flex-direction: row-reverse;
+      flex-wrap: nowrap;
 }
 
 .header-titles {
@@ -52,6 +53,7 @@
       align-items: center;
       gap: 12px;
       text-align: right;
+      flex-wrap: nowrap;
 }
 
 .header-menu-btn {
@@ -138,9 +140,11 @@
       border-bottom: 1px solid var(--pos-border);
       flex-shrink: 0;
       display: flex;
-      flex-direction: row;
+      flex-direction: row-reverse;
       align-items: center;
+      justify-content: flex-end;
       gap: 16px;
+      flex-wrap: nowrap;
 }
 
 .search-bar-wrapper {
@@ -148,6 +152,18 @@
       display: flex;
       align-items: center;
       flex: 1;
+      min-width: 240px;
+}
+
+.title-search {
+      min-width: 240px;
+      flex: 0 1 320px;
+      margin-right: 16px;
+}
+
+.filter-search {
+      min-width: 260px;
+      flex: 0 1 350px;
 }
 
 .search-icon {
@@ -188,8 +204,8 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
-      flex-direction: row-reverse;
+      flex-wrap: nowrap;
+      margin-left: auto;
 }
 
 .filter-item {

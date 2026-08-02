@@ -15,20 +15,19 @@
                         <!-- ============================= -->
                         <div class="toolbar-section">
 
-                              <!-- Search Bar -->
-                              <div class="search-bar-wrapper">
-                                    <span class="material-icons-outlined search-icon">search</span>
-                                    <input type="text" class="search-input"
-                                          placeholder="ابحث عن المنتجات باستخدام الاسم أو הرمز..."
-                                          [value]="searchQuery()" (input)="onSearch($event)">
-                              </div>
-
                               <!-- Filter Controls -->
                               <div class="filter-controls">
+                                    <div class="search-bar-wrapper filter-search">
+                                          <span class="material-icons-outlined search-icon">search</span>
+                                          <input type="text" class="search-input"
+                                                placeholder="ابحث عن المنتجات باستخدام الاسم أو الرمز..."
+                                                [value]="searchQuery()" (input)="onSearch($event)">
+                                    </div>
+
                                     <div class="filter-item">
                                           <select class="filter-select" [value]="selectedCategory()"
                                                 (change)="onCategoryChange($any($event.target).value)">
-                                                <option value="">الكل</option>
+                                                <option value="">الأقسام</option>
                                                 <option *ngFor="let category of categories()" [value]="category.id">
                                                       {{ category.name }}
                                                 </option>
@@ -38,7 +37,7 @@
                                     <div class="filter-item">
                                           <select class="filter-select" [value]="selectedManufacturer()"
                                                 (change)="onManufacturerChange($any($event.target).value)">
-                                                <option value="">الكل</option>
+                                                <option value="">الشركات</option>
                                                 <option *ngFor="let manufacturer of manufacturers()" [value]="manufacturer.id">
                                                       {{ manufacturer.name }}
                                                 </option>
@@ -48,21 +47,20 @@
                                     <div class="filter-item">
                                           <select class="filter-select" [value]="selectedSupplier()"
                                                 (change)="onSupplierChange($any($event.target).value)">
-                                                <option value="">الكل</option>
+                                                <option value="">الموردين</option>
                                                 <option *ngFor="let supplier of suppliers()" [value]="supplier.id">
                                                       {{ supplier.name }}
                                                 </option>
                                           </select>
                                     </div>
 
-                                    
-
                                     <button class="btn-clear-filters" *ngIf="hasActiveFilters()"
                                           (click)="clearFilters()">
                                           <span class="material-icons-outlined">close</span>
-                                          مسح
+                                          حذف/إعادة تعيين
                                     </button>
                               </div>
+
                         </div>
 
                         <button class="btn-add-product" routerLink="/pos/product/manage">
