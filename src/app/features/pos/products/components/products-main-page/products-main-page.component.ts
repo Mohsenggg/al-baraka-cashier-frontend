@@ -36,7 +36,12 @@ export class ProductsMainPageComponent implements OnInit {
       isLoading = this.state.isLoading;
       searchQuery = this.state.searchQuery;
       selectedCategory = this.state.selectedCategory;
+      selectedManufacturer = this.state.selectedManufacturer;
+      selectedSupplier = this.state.selectedSupplier;
       selectedStatus = this.state.selectedStatus;
+      categories = this.state.categories;
+      manufacturers = this.state.manufacturers;
+      suppliers = this.state.suppliers;
       currentPage = this.state.currentPage;
       pageSize = this.state.pageSize;
       totalPages = this.state.totalPages;
@@ -69,6 +74,18 @@ export class ProductsMainPageComponent implements OnInit {
 
       onFilterChange(): void {
             this.state.onFilterChange();
+      }
+
+      onCategoryChange(value: string): void {
+            this.state.setSelectedCategory(value);
+      }
+
+      onManufacturerChange(value: string): void {
+            this.state.setSelectedManufacturer(value);
+      }
+
+      onSupplierChange(value: string): void {
+            this.state.setSelectedSupplier(value);
       }
 
       clearFilters(): void {

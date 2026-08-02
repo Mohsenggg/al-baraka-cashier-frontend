@@ -25,30 +25,38 @@
 
                               <!-- Filter Controls -->
                               <div class="filter-controls">
-                                    <!-- Status Filter -->
-                                    <div class="filter-item">
-                                          <select class="filter-select" [value]="selectedStatus()"
-                                                (change)="selectedStatus.set($any($event.target).value); onFilterChange()">
-                                                <option value="">حالة المنتج</option>
-                                                <option value="active">نشط</option>
-                                                <option value="inactive">غير نشط</option>
-                                                <option value="draft">مسودة</option>
-                                                <option value="deleted">محذوف</option>
-                                          </select>
-                                    </div>
-
-                                    <!-- Category Filter (Uses ID now if updated) -->
-                                    <!-- Ideally this should use dynamically loaded categories but keeping static for UI template format -->
                                     <div class="filter-item">
                                           <select class="filter-select" [value]="selectedCategory()"
-                                                (change)="selectedCategory.set($any($event.target).value); onFilterChange()">
-                                                <option value="">الفئة (معرف)</option>
-                                                <option value="1">فئة 1</option>
-                                                <option value="2">فئة 2</option>
+                                                (change)="onCategoryChange($any($event.target).value)">
+                                                <option value="">الكل</option>
+                                                <option *ngFor="let category of categories()" [value]="category.id">
+                                                      {{ category.name }}
+                                                </option>
                                           </select>
                                     </div>
 
-                                    <!-- Clear Filters -->
+                                    <div class="filter-item">
+                                          <select class="filter-select" [value]="selectedManufacturer()"
+                                                (change)="onManufacturerChange($any($event.target).value)">
+                                                <option value="">الكل</option>
+                                                <option *ngFor="let manufacturer of manufacturers()" [value]="manufacturer.id">
+                                                      {{ manufacturer.name }}
+                                                </option>
+                                          </select>
+                                    </div>
+
+                                    <div class="filter-item">
+                                          <select class="filter-select" [value]="selectedSupplier()"
+                                                (change)="onSupplierChange($any($event.target).value)">
+                                                <option value="">الكل</option>
+                                                <option *ngFor="let supplier of suppliers()" [value]="supplier.id">
+                                                      {{ supplier.name }}
+                                                </option>
+                                          </select>
+                                    </div>
+
+                                    
+
                                     <button class="btn-clear-filters" *ngIf="hasActiveFilters()"
                                           (click)="clearFilters()">
                                           <span class="material-icons-outlined">close</span>

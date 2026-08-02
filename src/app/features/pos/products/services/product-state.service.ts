@@ -1,8 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, debounceTime, finalize, Subject, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, debounceTime, finalize, forkJoin, of, Subject, tap, throwError } from 'rxjs';
 import { ProductApiService } from './product-api.service';
-import type { ProductFilterParams, ProductListItem, ProductListItemDto } from '../models/product.models';
-import { resolveStockStatus } from '../models/product.models';
+import type { NamedEntity, ProductFilterParams, ProductListItem, ProductListItemDto } from '../models/product.models';
 
 @Injectable({
       providedIn: 'root'
@@ -28,7 +27,18 @@ export class ProductStateService {
 
       public searchQuery = signal<string>('');
       public selectedCategory = signal<string>('');
+      public selectedManufacturer = signal<string>('');
+      public selectedSupplier = signal<string>('');
       public selectedStatus = signal<string>('');
+
+      private readonly categoriesSignal = signal<NamedEntity[]>([]);
+      public readonly categories = this.categoriesSignal.asReadonly();
+
+      private readonly manufacturersSignal = signal<NamedEntity[]>([]);
+      public readonly manufacturers = this.manufacturersSignal.asReadonly();
+
+      private readonly suppliersSignal = signal<NamedEntity[]>([]);
+      public readonly suppliers = this.suppliersSignal.asReadonly();
 
       public currentPage = signal<number>(1);
       public pageSize = signal<number>(20);
@@ -48,7 +58,31 @@ export class ProductStateService {
       });
 
       public loadProducts(): void {
+            this.loadReferenceData();
             this.fetchProductsFromApi();
+      }
+
+      public loadReferenceData(): void {
+            if (this.categoriesSignal().length > 0 || this.manufacturersSignal().length > 0 || this.suppliersSignal().length > 0) {
+                  return;
+            }
+
+            forkJoin({
+                  categories: this.api.getCategories().pipe(catchError(() => of([]))),
+                  manufacturers: this.api.getManufacturers().pipe(catchError(() => of([]))),
+                  suppliers: this.api.getSuppliers().pipe(catchError(() => of([])))
+            }).subscribe({
+                  next: ({ categories, manufacturers, suppliers }) => {
+                        this.categoriesSignal.set(categories);
+                        this.manufacturersSignal.set(manufacturers);
+                        this.suppliersSignal.set(suppliers);
+                  },
+                  error: () => {
+                        this.categoriesSignal.set([]);
+                        this.manufacturersSignal.set([]);
+                        this.suppliersSignal.set([]);
+                  }
+            });
       }
 
       public setSearchQuery(query: string): void {
@@ -62,9 +96,29 @@ export class ProductStateService {
             this.queueApiReload();
       }
 
+      public setSelectedCategory(value: string): void {
+            this.selectedCategory.set(value);
+            this.currentPage.set(1);
+            this.queueApiReload();
+      }
+
+      public setSelectedManufacturer(value: string): void {
+            this.selectedManufacturer.set(value);
+            this.currentPage.set(1);
+            this.queueApiReload();
+      }
+
+      public setSelectedSupplier(value: string): void {
+            this.selectedSupplier.set(value);
+            this.currentPage.set(1);
+            this.queueApiReload();
+      }
+
       public clearFilters(): void {
             this.searchQuery.set('');
             this.selectedCategory.set('');
+            this.selectedManufacturer.set('');
+            this.selectedSupplier.set('');
             this.selectedStatus.set('');
             this.currentPage.set(1);
             this.queueApiReload();
@@ -74,8 +128,28 @@ export class ProductStateService {
             return !!(
                   this.searchQuery() ||
                   this.selectedCategory() ||
+                  this.selectedManufacturer() ||
+                  this.selectedSupplier() ||
                   this.selectedStatus()
             );
+      }
+
+      public getSelectedCategoryName(): string {
+            const id = this.selectedCategory();
+            if (!id) return 'الكل';
+            return this.categoriesSignal().find(item => String(item.id) === id)?.name || 'الكل';
+      }
+
+      public getSelectedManufacturerName(): string {
+            const id = this.selectedManufacturer();
+            if (!id) return 'الكل';
+            return this.manufacturersSignal().find(item => String(item.id) === id)?.name || 'الكل';
+      }
+
+      public getSelectedSupplierName(): string {
+            const id = this.selectedSupplier();
+            if (!id) return 'الكل';
+            return this.suppliersSignal().find(item => String(item.id) === id)?.name || 'الكل';
       }
 
       public deleteProduct(productId: number): Observable<void> {
@@ -164,6 +238,8 @@ export class ProductStateService {
             return {
                   query: this.searchQuery() || undefined,
                   categoryId: this.selectedCategory() ? Number(this.selectedCategory()) : undefined,
+                  manufacturerId: this.selectedManufacturer() ? Number(this.selectedManufacturer()) : undefined,
+                  supplierId: this.selectedSupplier() ? Number(this.selectedSupplier()) : undefined,
                   status: this.selectedStatus() || undefined,
                   page: this.currentPage() - 1,
                   size: this.pageSize(),
