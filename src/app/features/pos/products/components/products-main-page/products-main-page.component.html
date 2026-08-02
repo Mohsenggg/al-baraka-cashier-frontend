@@ -29,41 +29,51 @@
                                     </div>
 
                                     <div class="filter-item">
-                                          <select class="filter-select" [value]="selectedCategory()"
-                                                (change)="onCategoryChange($any($event.target).value)">
-                                                <option value="">الأقسام</option>
-                                                <option *ngFor="let category of categories()" [value]="category.id">
-                                                      {{ category.name }}
-                                                </option>
-                                          </select>
+                                          <div class="filter-select-wrapper" [class.has-value]="selectedCategory()">
+                                                <select class="filter-select" [value]="selectedCategory()"
+                                                      (change)="onCategoryChange($any($event.target).value)">
+                                                      <option value="" disabled hidden>اختر القسم</option>
+                                                      <option value="">الكل</option>
+                                                      <option *ngFor="let category of categories()" [value]="category.id">
+                                                            {{ category.name }}
+                                                      </option>
+                                                </select>
+                                                <span class="filter-select-icon material-icons-outlined">category</span>
+                                          </div>
                                     </div>
 
                                     <div class="filter-item">
-                                          <select class="filter-select" [value]="selectedManufacturer()"
-                                                (change)="onManufacturerChange($any($event.target).value)">
-                                                <option value="">الشركات</option>
-                                                <option *ngFor="let manufacturer of manufacturers()" [value]="manufacturer.id">
-                                                      {{ manufacturer.name }}
-                                                </option>
-                                          </select>
+                                          <div class="filter-select-wrapper" [class.has-value]="selectedManufacturer()">
+                                                <select class="filter-select" [value]="selectedManufacturer()"
+                                                      (change)="onManufacturerChange($any($event.target).value)">
+                                                      <option value="" disabled hidden>اختر الشركة</option>
+                                                      <option value="">الكل</option>
+                                                      <option *ngFor="let manufacturer of manufacturers()" [value]="manufacturer.id">
+                                                            {{ manufacturer.name }}
+                                                      </option>
+                                                </select>
+                                                <span class="filter-select-icon material-icons-outlined">business</span>
+                                          </div>
                                     </div>
 
                                     <div class="filter-item">
-                                          <select class="filter-select" [value]="selectedSupplier()"
-                                                (change)="onSupplierChange($any($event.target).value)">
-                                                <option value="">الموردين</option>
-                                                <option *ngFor="let supplier of suppliers()" [value]="supplier.id">
-                                                      {{ supplier.name }}
-                                                </option>
-                                          </select>
+                                          <div class="filter-select-wrapper" [class.has-value]="selectedSupplier()">
+                                                <select class="filter-select" [value]="selectedSupplier()"
+                                                      (change)="onSupplierChange($any($event.target).value)">
+                                                      <option value="" disabled hidden>اختر المورد</option>
+                                                      <option value="">الكل</option>
+                                                      <option *ngFor="let supplier of suppliers()" [value]="supplier.id">
+                                                            {{ supplier.name }}
+                                                      </option>
+                                                </select>
+                                                <span class="filter-select-icon material-icons-outlined">local_shipping</span>
+                                          </div>
                                     </div>
-
-                                    
 
                                     <button class="btn-clear-filters" *ngIf="hasActiveFilters()"
                                           (click)="clearFilters()">
-                                          <span class="material-icons-outlined">close</span>
-                                          مسح
+                                          <span class="material-icons-outlined">filter_alt_off</span>
+                                          مسح الكل
                                     </button>
                               </div>
                         </div>
