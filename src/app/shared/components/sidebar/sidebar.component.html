@@ -33,6 +33,11 @@
           </ng-template>
         </li>
       </ul>
+
+      <button class="nav-link fullscreen-nav-btn" type="button" (click)="enterFullscreen()" [attr.data-tooltip]="fullScreenLabel">
+        <span class="material-icons-outlined icon">{{ fullScreenIcon }}</span>
+        <span class="label">{{ fullScreenLabel }}</span>
+      </button>
     </nav>
 
     <div class="user-container">

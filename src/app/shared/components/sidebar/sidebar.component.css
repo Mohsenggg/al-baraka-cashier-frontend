@@ -147,6 +147,50 @@
 }
 
 /* ============================= */
+/* FULLSCREEN ACTION */
+/* ============================= */
+.fullscreen-nav-btn {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 4px;
+}
+
+.fullscreen-nav-btn:hover {
+      background-color: #f3f4f6;
+      color: var(--pos-text-primary, #1e293b);
+}
+
+.fullscreen-nav-btn .icon {
+      margin-inline-start: 0;
+      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      transition: margin-inline-end 0.3s, font-size 0.3s;
+}
+
+.sidebar.expanded .fullscreen-nav-btn .icon {
+      margin-inline-end: 12px;
+      font-size: 1.2rem;
+}
+
+.fullscreen-nav-btn .label {
+      display: none;
+      white-space: nowrap;
+      opacity: 0;
+}
+
+.sidebar.expanded .fullscreen-nav-btn .label {
+      display: inline-block;
+      opacity: 1;
+      animation: fadeInLabel 0.2s ease forwards;
+}
+
+/* ============================= */
 /* USER SECTION */
 /* ============================= */
 .user-container {
@@ -221,12 +265,14 @@
 /* TOOLTIPS FOR MINI SIDEBAR */
 /* ============================= */
 .sidebar:not(.expanded) .nav-link,
-.sidebar:not(.expanded) .user-btn {
+.sidebar:not(.expanded) .user-btn,
+.sidebar:not(.expanded) .fullscreen-nav-btn {
       position: relative;
 }
 
 .sidebar:not(.expanded) .nav-link::after,
-.sidebar:not(.expanded) .user-btn::after {
+.sidebar:not(.expanded) .user-btn::after,
+.sidebar:not(.expanded) .fullscreen-nav-btn::after {
       content: attr(data-tooltip);
       position: absolute;
       left: calc(100% + 8px); /* Pop out to the right */
@@ -266,14 +312,16 @@
 }
 
 .sidebar:not(.expanded) .nav-link:hover::after,
-.sidebar:not(.expanded) .user-btn:hover::after {
+.sidebar:not(.expanded) .user-btn:hover::after,
+.sidebar:not(.expanded) .fullscreen-nav-btn:hover::after {
       opacity: 1;
       visibility: visible;
       margin-left: 2px;
 }
 
 .sidebar:not(.expanded) .nav-link:hover::before,
-.sidebar:not(.expanded) .user-btn:hover::before {
+.sidebar:not(.expanded) .user-btn:hover::before,
+.sidebar:not(.expanded) .fullscreen-nav-btn:hover::before {
       opacity: 1;
       visibility: visible;
 }
