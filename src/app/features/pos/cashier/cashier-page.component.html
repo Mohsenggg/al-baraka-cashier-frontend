@@ -69,9 +69,14 @@
             <div class="refill-overlay" *ngIf="showRefillDialog()">
                   <div class="refill-dialog" role="dialog" aria-modal="true">
                         <div class="refill-dialog__header">
-                              <div>
-                                    <p class="refill-dialog__eyebrow">نفاد المخزون</p>
-                                    <h2 class="refill-dialog__title">إعادة تعبئة المخزون</h2>
+                              <div class="refill-dialog__header-content">
+                                    <div class="refill-dialog__header-icon">
+                                          <span class="material-icons-outlined">inventory_2</span>
+                                    </div>
+                                    <div>
+                                          <p class="refill-dialog__eyebrow">نفاد المخزون</p>
+                                          <h2 class="refill-dialog__title">إعادة تعبئة المخزون</h2>
+                                    </div>
                               </div>
                               <button class="refill-dialog__close" (click)="cancelRefill()" aria-label="إغلاق">
                                     <span class="material-icons-outlined">close</span>
