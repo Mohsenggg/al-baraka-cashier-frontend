@@ -14,14 +14,18 @@
                         <!-- SEARCH & FILTER TOOLBAR -->
                         <!-- ============================= -->
                         <div class="toolbar-section">
-
                               <!-- Filter Controls -->
                               <div class="filter-controls">
+                                    <!-- Search Bar -->
                                     <div class="search-bar-wrapper filter-search">
-                                          <span class="material-icons-outlined search-icon">search</span>
                                           <input type="text" class="search-input"
-                                                placeholder="ابحث عن المنتجات باستخدام الاسم أو الرمز..."
-                                                [value]="searchQuery()" (input)="onSearch($event)">
+                                                placeholder="مسح باركود أو كتابة اسم/رمز المنتج..."
+                                                [value]="localSearchTerm()" (input)="onSearchInput($event)"
+                                                (keyup.enter)="executeSearch()">
+                                          <button type="button" class="search-icon-button" (click)="executeSearch()"
+                                                [disabled]="!localSearchTerm()" aria-label="بحث">
+                                                <span class="material-icons-outlined">search</span>
+                                          </button>
                                     </div>
 
                                     <div class="filter-item">
@@ -54,13 +58,14 @@
                                           </select>
                                     </div>
 
+                                    
+
                                     <button class="btn-clear-filters" *ngIf="hasActiveFilters()"
                                           (click)="clearFilters()">
                                           <span class="material-icons-outlined">close</span>
-                                          حذف/إعادة تعيين
+                                          مسح
                                     </button>
                               </div>
-
                         </div>
 
                         <button class="btn-add-product" routerLink="/pos/product/manage">

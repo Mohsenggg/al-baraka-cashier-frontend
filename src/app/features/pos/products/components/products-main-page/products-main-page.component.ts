@@ -34,6 +34,7 @@ export class ProductsMainPageComponent implements OnInit {
       sidebarVisible = signal(false);
 
       isLoading = this.state.isLoading;
+      localSearchTerm = signal(this.state.searchQuery());
       searchQuery = this.state.searchQuery;
       selectedCategory = this.state.selectedCategory;
       selectedManufacturer = this.state.selectedManufacturer;
@@ -67,9 +68,13 @@ export class ProductsMainPageComponent implements OnInit {
             this.sidebarVisible.update(v => !v);
       }
 
-      onSearch(event: Event): void {
+      onSearchInput(event: Event): void {
             const input = event.target as HTMLInputElement;
-            this.state.setSearchQuery(input.value);
+            this.localSearchTerm.set(input.value);
+      }
+
+      executeSearch(): void {
+            this.state.setSearchQuery(this.localSearchTerm());
       }
 
       onFilterChange(): void {
@@ -89,6 +94,7 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       clearFilters(): void {
+            this.localSearchTerm.set('');
             this.state.clearFilters();
       }
 
