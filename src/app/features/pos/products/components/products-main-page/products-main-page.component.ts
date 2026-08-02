@@ -149,4 +149,8 @@ export class ProductsMainPageComponent implements OnInit {
       goToPage(page: number): void {
             this.state.goToPage(page);
       }
+
+      trackByProductId(index: number, product: any): number {
+            return product.id;
+      }
 }

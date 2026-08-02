@@ -80,18 +80,6 @@
             <!-- ============================= -->
             <div class="table-wrapper">
 
-                  <!-- Loading State -->
-                  <div class="loading-skeleton" *ngIf="isLoading()">
-                        <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
-                              <div class="skeleton-cell"></div>
-                              <div class="skeleton-cell"></div>
-                              <div class="skeleton-cell"></div>
-                              <div class="skeleton-cell"></div>
-                              <div class="skeleton-cell"></div>
-                              <div class="skeleton-cell"></div>
-                        </div>
-                  </div>
-
                   <!-- Empty State -->
                   <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
                         <span class="material-icons-outlined empty-icon">inventory_2</span>
@@ -104,7 +92,7 @@
                   </div>
 
                   <!-- Products Table -->
-                  <table class="products-table" *ngIf="!isLoading() && products().length > 0">
+                  <table class="products-table" *ngIf="isLoading() || products().length > 0">
                         <thead>
                               <tr>
                                     <th class="col-product">
@@ -120,8 +108,8 @@
                                     <th class="col-actions">الإجراءات</th>
                               </tr>
                         </thead>
-                        <tbody>
-                              <tr class="product-row" *ngFor="let product of products()"
+                        <tbody *ngIf="!isLoading()">
+                              <tr class="product-row" *ngFor="let product of products(); trackBy: trackByProductId"
                                     (mouseenter)="onRowHover(product.id)" (mouseleave)="onRowLeave()">
 
                                     <!-- Product Column -->
@@ -178,6 +166,18 @@
                                           </div>
                                     </td>
 
+                              </tr>
+                        </tbody>
+
+                        <!-- Loading Body -->
+                        <tbody *ngIf="isLoading()" class="loading-tbody">
+                              <tr class="skeleton-table-row" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+                                    <td class="col-product"><div class="skeleton-cell" style="height: 32px; max-width: 80%;"></div></td>
+                                    <td class="col-price"><div class="skeleton-cell"></div></td>
+                                    <td class="col-stock"><div class="skeleton-cell"></div></td>
+                                    <td class="col-type"><div class="skeleton-cell"></div></td>
+                                    <td class="col-status"><div class="skeleton-cell"></div></td>
+                                    <td class="col-actions"><div class="skeleton-cell"></div></td>
                               </tr>
                         </tbody>
                   </table>

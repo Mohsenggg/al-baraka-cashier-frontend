@@ -475,20 +475,8 @@
 /* LOADING STATE */
 /* ============================= */
 
-.loading-skeleton {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 24px;
-}
-
-.skeleton-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr 0.8fr 0.6fr 0.7fr;
-      gap: 12px;
-      padding: 12px;
-      background-color: #f8fafc;
-      border-radius: 8px;
+.skeleton-table-row td {
+      padding: 14px 16px;
 }
 
 .skeleton-cell {
@@ -580,6 +568,7 @@
 
 .products-table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       background-color: var(--pos-card-bg);
 }

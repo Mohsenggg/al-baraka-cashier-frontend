@@ -88,7 +88,7 @@ export class ProductStateService {
       public setSearchQuery(query: string): void {
             this.searchQuery.set(query);
             this.currentPage.set(1);
-            this.queueApiReload();
+            this.queueApiReload(true);
       }
 
       public onFilterChange(): void {
