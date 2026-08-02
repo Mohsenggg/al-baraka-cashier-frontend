@@ -70,14 +70,13 @@
 /* ============================= */
 .nav-menu {
       flex-grow: 1;
-      padding: 0 10px;
-      overflow-y: auto;
-      overflow-x: hidden; /* FIX: Prevents horizontal scrolling inside the nav menu */
+      padding: 0 8px;
+      overflow: hidden;
       transition: padding 0.3s;
 }
 
 .sidebar.expanded .nav-menu {
-      padding: 0 16px;
+      padding: 0 12px;
 }
 
 .nav-menu ul {
@@ -87,7 +86,7 @@
 }
 
 .nav-menu li {
-      margin-bottom: 8px;
+      margin-bottom: 4px;
 }
 
 .nav-link {
