@@ -48,11 +48,11 @@
             </div>
             -->
 
-            <div class="left-action-group" *ngIf="(receipt?.id && receiptMode !== 'NEW') || receiptMode === 'VIEW'"
-                  style="display: flex; align-items: center; gap: 8px; background-color: #f8f9fa; padding: 4px 12px; border-radius: 8px; border: 1px solid #e9ecef;">
-                  <span class="group-label"
-                        style="font-size: 0.8rem; color: #6c757d; white-space: nowrap; font-weight: 500;">مرتد
-                        كاشير:</span>
+            <div class="left-action-group" *ngIf="(receipt?.id && receiptMode !== 'NEW') || receiptMode === 'VIEW'">
+                  <span class="group-label">
+                        <span class="material-icons-outlined">info</span>
+                        مرتد كاشير:
+                  </span>
 
                   <button class="btn-outline" (click)="edit.emit()" *ngIf="receiptMode === 'VIEW'">
                         <span class="text">تعديل</span>
