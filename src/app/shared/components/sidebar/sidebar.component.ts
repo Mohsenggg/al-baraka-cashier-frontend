@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,6 +13,8 @@ import { RouterModule } from '@angular/router';
 export class SidebarComponent {
   @Input() expanded = false;
   @Output() toggle = new EventEmitter<void>();
+
+  private authService = inject(AuthService);
 
   isFullscreen = false;
   fullScreenIcon = 'fullscreen';
@@ -66,5 +69,9 @@ export class SidebarComponent {
     this.isFullscreen = !!document.fullscreenElement;
     this.fullScreenIcon = this.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
     this.fullScreenLabel = this.isFullscreen ? 'الخروج من ملء الشاشة' : 'ملء الشاشة';
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

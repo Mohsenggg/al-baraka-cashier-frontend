@@ -33,6 +33,10 @@ export class AuthService {
   logout(): void {
     this.loggedIn = false;
     localStorage.removeItem('pos_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('expires_at');
     this.router.navigate(['/pos/login']);
   }
 

@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../shared/environment/developments';
 import { RegisterRequest } from '../../model/interface/RegisterRequest';
@@ -13,9 +15,15 @@ import { InvitationCheckResponse } from '../model/interface/InvitationCheckRespo
 export class AuthService {
 
       private apiUrl = `${environment.API_URL}/auth`;
-      private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+      private isAuthenticatedSubject: BehaviorSubject<boolean>;
 
-      constructor(private http: HttpClient) { }
+      constructor(
+            private http: HttpClient,
+            private router: Router,
+            @Inject(PLATFORM_ID) private platformId: Object
+      ) {
+            this.isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+      }
 
       checkInvitationCode(invitationCode: string): Observable<InvitationCheckResponse> {
             return this.http.post<InvitationCheckResponse>(`${this.apiUrl}/invitation/check`, { invitationCode });
@@ -50,34 +58,24 @@ export class AuthService {
       }
 
       setSession(authResult: LoginResponse): void {
-            // Store tokens in localStorage or sessionStorage
-            localStorage.setItem('access_token', authResult.token);
-
-
-            // localStorage.setItem('refresh_token', authResult.refreshToken);
-            localStorage.setItem('user', JSON.stringify(authResult.user));
-
-            // Set token expiration
-
-            const expiresAt = new Date(authResult.expiresIn).getTime();
-            localStorage.setItem('expires_at', expiresAt.toString());
-            console.log(authResult.expiresIn);
-            console.log(expiresAt);
-
+            if (isPlatformBrowser(this.platformId)) {
+                  localStorage.setItem('access_token', authResult.token);
+                  localStorage.setItem('user', JSON.stringify(authResult.user));
+                  const expiresAt = new Date(authResult.expiresIn).getTime();
+                  localStorage.setItem('expires_at', expiresAt.toString());
+            }
       }
 
-
-
-
-
       logout(): void {
-            // Remove tokens and user data
-            localStorage.removeItem('access_token');
-            // localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('expires_at');
-
+            if (isPlatformBrowser(this.platformId)) {
+                  localStorage.removeItem('access_token');
+                  localStorage.removeItem('refresh_token');
+                  localStorage.removeItem('pos_token');
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('expires_at');
+            }
             this.isAuthenticatedSubject.next(false);
+            this.router.navigate(['/pos/login']);
       }
 
       isLoggedIn(): boolean {
@@ -85,23 +83,34 @@ export class AuthService {
       }
 
       private hasToken(): boolean {
-            return !!localStorage.getItem('access_token');
+            if (isPlatformBrowser(this.platformId)) {
+                  return !!localStorage.getItem('access_token');
+            }
+            return false;
       }
 
       private isTokenExpired(): boolean {
-            const expiration = localStorage.getItem('expires_at');
-            if (!expiration) return true;
-
-            return Date.now() > parseInt(expiration);
+            if (isPlatformBrowser(this.platformId)) {
+                  const expiration = localStorage.getItem('expires_at');
+                  if (!expiration) return true;
+                  return Date.now() > parseInt(expiration);
+            }
+            return true;
       }
 
       getToken(): string | null {
-            return localStorage.getItem('access_token');
+            if (isPlatformBrowser(this.platformId)) {
+                  return localStorage.getItem('access_token');
+            }
+            return null;
       }
 
       getUser(): any {
-            const user = localStorage.getItem('user');
-            return user ? JSON.parse(user) : null;
+            if (isPlatformBrowser(this.platformId)) {
+                  const user = localStorage.getItem('user');
+                  return user ? JSON.parse(user) : null;
+            }
+            return null;
       }
 
       get isAuthenticated$(): Observable<boolean> {
