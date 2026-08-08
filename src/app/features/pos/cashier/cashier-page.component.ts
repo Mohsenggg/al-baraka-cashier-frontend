@@ -65,9 +65,37 @@ export class CashierPageComponent implements OnInit {
       }
 
       // Action Bar Events
+      private pendingPrintIntent = false;
+
       onSave() {
+            this.pendingPrintIntent = false;
+            this.executeSaveFlow();
+      }
+
+      onSaveAndPrint() {
+            this.pendingPrintIntent = true;
+            this.executeSaveFlow();
+      }
+
+      onConfirmPayment() {
+            this.executeSaveFlow();
+      }
+
+      private executeSaveFlow() {
             const obs = this.doSave();
-            if (obs) obs.subscribe();
+            if (obs) {
+                  obs.subscribe({
+                        next: (receipt) => {
+                              if (receipt && receipt.id) {
+                                    if (this.pendingPrintIntent) {
+                                          this.executePrint(receipt.id, true);
+                                    }
+                                    // Reset intent after successful completion
+                                    this.pendingPrintIntent = false;
+                              }
+                        }
+                  });
+            }
       }
 
       private doSave(): Observable<ReceiptResponse | null> {
@@ -120,19 +148,6 @@ export class CashierPageComponent implements OnInit {
             }
       }
 
-      onSaveAndPrint() {
-            const obs = this.doSave();
-            if (obs) {
-                  obs.subscribe({
-                        next: (receipt) => {
-                              if (receipt && receipt.id) {
-                                    this.executePrint(receipt.id, true);
-                              }
-                        }
-                  });
-            }
-      }
-
       onPrint() {
             const current = this.currentReceipt();
             if (current?.id) {
@@ -141,9 +156,14 @@ export class CashierPageComponent implements OnInit {
       }
 
       private executePrint(id: number, isFromSaveAndPrint: boolean) {
+            console.log(`[PRINT] Starting print operation for receipt ID: ${id}`);
             this.state.printReceipt(id).subscribe({
-                  next: () => this.notifications.success('تمت الطباعة بنجاح'),
-                  error: () => {
+                  next: () => {
+                        console.log(`[PRINT SUCCESS] Receipt ID ${id} printed successfully.`);
+                        this.notifications.success('تمت الطباعة بنجاح');
+                  },
+                  error: (err) => {
+                        console.error(`[PRINT ERROR] Failed to print receipt ID ${id}.`, err);
                         if (isFromSaveAndPrint) {
                               this.notifications.warning('تم حفظ الفاتورة ولكن فشلت عملية الطباعة');
                         } else {
