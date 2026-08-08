@@ -19,6 +19,7 @@ import { ProductSearchPopupComponent } from '../../../../../shared/components/pr
 import type { NamedEntity, ProductAttributeOption, ProductListItemDto } from '../../models/product.models';
 import { calculateProfitMargin } from '../../models/product.models';
 import { ProductApiService } from '../../services/product-api.service';
+import { NotificationService } from '../../../../../shared/services/notification.service';
 
 @Component({
       selector: 'app-manage-product',
@@ -33,6 +34,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       private readonly api = inject(ProductApiService);
       private readonly router = inject(Router);
       private readonly route = inject(ActivatedRoute);
+      private readonly notifications = inject(NotificationService);
       private readonly destroy$ = new Subject<void>();
 
       activeTab: 'basic' | 'conversions' | 'composition' = 'basic';
@@ -332,6 +334,7 @@ export class ManageProductComponent implements OnInit, OnDestroy {
       }
 
       onSave(): void {
+            const isCreating = !this.state.isEditMode();
             const result = this.state.saveProduct();
             if (!result) {
                   if (this.state.saveError()) {
@@ -345,6 +348,17 @@ export class ManageProductComponent implements OnInit, OnDestroy {
                   }
                   return;
             }
-            result.subscribe();
+            result.subscribe({
+                  next: () => {
+                        if (isCreating) {
+                              // Navigate immediately to product list, then show the toast
+                              // The toast is rendered at the app root level so it persists across navigation
+                              this.router.navigate(['/pos/products']).then(() => {
+                                    this.notifications.success('تم حفظ المنتج بنجاح');
+                              });
+                        }
+                        // In edit mode, saveSuccess signal handles inline feedback
+                  }
+            });
       }
 }
