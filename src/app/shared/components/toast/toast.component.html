@@ -1,22 +1,25 @@
 <div class="toast-container">
-  <div *ngFor="let toast of toasts; let i = index" 
-       class="toast" 
-       [ngClass]="'toast-' + toast.type" 
-       (click)="dismiss(toast.id)">
-    
-    <div class="toast-icon">
-      <ng-container [ngSwitch]="toast.type">
-        <span *ngSwitchCase="'success'">✅</span>
-        <span *ngSwitchCase="'error'">❌</span>
-        <span *ngSwitchCase="'warning'">⚠️</span>
-        <span *ngSwitchCase="'info'">ℹ️</span>
-      </ng-container>
-    </div>
-    
-    <div class="toast-message">
-      {{ toast.message }}
-    </div>
+  <div *ngFor="let toast of toasts"
+       class="toast"
+       [class.toast-success]="toast.type === 'success'"
+       [class.toast-error]="toast.type === 'error'"
+       [class.toast-warning]="toast.type === 'warning'"
+       [class.toast-info]="toast.type === 'info'">
 
-    <button class="toast-close" (click)="dismiss(toast.id); $event.stopPropagation()">✕</button>
+    <span class="toast-icon material-icons-outlined">
+      <ng-container [ngSwitch]="toast.type">
+        <ng-container *ngSwitchCase="'success'">check_circle</ng-container>
+        <ng-container *ngSwitchCase="'error'">error_outline</ng-container>
+        <ng-container *ngSwitchCase="'warning'">warning_amber</ng-container>
+        <ng-container *ngSwitchDefault>info</ng-container>
+      </ng-container>
+    </span>
+
+    <span class="toast-message">{{ toast.message }}</span>
+
+    <button class="toast-close material-icons-outlined"
+            type="button"
+            (click)="dismiss(toast.id)"
+            aria-label="إغلاق">close</button>
   </div>
 </div>
