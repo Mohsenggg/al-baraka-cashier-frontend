@@ -50,6 +50,13 @@ export class ProductManageStateService {
       readonly attributeEditorError = signal<string | null>(null);
 
       initialize(): void {
+            this.productId.set(null);
+            this.isEditMode.set(false);
+            this.isSaving.set(false);
+            this.saveSuccess.set(false);
+            this.saveError.set(null);
+            this.generatedName.set('');
+            this.clearAttributeEditor();
             this.initForm();
             this.addBarcode();
       }
