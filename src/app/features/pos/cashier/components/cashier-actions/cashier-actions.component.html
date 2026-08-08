@@ -7,7 +7,7 @@
       </div>
 
       <div class="main-actions-bar">
-            <button class="btn-main-action" (click)="receiptMode === 'VIEW' ? print.emit() : saveAndPrint.emit()">
+            <button class="btn-main-action" (click)="receiptMode === 'VIEW' ? print.emit() : saveAndPrint.emit()" [disabled]="isLoading || hasStockErrors">
                   <div class="btn-content">
                         <span class="material-icons-outlined">print</span>
                         <ng-container *ngIf="receiptMode === 'VIEW'">
@@ -21,7 +21,7 @@
 
             <div class="middle-group">
                   <button class="btn-outline" (click)="save.emit()" *ngIf="receiptMode !== 'VIEW'"
-                        [disabled]="hasStockErrors">
+                        [disabled]="isLoading || hasStockErrors">
                         <span class="text">حفظ</span>
                         <span class="material-icons-outlined">save</span>
                         <span class="shortcut">(F11)</span>

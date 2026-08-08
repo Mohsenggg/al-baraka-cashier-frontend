@@ -1,6 +1,9 @@
 import { Component, ChangeDetectionStrategy, inject, HostListener, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { ReceiptResponse } from '../core/models/pos.models';
 
 // New dumb components
 import { CashierActionsComponent } from './components/cashier-actions/cashier-actions.component';
@@ -63,13 +66,18 @@ export class CashierPageComponent implements OnInit {
 
       // Action Bar Events
       onSave() {
+            const obs = this.doSave();
+            if (obs) obs.subscribe();
+      }
+
+      private doSave(): Observable<ReceiptResponse | null> {
             const items = this.cartItems();
-            if (items.length === 0) return;
-            if (this.hasStockErrors()) return;
+            if (items.length === 0) return of(null);
+            if (this.hasStockErrors()) return of(null);
             
             if (!this.showPaymentScreen()) {
                   this.showPaymentScreen.set(true);
-                  return;
+                  return of(null);
             }
 
             const receiptData = this.currentReceipt();
@@ -96,25 +104,53 @@ export class CashierPageComponent implements OnInit {
             };
 
             if (this.receiptMode() === 'EDIT' && receiptData?.id) {
-                  this.state.updateReceipt(receiptData.id, payload).subscribe(() => {
-                        this.showPaymentScreen.set(false);
-                        this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
-                  });
+                  return this.state.updateReceipt(receiptData.id, payload).pipe(
+                        tap(() => {
+                              this.showPaymentScreen.set(false);
+                              this.state.filterReceipts({ page: 0, size: 20 });
+                        })
+                  );
             } else {
-                  this.state.createReceipt(payload).subscribe(() => {
-                        this.showPaymentScreen.set(false);
-                        this.state.filterReceipts({ page: 0, size: 20 }); // refresh list
-                  });
+                  return this.state.createReceipt(payload).pipe(
+                        tap(() => {
+                              this.showPaymentScreen.set(false);
+                              this.state.filterReceipts({ page: 0, size: 20 });
+                        })
+                  );
             }
       }
 
       onSaveAndPrint() {
-            this.onSave();
-            this.onPrint();
+            const obs = this.doSave();
+            if (obs) {
+                  obs.subscribe({
+                        next: (receipt) => {
+                              if (receipt && receipt.id) {
+                                    this.executePrint(receipt.id, true);
+                              }
+                        }
+                  });
+            }
       }
 
       onPrint() {
-            console.log('Print triggered - Printing implementation will be added later.');
+            const current = this.currentReceipt();
+            if (current?.id) {
+                  this.executePrint(current.id, false);
+            }
+      }
+
+      private executePrint(id: number, isFromSaveAndPrint: boolean) {
+            this.state.printReceipt(id).subscribe({
+                  next: () => this.notifications.success('تمت الطباعة بنجاح'),
+                  error: () => {
+                        if (isFromSaveAndPrint) {
+                              this.notifications.warning('تم حفظ الفاتورة ولكن فشلت عملية الطباعة');
+                        } else {
+                              this.notifications.error('فشلت عملية الطباعة');
+                        }
+                  }
+            });
       }
 
       onNew() {

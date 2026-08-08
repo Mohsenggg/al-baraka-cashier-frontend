@@ -26,6 +26,7 @@
                   [receiptMode]="receiptMode()"
                   [draftsCount]="5"
                   [hasStockErrors]="hasStockErrors()"
+                  [isLoading]="(loading$ | async) ?? false"
                   (toggleRightSidebar)="onToggleRightSidebar()"
                   (saveAndPrint)="onSaveAndPrint()"
                   (save)="onSave()"

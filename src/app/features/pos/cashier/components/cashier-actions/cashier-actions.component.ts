@@ -15,6 +15,7 @@ export class CashierActionsComponent {
       @Input() receiptMode: ReceiptMode = 'NEW';
       @Input() draftsCount = 0;
       @Input() hasStockErrors = false;
+      @Input() isLoading = false;
 
       @Output() toggleRightSidebar = new EventEmitter<void>();
       @Output() saveAndPrint = new EventEmitter<void>();

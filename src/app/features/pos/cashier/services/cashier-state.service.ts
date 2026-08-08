@@ -440,6 +440,17 @@ export class CashierStateService {
             );
       }
 
+      public printReceipt(id: number): Observable<void> {
+            this.setLoading(true);
+            return this.api.printReceipt(id).pipe(
+                  catchError((err) => {
+                        this.handleError(err);
+                        return throwError(() => err);
+                  }),
+                  finalize(() => this.setLoading(false))
+            );
+      }
+
       private updateProductsCacheFromReceipt(receipt: ReceiptResponse): void {
             const currentProducts = [...this.productsSignal()];
             let hasChanges = false;
