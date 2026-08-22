@@ -7,7 +7,8 @@
             <div class="page-header">
                   <div class="header-content">
                         <div class="header-titles">
-                              <button type="button" class="header-menu-btn" (click)="onToggleSidebar()" aria-label="القائمة">
+                              <button type="button" class="header-menu-btn" (click)="onToggleSidebar()"
+                                    aria-label="القائمة">
                                     <span class="material-icons-outlined">menu</span>
                               </button>
                               <div>
@@ -18,7 +19,8 @@
                                                 هيكل هرمي
                                           </span>
                                     </div>
-                                    <p class="page-subtitle">استعراض وتصفح دليل المنتجات وفق الهيكل الهرمي (قسم &larr; شركة &larr; مجموعة &larr; منتج)</p>
+                                    <p class="page-subtitle">استعراض وتصفح دليل المنتجات وفق الهيكل الهرمي (قسم &larr;
+                                          شركة &larr; مجموعة &larr; منتج)</p>
                               </div>
                         </div>
 
@@ -54,10 +56,12 @@
                               <input type="text" class="search-input"
                                     placeholder="بحث بالاسم، الباركود، الكود، القسم أو الشركة..."
                                     [value]="searchQuery()" (input)="onSearchInput($event)">
-                              <button type="button" class="search-clear-btn" *ngIf="searchQuery()" (click)="clearSearch()" aria-label="مسح">
+                              <button type="button" class="search-clear-btn" *ngIf="searchQuery()"
+                                    (click)="clearSearch()" aria-label="مسح">
                                     <span class="material-icons-outlined">close</span>
                               </button>
-                              <span class="search-icon-static material-icons-outlined" *ngIf="!searchQuery()">search</span>
+                              <span class="search-icon-static material-icons-outlined"
+                                    *ngIf="!searchQuery()">search</span>
                         </div>
 
                         <!-- Filter by Category -->
@@ -91,18 +95,21 @@
 
                         <!-- Expand / Collapse All Controls -->
                         <div class="tree-controls-group">
-                              <button type="button" class="btn-tree-ctrl" (click)="expandAll()" title="توسيع كل عناصر الشجرة">
+                              <button type="button" class="btn-tree-ctrl" (click)="expandAll()"
+                                    title="توسيع كل عناصر الشجرة">
                                     <span class="material-icons-outlined">unfold_more</span>
                                     <span>توسيع الكل</span>
                               </button>
-                              <button type="button" class="btn-tree-ctrl" (click)="collapseAll()" title="طي كل عناصر الشجرة">
+                              <button type="button" class="btn-tree-ctrl" (click)="collapseAll()"
+                                    title="طي كل عناصر الشجرة">
                                     <span class="material-icons-outlined">unfold_less</span>
                                     <span>طي الكل</span>
                               </button>
                         </div>
 
                         <!-- Reset Filters -->
-                        <button type="button" class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearAllFilters()">
+                        <button type="button" class="btn-clear-filters" *ngIf="hasActiveFilters()"
+                              (click)="clearAllFilters()">
                               <span class="material-icons-outlined">filter_alt_off</span>
                               <span>مسح التصفية</span>
                         </button>
@@ -171,7 +178,8 @@
                               <div class="category-row" (click)="toggleCategory(category, $event)">
                                     <div class="row-leading">
                                           <!-- Expand Toggle Button -->
-                                          <button type="button" class="btn-node-toggle" (click)="toggleCategory(category, $event)"
+                                          <button type="button" class="btn-node-toggle"
+                                                (click)="toggleCategory(category, $event)"
                                                 [attr.aria-expanded]="category.expanded">
                                                 <span class="material-icons-outlined chevron-icon">
                                                       {{ category.expanded ? 'expand_more' : 'chevron_left' }}
@@ -187,9 +195,9 @@
                                           <div class="node-info">
                                                 <div class="node-name-wrap">
                                                       <span class="node-title category-title">{{ category.name }}</span>
-                                                      <span class="code-tag category-code-tag">كود: {{ category.code }}</span>
+                                                      <!-- <span class="code-tag category-code-tag">كود: {{ category.code }}</span> -->
                                                 </div>
-                                                <span class="level-indicator level-cat">قسم رئيسي</span>
+                                                <!-- <span class="level-indicator level-cat">قسم رئيسي</span> -->
                                           </div>
                                     </div>
 
@@ -219,7 +227,8 @@
                                     <!-- A. BRANDS LIST (Level 2) -->
                                     <!-- ============================= -->
                                     <div class="brands-branch" *ngIf="category.brands && category.brands.length > 0">
-                                          <div class="brand-block" *ngFor="let brand of category.brands; trackBy: trackByBrandId"
+                                          <div class="brand-block"
+                                                *ngFor="let brand of category.brands; trackBy: trackByBrandId"
                                                 [class.is-expanded]="brand.expanded">
 
                                                 <!-- Brand Header Row -->
@@ -230,22 +239,25 @@
                                                                   (click)="toggleBrand(category, brand, $event)"
                                                                   [attr.aria-expanded]="brand.expanded">
                                                                   <span class="material-icons-outlined chevron-icon">
-                                                                        {{ brand.expanded ? 'expand_more' : 'chevron_left' }}
+                                                                        {{ brand.expanded ? 'expand_more' :
+                                                                        'chevron_left' }}
                                                                   </span>
                                                             </button>
 
                                                             <!-- Brand Icon Badge -->
                                                             <div class="node-icon-badge brand-badge">
-                                                                  <span class="material-icons-outlined">storefront</span>
+                                                                  <span
+                                                                        class="material-icons-outlined">storefront</span>
                                                             </div>
 
                                                             <!-- Brand Title & Code -->
                                                             <div class="node-info">
                                                                   <div class="node-name-wrap">
-                                                                        <span class="node-title brand-title">{{ brand.name }}</span>
-                                                                        <span class="code-tag brand-code-tag">كود: {{ brand.code }}</span>
+                                                                        <span class="node-title brand-title">{{
+                                                                              brand.name }}</span>
+                                                                        <!-- <span class="code-tag brand-code-tag">كود: {{ brand.code }}</span> -->
                                                                   </div>
-                                                                  <span class="level-indicator level-brand">شركة / علامة تجارية</span>
+                                                                  <!-- <span class="level-indicator level-brand">شركة / علامة تجارية</span> -->
                                                             </div>
                                                       </div>
 
@@ -253,11 +265,13 @@
                                                       <div class="row-trailing">
                                                             <div class="counts-group">
                                                                   <span class="count-pill">
-                                                                        <span class="material-icons-outlined pill-icon">layers</span>
+                                                                        <span
+                                                                              class="material-icons-outlined pill-icon">layers</span>
                                                                         {{ brand.groups.length }} مجموعات
                                                                   </span>
                                                                   <span class="count-pill primary-pill">
-                                                                        <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                                        <span
+                                                                              class="material-icons-outlined pill-icon">inventory_2</span>
                                                                         {{ getBrandProductsCount(brand) }} منتج
                                                                   </span>
                                                             </div>
@@ -266,44 +280,59 @@
 
                                                 <!-- Brand Body: Product Groups (Level 3 under Brand) -->
                                                 <div class="brand-children-container" *ngIf="brand.expanded">
-                                                      <div class="group-block" *ngFor="let group of brand.groups; trackBy: trackByGroupId"
+                                                      <div class="group-block"
+                                                            *ngFor="let group of brand.groups; trackBy: trackByGroupId"
                                                             [class.is-expanded]="group.expanded">
 
                                                             <!-- Group Header Row -->
-                                                            <div class="group-row" (click)="toggleGroup(category, brand, group, $event)">
+                                                            <div class="group-row"
+                                                                  (click)="toggleGroup(category, brand, group, $event)">
                                                                   <div class="row-leading">
-                                                                        <button type="button" class="btn-node-toggle group-toggle"
+                                                                        <button type="button"
+                                                                              class="btn-node-toggle group-toggle"
                                                                               (click)="toggleGroup(category, brand, group, $event)"
                                                                               [attr.aria-expanded]="group.expanded">
-                                                                              <span class="material-icons-outlined chevron-icon">
-                                                                                    {{ group.expanded ? 'expand_more' : 'chevron_left' }}
+                                                                              <span
+                                                                                    class="material-icons-outlined chevron-icon">
+                                                                                    {{ group.expanded ? 'expand_more' :
+                                                                                    'chevron_left' }}
                                                                               </span>
                                                                         </button>
 
                                                                         <div class="node-icon-badge group-badge">
-                                                                              <span class="material-icons-outlined">layers</span>
+                                                                              <span
+                                                                                    class="material-icons-outlined">layers</span>
                                                                         </div>
 
                                                                         <div class="node-info">
                                                                               <div class="node-name-wrap">
-                                                                                    <span class="node-title group-title">{{ group.name }}</span>
-                                                                                    <span class="code-tag group-code-tag">كود: {{ group.code }}</span>
+                                                                                    <span
+                                                                                          class="level-indicator level-group">مجموعة
+                                                                                          منتجات</span>
+
+                                                                                    <span
+                                                                                          class="node-title group-title">{{
+                                                                                          group.name }}</span>
+                                                                                    <!-- <span class="code-tag group-code-tag">كود: {{ group.code }}</span> -->
+
                                                                               </div>
-                                                                              <span class="level-indicator level-group">مجموعة منتجات</span>
                                                                         </div>
                                                                   </div>
 
                                                                   <div class="row-trailing">
                                                                         <span class="count-pill primary-pill">
-                                                                              <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                                              <span
+                                                                                    class="material-icons-outlined pill-icon">inventory_2</span>
                                                                               {{ group.products.length }} منتج
                                                                         </span>
                                                                   </div>
                                                             </div>
 
                                                             <!-- Group Body: Products Table (Level 4 Leaf Items) -->
-                                                            <div class="group-children-container" *ngIf="group.expanded">
-                                                                  <ng-container *ngTemplateOutlet="productsTableTpl; context: { products: group.products, group: group }">
+                                                            <div class="group-children-container"
+                                                                  *ngIf="group.expanded">
+                                                                  <ng-container
+                                                                        *ngTemplateOutlet="productsTableTpl; context: { products: group.products, group: group }">
                                                                   </ng-container>
                                                             </div>
 
@@ -316,18 +345,22 @@
                                     <!-- ============================= -->
                                     <!-- B. DIRECT PRODUCT GROUPS (Level 3 direct under Category - No Brand) -->
                                     <!-- ============================= -->
-                                    <div class="direct-groups-branch" *ngIf="category.directGroups && category.directGroups.length > 0">
-                                          <div class="group-block direct-group-block" *ngFor="let group of category.directGroups; trackBy: trackByGroupId"
+                                    <div class="direct-groups-branch"
+                                          *ngIf="category.directGroups && category.directGroups.length > 0">
+                                          <div class="group-block direct-group-block"
+                                                *ngFor="let group of category.directGroups; trackBy: trackByGroupId"
                                                 [class.is-expanded]="group.expanded">
 
                                                 <!-- Direct Group Header Row -->
-                                                <div class="group-row direct-group-row" (click)="toggleGroup(category, null, group, $event)">
+                                                <div class="group-row direct-group-row"
+                                                      (click)="toggleGroup(category, null, group, $event)">
                                                       <div class="row-leading">
                                                             <button type="button" class="btn-node-toggle group-toggle"
                                                                   (click)="toggleGroup(category, null, group, $event)"
                                                                   [attr.aria-expanded]="group.expanded">
                                                                   <span class="material-icons-outlined chevron-icon">
-                                                                        {{ group.expanded ? 'expand_more' : 'chevron_left' }}
+                                                                        {{ group.expanded ? 'expand_more' :
+                                                                        'chevron_left' }}
                                                                   </span>
                                                             </button>
 
@@ -337,16 +370,22 @@
 
                                                             <div class="node-info">
                                                                   <div class="node-name-wrap">
-                                                                        <span class="node-title group-title">{{ group.name }}</span>
-                                                                        <span class="code-tag group-code-tag">كود: {{ group.code }}</span>
+                                                                  
+                                                                        <span
+                                                                              class="level-indicator level-direct-group">مجموعة
+                                                                              منتجات</span>
+
+                                                                        <span class="node-title group-title">{{
+                                                                              group.name }}</span>
+                                                                        <!-- <span class="code-tag group-code-tag">كود: {{ group.code }}</span> -->
                                                                   </div>
-                                                                  <span class="level-indicator level-direct-group">مجموعة منتجات (مباشرة بدون علامة تجارية)</span>
                                                             </div>
                                                       </div>
 
                                                       <div class="row-trailing">
                                                             <span class="count-pill primary-pill">
-                                                                  <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                                  <span
+                                                                        class="material-icons-outlined pill-icon">inventory_2</span>
                                                                   {{ group.products.length }} منتج
                                                             </span>
                                                       </div>
@@ -354,7 +393,8 @@
 
                                                 <!-- Direct Group Body: Products Table (Level 4 Leaf Items) -->
                                                 <div class="group-children-container" *ngIf="group.expanded">
-                                                      <ng-container *ngTemplateOutlet="productsTableTpl; context: { products: group.products, group: group }">
+                                                      <ng-container
+                                                            *ngTemplateOutlet="productsTableTpl; context: { products: group.products, group: group }">
                                                       </ng-container>
                                                 </div>
 
@@ -405,8 +445,9 @@
                                     <div class="product-cell-content">
                                           <span class="product-leaf-dot"></span>
                                           <div class="prod-text-group">
-                                                <span class="tree-prod-name" (click)="onViewProduct(product)">{{ product.name }}</span>
-                                                <div class="prod-sub-meta">
+                                                <span class="tree-prod-name" (click)="onViewProduct(product)">{{
+                                                      product.name }}</span>
+                                                <!-- <div class="prod-sub-meta">
                                                       <span class="barcode-pill">
                                                             <span class="material-icons-outlined mini-icon">qr_code_2</span>
                                                             {{ product.sku }}
@@ -414,7 +455,7 @@
                                                       <span class="vendor-tag" *ngIf="product.vendorCode">
                                                             {{ product.vendorCode }}
                                                       </span>
-                                                </div>
+                                                </div> -->
                                           </div>
                                     </div>
                               </td>
@@ -422,14 +463,18 @@
                               <!-- Selling Price Column -->
                               <td class="col-tree-price">
                                     <div class="price-cell-wrap">
-                                          <span class="price-main">{{ product.sellingPrice | number:'1.2-2' }} <small class="curr">ج.م</small></span>
+                                          <span class="price-main">{{ product.sellingPrice | number:'1.2-2' }} <small
+                                                      class="curr">ج.م</small></span>
                                           <button type="button" class="btn-price-breakdown" *ngIf="product.buyingPrice"
-                                                (click)="togglePricePopover(product.id, $event)" title="عرض تفاصيل التسعير والتكلفة">
+                                                (click)="togglePricePopover(product.id, $event)"
+                                                title="عرض تفاصيل التسعير والتكلفة">
                                                 <span class="material-icons-outlined">info</span>
                                           </button>
 
                                           <!-- Price Breakdown Popover -->
-                                          <div class="price-popover" *ngIf="activePricePopoverProductId() === product.id" (click)="$event.stopPropagation()">
+                                          <div class="price-popover"
+                                                *ngIf="activePricePopoverProductId() === product.id"
+                                                (click)="$event.stopPropagation()">
                                                 <div class="popover-title">تفاصيل أسعار المنتج</div>
                                                 <div class="popover-row">
                                                       <span>سعر التكلفة (شراء):</span>
@@ -442,8 +487,10 @@
                                                 <div class="popover-row profit-row" *ngIf="product.buyingPrice">
                                                       <span>هامش الربح:</span>
                                                       <strong class="profit-val">
-                                                            {{ (product.sellingPrice - product.buyingPrice) | number:'1.2-2' }} ج.م
-                                                            ({{ ((product.sellingPrice - product.buyingPrice) / product.buyingPrice * 100) | number:'1.1-1' }}%)
+                                                            {{ (product.sellingPrice - product.buyingPrice) |
+                                                            number:'1.2-2' }} ج.م
+                                                            ({{ ((product.sellingPrice - product.buyingPrice) /
+                                                            product.buyingPrice * 100) | number:'1.1-1' }}%)
                                                       </strong>
                                                 </div>
                                           </div>
@@ -475,13 +522,16 @@
                               <!-- Actions Column -->
                               <td class="col-tree-actions">
                                     <div class="action-buttons-group">
-                                          <button type="button" class="btn-action btn-view" (click)="onViewProduct(product)" title="عرض التفاصيل">
+                                          <button type="button" class="btn-action btn-view"
+                                                (click)="onViewProduct(product)" title="عرض التفاصيل">
                                                 <span class="material-icons-outlined">visibility</span>
                                           </button>
-                                          <button type="button" class="btn-action btn-edit" (click)="onEditProduct(product)" title="تعديل المنتج">
+                                          <button type="button" class="btn-action btn-edit"
+                                                (click)="onEditProduct(product)" title="تعديل المنتج">
                                                 <span class="material-icons-outlined">edit</span>
                                           </button>
-                                          <button type="button" class="btn-action btn-delete" (click)="onDeleteProduct(product, group, $event)" title="حذف المنتج">
+                                          <button type="button" class="btn-action btn-delete"
+                                                (click)="onDeleteProduct(product, group, $event)" title="حذف المنتج">
                                                 <span class="material-icons-outlined">delete_outline</span>
                                           </button>
                                     </div>
