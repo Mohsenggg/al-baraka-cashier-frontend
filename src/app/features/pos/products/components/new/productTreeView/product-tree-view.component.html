@@ -1,0 +1,495 @@
+<div class="products-layout">
+      <div class="products-container" dir="rtl">
+
+            <!-- ============================= -->
+            <!-- HEADER SECTION -->
+            <!-- ============================= -->
+            <div class="page-header">
+                  <div class="header-content">
+                        <div class="header-titles">
+                              <button type="button" class="header-menu-btn" (click)="onToggleSidebar()" aria-label="القائمة">
+                                    <span class="material-icons-outlined">menu</span>
+                              </button>
+                              <div>
+                                    <div class="title-with-badge">
+                                          <h1 class="page-title">شجرة المنتجات</h1>
+                                          <span class="view-pill-badge">
+                                                <span class="material-icons-outlined">account_tree</span>
+                                                هيكل هرمي
+                                          </span>
+                                    </div>
+                                    <p class="page-subtitle">استعراض وتصفح دليل المنتجات وفق الهيكل الهرمي (قسم &larr; شركة &larr; مجموعة &larr; منتج)</p>
+                              </div>
+                        </div>
+
+                        <!-- Top actions & view mode switcher -->
+                        <div class="header-actions">
+                              <!-- View switcher tab buttons -->
+                              <div class="view-switch-group">
+                                    <a routerLink="/pos/products" class="btn-view-mode" title="عرض جدولي مسطح">
+                                          <span class="material-icons-outlined">table_rows</span>
+                                          <span>جدول</span>
+                                    </a>
+                                    <button type="button" class="btn-view-mode active" title="عرض شجري هرمي">
+                                          <span class="material-icons-outlined">account_tree</span>
+                                          <span>شجرة</span>
+                                    </button>
+                              </div>
+
+                              <button class="btn-add-product" routerLink="/pos/product/manage">
+                                    <span class="material-icons-outlined">add_circle</span>
+                                    <span>إضافة منتج</span>
+                              </button>
+                        </div>
+                  </div>
+            </div>
+
+            <!-- ============================= -->
+            <!-- TOOLBAR & FILTERS SECTION -->
+            <!-- ============================= -->
+            <div class="toolbar-section">
+                  <div class="toolbar-content">
+                        <!-- Search Bar -->
+                        <div class="search-bar-wrapper filter-search">
+                              <input type="text" class="search-input"
+                                    placeholder="بحث بالاسم، الباركود، الكود، القسم أو الشركة..."
+                                    [value]="searchQuery()" (input)="onSearchInput($event)">
+                              <button type="button" class="search-clear-btn" *ngIf="searchQuery()" (click)="clearSearch()" aria-label="مسح">
+                                    <span class="material-icons-outlined">close</span>
+                              </button>
+                              <span class="search-icon-static material-icons-outlined" *ngIf="!searchQuery()">search</span>
+                        </div>
+
+                        <!-- Filter by Category -->
+                        <div class="filter-item">
+                              <div class="filter-select-wrapper" [class.has-value]="selectedCategoryId()">
+                                    <select class="filter-select" [value]="selectedCategoryId()"
+                                          (change)="onCategoryFilterChange($any($event.target).value)">
+                                          <option value="">جميع الأقسام</option>
+                                          <option *ngFor="let cat of treeData()" [value]="cat.id">
+                                                {{ cat.name }} ({{ cat.code }})
+                                          </option>
+                                    </select>
+                                    <span class="filter-select-icon material-icons-outlined">category</span>
+                              </div>
+                        </div>
+
+                        <!-- Filter by Stock Status -->
+                        <div class="filter-item">
+                              <div class="filter-select-wrapper" [class.has-value]="selectedStockFilter()">
+                                    <select class="filter-select" [value]="selectedStockFilter()"
+                                          (change)="onStockFilterChange($any($event.target).value)">
+                                          <option value="">حالة المخزون (الكل)</option>
+                                          <option value="in-stock">متوفر بالمخزن</option>
+                                          <option value="low">مخزون منخفض (&le; 15)</option>
+                                          <option value="critical">حرج جداً (&le; 5)</option>
+                                          <option value="outofstock">نفذ من المخزن (0)</option>
+                                    </select>
+                                    <span class="filter-select-icon material-icons-outlined">inventory_2</span>
+                              </div>
+                        </div>
+
+                        <!-- Expand / Collapse All Controls -->
+                        <div class="tree-controls-group">
+                              <button type="button" class="btn-tree-ctrl" (click)="expandAll()" title="توسيع كل عناصر الشجرة">
+                                    <span class="material-icons-outlined">unfold_more</span>
+                                    <span>توسيع الكل</span>
+                              </button>
+                              <button type="button" class="btn-tree-ctrl" (click)="collapseAll()" title="طي كل عناصر الشجرة">
+                                    <span class="material-icons-outlined">unfold_less</span>
+                                    <span>طي الكل</span>
+                              </button>
+                        </div>
+
+                        <!-- Reset Filters -->
+                        <button type="button" class="btn-clear-filters" *ngIf="hasActiveFilters()" (click)="clearAllFilters()">
+                              <span class="material-icons-outlined">filter_alt_off</span>
+                              <span>مسح التصفية</span>
+                        </button>
+                  </div>
+
+                  <!-- Statistics summary chip strip -->
+                  <div class="tree-stats-strip">
+                        <div class="stat-pill">
+                              <span class="stat-pill-icon material-icons-outlined cat-color">folder</span>
+                              <span class="stat-pill-val">{{ stats().totalCategories }}</span>
+                              <span class="stat-pill-lbl">أقسام</span>
+                        </div>
+                        <div class="stat-sep">/</div>
+                        <div class="stat-pill">
+                              <span class="stat-pill-icon material-icons-outlined brand-color">storefront</span>
+                              <span class="stat-pill-val">{{ stats().totalBrands }}</span>
+                              <span class="stat-pill-lbl">شركات</span>
+                        </div>
+                        <div class="stat-sep">/</div>
+                        <div class="stat-pill">
+                              <span class="stat-pill-icon material-icons-outlined group-color">layers</span>
+                              <span class="stat-pill-val">{{ stats().totalGroups }}</span>
+                              <span class="stat-pill-lbl">مجموعات</span>
+                        </div>
+                        <div class="stat-sep">/</div>
+                        <div class="stat-pill highlight">
+                              <span class="stat-pill-icon material-icons-outlined prod-color">inventory</span>
+                              <span class="stat-pill-val">{{ stats().totalProducts }}</span>
+                              <span class="stat-pill-lbl">منتجات</span>
+                        </div>
+                        <div class="stat-sep">/</div>
+                        <div class="stat-pill">
+                              <span class="stat-pill-icon material-icons-outlined stock-color">warehouse</span>
+                              <span class="stat-pill-val">{{ stats().totalStockUnits | number }}</span>
+                              <span class="stat-pill-lbl">إجمالي الوحدات</span>
+                        </div>
+                  </div>
+            </div>
+
+            <!-- ============================= -->
+            <!-- TREE CONTENT WRAPPER -->
+            <!-- ============================= -->
+            <div class="tree-viewport">
+
+                  <!-- Empty state when no matches found -->
+                  <div class="tree-empty-state" *ngIf="filteredTree().length === 0">
+                        <div class="empty-icon-wrap">
+                              <span class="material-icons-outlined empty-icon">account_tree</span>
+                        </div>
+                        <h3>لم يتم العثور على نتائج</h3>
+                        <p>لا توجد أقسام أو منتجات مطابقة لكلمات البحث أو الفلاتر المحددة.</p>
+                        <button type="button" class="btn-reset-search" (click)="clearAllFilters()">
+                              <span class="material-icons-outlined">refresh</span>
+                              إعادة ضبط البحث والتصفية
+                        </button>
+                  </div>
+
+                  <!-- Tree Root Container -->
+                  <div class="tree-root-container" *ngIf="filteredTree().length > 0">
+
+                        <!-- CATEGORY NODE (Level 1) -->
+                        <div class="category-block" *ngFor="let category of filteredTree(); trackBy: trackByCategoryId"
+                              [class.is-expanded]="category.expanded">
+
+                              <!-- Category Header Row -->
+                              <div class="category-row" (click)="toggleCategory(category, $event)">
+                                    <div class="row-leading">
+                                          <!-- Expand Toggle Button -->
+                                          <button type="button" class="btn-node-toggle" (click)="toggleCategory(category, $event)"
+                                                [attr.aria-expanded]="category.expanded">
+                                                <span class="material-icons-outlined chevron-icon">
+                                                      {{ category.expanded ? 'expand_more' : 'chevron_left' }}
+                                                </span>
+                                          </button>
+
+                                          <!-- Category Icon Badge -->
+                                          <div class="node-icon-badge category-badge">
+                                                <span class="material-icons-outlined">folder</span>
+                                          </div>
+
+                                          <!-- Category Title & Code -->
+                                          <div class="node-info">
+                                                <div class="node-name-wrap">
+                                                      <span class="node-title category-title">{{ category.name }}</span>
+                                                      <span class="code-tag category-code-tag">كود: {{ category.code }}</span>
+                                                </div>
+                                                <span class="level-indicator level-cat">قسم رئيسي</span>
+                                          </div>
+                                    </div>
+
+                                    <!-- Category Summary Badges & Actions -->
+                                    <div class="row-trailing">
+                                          <div class="counts-group">
+                                                <span class="count-pill" *ngIf="getCategoryBrandsCount(category) > 0">
+                                                      <span class="material-icons-outlined pill-icon">storefront</span>
+                                                      {{ getCategoryBrandsCount(category) }} شركات
+                                                </span>
+                                                <span class="count-pill">
+                                                      <span class="material-icons-outlined pill-icon">layers</span>
+                                                      {{ getCategoryGroupsCount(category) }} مجموعات
+                                                </span>
+                                                <span class="count-pill primary-pill">
+                                                      <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                      {{ getCategoryProductsCount(category) }} منتج
+                                                </span>
+                                          </div>
+                                    </div>
+                              </div>
+
+                              <!-- Category Body: Brands & Direct Groups (Level 2 & 3) -->
+                              <div class="category-children-container" *ngIf="category.expanded">
+
+                                    <!-- ============================= -->
+                                    <!-- A. BRANDS LIST (Level 2) -->
+                                    <!-- ============================= -->
+                                    <div class="brands-branch" *ngIf="category.brands && category.brands.length > 0">
+                                          <div class="brand-block" *ngFor="let brand of category.brands; trackBy: trackByBrandId"
+                                                [class.is-expanded]="brand.expanded">
+
+                                                <!-- Brand Header Row -->
+                                                <div class="brand-row" (click)="toggleBrand(category, brand, $event)">
+                                                      <div class="row-leading">
+                                                            <!-- Toggle Button -->
+                                                            <button type="button" class="btn-node-toggle brand-toggle"
+                                                                  (click)="toggleBrand(category, brand, $event)"
+                                                                  [attr.aria-expanded]="brand.expanded">
+                                                                  <span class="material-icons-outlined chevron-icon">
+                                                                        {{ brand.expanded ? 'expand_more' : 'chevron_left' }}
+                                                                  </span>
+                                                            </button>
+
+                                                            <!-- Brand Icon Badge -->
+                                                            <div class="node-icon-badge brand-badge">
+                                                                  <span class="material-icons-outlined">storefront</span>
+                                                            </div>
+
+                                                            <!-- Brand Title & Code -->
+                                                            <div class="node-info">
+                                                                  <div class="node-name-wrap">
+                                                                        <span class="node-title brand-title">{{ brand.name }}</span>
+                                                                        <span class="code-tag brand-code-tag">كود: {{ brand.code }}</span>
+                                                                  </div>
+                                                                  <span class="level-indicator level-brand">شركة / علامة تجارية</span>
+                                                            </div>
+                                                      </div>
+
+                                                      <!-- Brand Summary Badges -->
+                                                      <div class="row-trailing">
+                                                            <div class="counts-group">
+                                                                  <span class="count-pill">
+                                                                        <span class="material-icons-outlined pill-icon">layers</span>
+                                                                        {{ brand.groups.length }} مجموعات
+                                                                  </span>
+                                                                  <span class="count-pill primary-pill">
+                                                                        <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                                        {{ getBrandProductsCount(brand) }} منتج
+                                                                  </span>
+                                                            </div>
+                                                      </div>
+                                                </div>
+
+                                                <!-- Brand Body: Product Groups (Level 3 under Brand) -->
+                                                <div class="brand-children-container" *ngIf="brand.expanded">
+                                                      <div class="group-block" *ngFor="let group of brand.groups; trackBy: trackByGroupId"
+                                                            [class.is-expanded]="group.expanded">
+
+                                                            <!-- Group Header Row -->
+                                                            <div class="group-row" (click)="toggleGroup(category, brand, group, $event)">
+                                                                  <div class="row-leading">
+                                                                        <button type="button" class="btn-node-toggle group-toggle"
+                                                                              (click)="toggleGroup(category, brand, group, $event)"
+                                                                              [attr.aria-expanded]="group.expanded">
+                                                                              <span class="material-icons-outlined chevron-icon">
+                                                                                    {{ group.expanded ? 'expand_more' : 'chevron_left' }}
+                                                                              </span>
+                                                                        </button>
+
+                                                                        <div class="node-icon-badge group-badge">
+                                                                              <span class="material-icons-outlined">layers</span>
+                                                                        </div>
+
+                                                                        <div class="node-info">
+                                                                              <div class="node-name-wrap">
+                                                                                    <span class="node-title group-title">{{ group.name }}</span>
+                                                                                    <span class="code-tag group-code-tag">كود: {{ group.code }}</span>
+                                                                              </div>
+                                                                              <span class="level-indicator level-group">مجموعة منتجات</span>
+                                                                        </div>
+                                                                  </div>
+
+                                                                  <div class="row-trailing">
+                                                                        <span class="count-pill primary-pill">
+                                                                              <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                                              {{ group.products.length }} منتج
+                                                                        </span>
+                                                                  </div>
+                                                            </div>
+
+                                                            <!-- Group Body: Products Table (Level 4 Leaf Items) -->
+                                                            <div class="group-children-container" *ngIf="group.expanded">
+                                                                  <ng-container *ngTemplateOutlet="productsTableTpl; context: { products: group.products, group: group }">
+                                                                  </ng-container>
+                                                            </div>
+
+                                                      </div>
+                                                </div>
+
+                                          </div>
+                                    </div>
+
+                                    <!-- ============================= -->
+                                    <!-- B. DIRECT PRODUCT GROUPS (Level 3 direct under Category - No Brand) -->
+                                    <!-- ============================= -->
+                                    <div class="direct-groups-branch" *ngIf="category.directGroups && category.directGroups.length > 0">
+                                          <div class="group-block direct-group-block" *ngFor="let group of category.directGroups; trackBy: trackByGroupId"
+                                                [class.is-expanded]="group.expanded">
+
+                                                <!-- Direct Group Header Row -->
+                                                <div class="group-row direct-group-row" (click)="toggleGroup(category, null, group, $event)">
+                                                      <div class="row-leading">
+                                                            <button type="button" class="btn-node-toggle group-toggle"
+                                                                  (click)="toggleGroup(category, null, group, $event)"
+                                                                  [attr.aria-expanded]="group.expanded">
+                                                                  <span class="material-icons-outlined chevron-icon">
+                                                                        {{ group.expanded ? 'expand_more' : 'chevron_left' }}
+                                                                  </span>
+                                                            </button>
+
+                                                            <div class="node-icon-badge group-badge direct-badge">
+                                                                  <span class="material-icons-outlined">layers</span>
+                                                            </div>
+
+                                                            <div class="node-info">
+                                                                  <div class="node-name-wrap">
+                                                                        <span class="node-title group-title">{{ group.name }}</span>
+                                                                        <span class="code-tag group-code-tag">كود: {{ group.code }}</span>
+                                                                  </div>
+                                                                  <span class="level-indicator level-direct-group">مجموعة منتجات (مباشرة بدون علامة تجارية)</span>
+                                                            </div>
+                                                      </div>
+
+                                                      <div class="row-trailing">
+                                                            <span class="count-pill primary-pill">
+                                                                  <span class="material-icons-outlined pill-icon">inventory_2</span>
+                                                                  {{ group.products.length }} منتج
+                                                            </span>
+                                                      </div>
+                                                </div>
+
+                                                <!-- Direct Group Body: Products Table (Level 4 Leaf Items) -->
+                                                <div class="group-children-container" *ngIf="group.expanded">
+                                                      <ng-container *ngTemplateOutlet="productsTableTpl; context: { products: group.products, group: group }">
+                                                      </ng-container>
+                                                </div>
+
+                                          </div>
+                                    </div>
+
+                              </div>
+
+                        </div>
+
+                  </div>
+
+            </div>
+
+      </div>
+
+      <!-- SIDEBAR: NAVIGATION -->
+      <app-sidebar [expanded]="sidebarVisible()" (toggle)="onToggleSidebar()"></app-sidebar>
+</div>
+
+<!-- ============================================================== -->
+<!-- REUSABLE PRODUCTS TABLE TEMPLATE (Level 4 Leaf Items) -->
+<!-- ============================================================== -->
+<ng-template #productsTableTpl let-products="products" let-group="group">
+      <div class="leaf-products-wrapper">
+
+            <div class="no-products-msg" *ngIf="!products || products.length === 0">
+                  <span class="material-icons-outlined">inventory_2</span>
+                  <span>لا توجد منتجات مسجلة في هذه المجموعة حالياً.</span>
+            </div>
+
+            <table class="leaf-products-table" *ngIf="products && products.length > 0">
+                  <thead>
+                        <tr>
+                              <th class="col-tree-prod">المنتج والباركود</th>
+                              <th class="col-tree-price">سعر البيع</th>
+                              <th class="col-tree-stock">المخزون</th>
+                              <th class="col-tree-type">النوع</th>
+                              <th class="col-tree-status">الحالة</th>
+                              <th class="col-tree-actions">الإجراءات</th>
+                        </tr>
+                  </thead>
+                  <tbody>
+                        <tr class="leaf-product-row" *ngFor="let product of products; trackBy: trackByProductId">
+
+                              <!-- Product Name & SKU -->
+                              <td class="col-tree-prod">
+                                    <div class="product-cell-content">
+                                          <span class="product-leaf-dot"></span>
+                                          <div class="prod-text-group">
+                                                <span class="tree-prod-name" (click)="onViewProduct(product)">{{ product.name }}</span>
+                                                <div class="prod-sub-meta">
+                                                      <span class="barcode-pill">
+                                                            <span class="material-icons-outlined mini-icon">qr_code_2</span>
+                                                            {{ product.sku }}
+                                                      </span>
+                                                      <span class="vendor-tag" *ngIf="product.vendorCode">
+                                                            {{ product.vendorCode }}
+                                                      </span>
+                                                </div>
+                                          </div>
+                                    </div>
+                              </td>
+
+                              <!-- Selling Price Column -->
+                              <td class="col-tree-price">
+                                    <div class="price-cell-wrap">
+                                          <span class="price-main">{{ product.sellingPrice | number:'1.2-2' }} <small class="curr">ج.م</small></span>
+                                          <button type="button" class="btn-price-breakdown" *ngIf="product.buyingPrice"
+                                                (click)="togglePricePopover(product.id, $event)" title="عرض تفاصيل التسعير والتكلفة">
+                                                <span class="material-icons-outlined">info</span>
+                                          </button>
+
+                                          <!-- Price Breakdown Popover -->
+                                          <div class="price-popover" *ngIf="activePricePopoverProductId() === product.id" (click)="$event.stopPropagation()">
+                                                <div class="popover-title">تفاصيل أسعار المنتج</div>
+                                                <div class="popover-row">
+                                                      <span>سعر التكلفة (شراء):</span>
+                                                      <strong>{{ product.buyingPrice | number:'1.2-2' }} ج.م</strong>
+                                                </div>
+                                                <div class="popover-row">
+                                                      <span>سعر البيع (قطاعي):</span>
+                                                      <strong>{{ product.sellingPrice | number:'1.2-2' }} ج.م</strong>
+                                                </div>
+                                                <div class="popover-row profit-row" *ngIf="product.buyingPrice">
+                                                      <span>هامش الربح:</span>
+                                                      <strong class="profit-val">
+                                                            {{ (product.sellingPrice - product.buyingPrice) | number:'1.2-2' }} ج.م
+                                                            ({{ ((product.sellingPrice - product.buyingPrice) / product.buyingPrice * 100) | number:'1.1-1' }}%)
+                                                      </strong>
+                                                </div>
+                                          </div>
+                                    </div>
+                              </td>
+
+                              <!-- Stock Column -->
+                              <td class="col-tree-stock">
+                                    <div class="stock-indicator" [ngClass]="getStockClass(product)">
+                                          <span class="stock-dot"></span>
+                                          <span class="stock-text">{{ getStockLabel(product) }}</span>
+                                    </div>
+                              </td>
+
+                              <!-- Type Column -->
+                              <td class="col-tree-type">
+                                    <span class="type-badge" [ngClass]="'type-' + product.type">
+                                          {{ getTypeLabel(product.type) }}
+                                    </span>
+                              </td>
+
+                              <!-- Status Column -->
+                              <td class="col-tree-status">
+                                    <span class="status-badge" [ngClass]="getStatusClass(product.status)">
+                                          {{ getStatusLabel(product.status) }}
+                                    </span>
+                              </td>
+
+                              <!-- Actions Column -->
+                              <td class="col-tree-actions">
+                                    <div class="action-buttons-group">
+                                          <button type="button" class="btn-action btn-view" (click)="onViewProduct(product)" title="عرض التفاصيل">
+                                                <span class="material-icons-outlined">visibility</span>
+                                          </button>
+                                          <button type="button" class="btn-action btn-edit" (click)="onEditProduct(product)" title="تعديل المنتج">
+                                                <span class="material-icons-outlined">edit</span>
+                                          </button>
+                                          <button type="button" class="btn-action btn-delete" (click)="onDeleteProduct(product, group, $event)" title="حذف المنتج">
+                                                <span class="material-icons-outlined">delete_outline</span>
+                                          </button>
+                                    </div>
+                              </td>
+
+                        </tr>
+                  </tbody>
+            </table>
+
+      </div>
+</ng-template>
