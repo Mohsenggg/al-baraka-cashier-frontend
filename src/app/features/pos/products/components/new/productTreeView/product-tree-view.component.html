@@ -7,10 +7,6 @@
             <div class="page-header">
                   <div class="header-content">
                         <div class="header-titles">
-                              <button type="button" class="header-menu-btn" (click)="onToggleSidebar()"
-                                    aria-label="القائمة">
-                                    <span class="material-icons-outlined">menu</span>
-                              </button>
                               <div>
                                     <div class="title-with-badge">
                                           <h1 class="page-title">شجرة المنتجات</h1>
@@ -170,7 +166,7 @@
                   <!-- Empty state when no matches found -->
                   <div class="tree-empty-state" *ngIf="!isLoading() && !errorMessage() && filteredTree().length === 0">
                         <div class="empty-icon-wrap">
-                               <span class="material-icons-outlined empty-icon">account_tree</span>
+                              <span class="material-icons-outlined empty-icon">account_tree</span>
                         </div>
                         <h3>لم يتم العثور على نتائج</h3>
                         <p>لا توجد أقسام أو منتجات مطابقة لكلمات البحث أو الفلاتر المحددة.</p>
@@ -383,7 +379,7 @@
 
                                                             <div class="node-info">
                                                                   <div class="node-name-wrap">
-                                                                  
+
                                                                         <span
                                                                               class="level-indicator level-direct-group">مجموعة
                                                                               منتجات</span>
