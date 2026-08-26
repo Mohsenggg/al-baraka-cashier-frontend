@@ -4,104 +4,101 @@
             <!-- ============================= -->
             <!-- HEADER SECTION -->
             <!-- ============================= -->
+            <!-- ============================= -->
+            <!-- HEADER SECTION WITH INLINE FILTERS -->
+            <!-- ============================= -->
             <div class="page-header">
                   <div class="header-content">
-                        <div class="header-titles">
+                        <!-- Right side: Title & Filters Group -->
+                        <div class="header-start-group">
                               <h1 class="page-title">المنتجات</h1>
-                        </div>
 
-                        <!-- ============================= -->
-                        <!-- SEARCH & FILTER TOOLBAR -->
-                        <!-- ============================= -->
-                        <div class="toolbar-section">
-                              <!-- Filter Controls -->
-                              <div class="filter-controls">
-                                    <!-- Search Bar -->
-                                    <div class="search-bar-wrapper filter-search">
-                                          <input type="text" class="search-input"
-                                                placeholder="مسح باركود أو كتابة اسم/رمز المنتج..."
-                                                [value]="localSearchTerm()" (input)="onSearchInput($event)"
-                                                (keyup.enter)="executeSearch()">
-                                          <button type="button" class="search-icon-button" (click)="executeSearch()"
-                                                [disabled]="!localSearchTerm()" aria-label="بحث">
-                                                <span class="material-icons-outlined">search</span>
-                                          </button>
-                                    </div>
-
-                                    <!-- Category Multi-select -->
-                                    <div class="filter-item custom-multiselect" [class.has-value]="selectedCategories().length > 0">
-                                          <div class="multiselect-trigger" (click)="toggleDropdown('category', $event)">
-                                                <span class="filter-select-icon material-icons-outlined">category</span>
-                                                <span class="selected-text">{{ getCategoriesLabel() }}</span>
-                                                <span class="material-icons-outlined arrow-icon">expand_more</span>
-                                          </div>
-                                          <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'category'" (click)="$event.stopPropagation()">
-                                                <div class="dropdown-options">
-                                                      <label class="option-label" *ngFor="let cat of categories()">
-                                                            <input type="checkbox" 
-                                                                   [checked]="isCategorySelected(cat.id)" 
-                                                                   (change)="toggleCategorySelection(cat.id)">
-                                                            <span>{{ cat.name }}</span>
-                                                      </label>
-                                                </div>
-                                          </div>
-                                    </div>
-
-                                    <!-- Brand Multi-select -->
-                                    <div class="filter-item custom-multiselect" [class.has-value]="selectedBrands().length > 0">
-                                          <div class="multiselect-trigger" (click)="toggleDropdown('brand', $event)">
-                                                <span class="filter-select-icon material-icons-outlined">business</span>
-                                                <span class="selected-text">{{ getBrandsLabel() }}</span>
-                                                <span class="material-icons-outlined arrow-icon">expand_more</span>
-                                          </div>
-                                          <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'brand'" (click)="$event.stopPropagation()">
-                                                <div class="dropdown-options">
-                                                      <div class="no-options-msg" *ngIf="availableBrands().length === 0">
-                                                            لا توجد شركات متاحة
-                                                      </div>
-                                                      <label class="option-label" *ngFor="let brand of availableBrands()">
-                                                            <input type="checkbox" 
-                                                                   [checked]="isBrandSelected(brand.id)" 
-                                                                   (change)="toggleBrandSelection(brand.id)">
-                                                            <span>{{ brand.name }}</span>
-                                                      </label>
-                                                </div>
-                                          </div>
-                                    </div>
-
-                                    <!-- Product Group Multi-select -->
-                                    <div class="filter-item custom-multiselect" [class.has-value]="selectedProductGroups().length > 0">
-                                          <div class="multiselect-trigger" (click)="toggleDropdown('group', $event)">
-                                                <span class="filter-select-icon material-icons-outlined">layers</span>
-                                                <span class="selected-text">{{ getProductGroupsLabel() }}</span>
-                                                <span class="material-icons-outlined arrow-icon">expand_more</span>
-                                          </div>
-                                          <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'group'" (click)="$event.stopPropagation()">
-                                                <div class="dropdown-options">
-                                                      <div class="no-options-msg" *ngIf="availableGroups().length === 0">
-                                                            لا توجد مجموعات متاحة
-                                                      </div>
-                                                      <label class="option-label" *ngFor="let group of availableGroups()">
-                                                            <input type="checkbox" 
-                                                                   [checked]="isProductGroupSelected(group.id)" 
-                                                                   (change)="toggleProductGroupSelection(group.id)">
-                                                            <span>{{ group.name }}</span>
-                                                      </label>
-                                                </div>
-                                          </div>
-                                    </div>
-
-                                    <button class="btn-clear-filters" *ngIf="hasActiveFilters()"
-                                          (click)="clearFilters()">
-                                          <span class="material-icons-outlined">filter_alt_off</span>
-                                          مسح الكل
+                              <!-- Search Bar -->
+                              <div class="search-bar-wrapper filter-search">
+                                    <input type="text" class="search-input"
+                                          placeholder="بحث بالاسم، الباركود..."
+                                          [value]="localSearchTerm()" (input)="onSearchInput($event)"
+                                          (keyup.enter)="executeSearch()">
+                                    <button type="button" class="search-clear-btn" *ngIf="localSearchTerm()"
+                                          (click)="localSearchTerm.set(''); executeSearch()" aria-label="مسح">
+                                          <span class="material-icons-outlined">close</span>
                                     </button>
+                                    <span class="search-icon-static material-icons-outlined"
+                                          *ngIf="!localSearchTerm()">search</span>
                               </div>
+
+                              <!-- Category Multi-select -->
+                              <div class="filter-item custom-multiselect" [class.has-value]="selectedCategories().length > 0">
+                                    <div class="multiselect-trigger" (click)="toggleDropdown('category', $event)">
+                                          <span class="filter-select-icon material-icons-outlined">category</span>
+                                          <span class="selected-text">{{ getCategoriesLabel() }}</span>
+                                          <span class="material-icons-outlined arrow-icon">expand_more</span>
+                                    </div>
+                                    <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'category'" (click)="$event.stopPropagation()">
+                                          <div class="dropdown-options">
+                                                <label class="option-label" *ngFor="let cat of categories()">
+                                                      <input type="checkbox" 
+                                                             [checked]="isCategorySelected(cat.id)" 
+                                                             (change)="toggleCategorySelection(cat.id)">
+                                                      <span>{{ cat.name }}</span>
+                                                </label>
+                                          </div>
+                                    </div>
+                              </div>
+
+                              <!-- Brand Multi-select -->
+                              <div class="filter-item custom-multiselect" [class.has-value]="selectedBrands().length > 0">
+                                    <div class="multiselect-trigger" (click)="toggleDropdown('brand', $event)">
+                                          <span class="filter-select-icon material-icons-outlined">business</span>
+                                          <span class="selected-text">{{ getBrandsLabel() }}</span>
+                                          <span class="material-icons-outlined arrow-icon">expand_more</span>
+                                    </div>
+                                    <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'brand'" (click)="$event.stopPropagation()">
+                                          <div class="dropdown-options">
+                                                <div class="no-options-msg" *ngIf="availableBrands().length === 0">
+                                                      لا توجد شركات متاحة
+                                                </div>
+                                                <label class="option-label" *ngFor="let brand of availableBrands()">
+                                                      <input type="checkbox" 
+                                                             [checked]="isBrandSelected(brand.id)" 
+                                                             (change)="toggleBrandSelection(brand.id)">
+                                                      <span>{{ brand.name }}</span>
+                                                </label>
+                                          </div>
+                                    </div>
+                              </div>
+
+                              <!-- Product Group Multi-select -->
+                              <div class="filter-item custom-multiselect" [class.has-value]="selectedProductGroups().length > 0">
+                                    <div class="multiselect-trigger" (click)="toggleDropdown('group', $event)">
+                                          <span class="filter-select-icon material-icons-outlined">layers</span>
+                                          <span class="selected-text">{{ getProductGroupsLabel() }}</span>
+                                          <span class="material-icons-outlined arrow-icon">expand_more</span>
+                                    </div>
+                                    <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'group'" (click)="$event.stopPropagation()">
+                                          <div class="dropdown-options">
+                                                <div class="no-options-msg" *ngIf="availableGroups().length === 0">
+                                                      لا توجد مجموعات متاحة
+                                                </div>
+                                                <label class="option-label" *ngFor="let group of availableGroups()">
+                                                      <input type="checkbox" 
+                                                             [checked]="isProductGroupSelected(group.id)" 
+                                                             (change)="toggleProductGroupSelection(group.id)">
+                                                      <span>{{ group.name }}</span>
+                                                </label>
+                                          </div>
+                                    </div>
+                              </div>
+
+                              <!-- Reset Filters -->
+                              <button type="button" class="btn-clear-filters" *ngIf="hasActiveFilters()"
+                                    (click)="clearFilters()" title="مسح التصفية">
+                                    <span class="material-icons-outlined">filter_alt_off</span>
+                              </button>
                         </div>
 
-                        <!-- Top actions & view mode switcher -->
+                        <!-- Left side: Actions & Switcher -->
                         <div class="header-actions">
-                              <!-- View switcher tab buttons -->
                               <div class="view-switch-group">
                                     <button type="button" class="btn-view-mode active" title="عرض جدولي مسطح">
                                           <span class="material-icons-outlined">table_rows</span>
