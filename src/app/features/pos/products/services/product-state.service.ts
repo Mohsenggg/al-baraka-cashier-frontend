@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, debounceTime, finalize, forkJoin, of, Subject, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, Subject, tap, throwError } from 'rxjs';
 import { ProductApiService } from './product-api.service';
-import type { NamedEntity, ProductFilterParams, ProductListItem, ProductListItemDto } from '../models/product.models';
+import type { ProductListItem } from '../models/product.models';
 
 @Injectable({
       providedIn: 'root'
@@ -9,147 +9,324 @@ import type { NamedEntity, ProductFilterParams, ProductListItem, ProductListItem
 export class ProductStateService {
       private api = inject(ProductApiService);
 
-      private readonly apiReload$ = new Subject<void>();
-
       private _loading = new BehaviorSubject<boolean>(false);
       public loading$ = this._loading.asObservable();
 
       private _error = new BehaviorSubject<string | null>(null);
       public error$ = this._error.asObservable();
 
-      private allProductsSignal = signal<ProductListItem[]>([]);
-      public allProducts = this.allProductsSignal.asReadonly();
-
-      private serverTotalElements = signal(0);
-      private serverTotalPages = signal(0);
-
       public isLoading = signal<boolean>(false);
-
-      public searchQuery = signal<string>('');
-      public selectedCategory = signal<string>('');
-      public selectedManufacturer = signal<string>('');
-      public selectedSupplier = signal<string>('');
-      public selectedStatus = signal<string>('');
-
-      private readonly categoriesSignal = signal<NamedEntity[]>([]);
-      public readonly categories = this.categoriesSignal.asReadonly();
-
-      private readonly manufacturersSignal = signal<NamedEntity[]>([]);
-      public readonly manufacturers = this.manufacturersSignal.asReadonly();
-
-      private readonly suppliersSignal = signal<NamedEntity[]>([]);
-      public readonly suppliers = this.suppliersSignal.asReadonly();
-
       public currentPage = signal<number>(1);
       public pageSize = signal<number>(20);
 
-      constructor() {
-            this.apiReload$.pipe(debounceTime(300)).subscribe(() => {
-                  this.fetchProductsFromApi();
-            });
-      }
+      // Raw tree data loaded from API
+      private treeDataSignal = signal<any[]>([]);
+      public treeData = this.treeDataSignal.asReadonly();
 
-      public totalPages = computed(() => this.serverTotalPages());
+      // Search & Status filters
+      public searchQuery = signal<string>('');
+      public selectedStatus = signal<string>('');
 
-      public totalProducts = computed(() => this.serverTotalElements());
+      // Selected IDs (Multi-select)
+      public selectedCategories = signal<(number | string)[]>([]);
+      public selectedBrands = signal<(number | string)[]>([]);
+      public selectedProductGroups = signal<(number | string)[]>([]);
 
-      public products = computed(() => {
-            return this.allProductsSignal();
+      // Category options extracted from Tree
+      public categories = computed(() => {
+            return this.treeData().map(c => ({ id: c.id, name: c.name }));
       });
 
-      public loadProducts(): void {
-            this.loadReferenceData();
-            this.fetchProductsFromApi();
-      }
+      // Brand options extracted from Tree
+      public allBrands = computed(() => {
+            const brandsMap = new Map<number | string, any>();
+            for (const cat of this.treeData()) {
+                  for (const brand of cat.brands || []) {
+                        brandsMap.set(brand.id, { id: brand.id, name: brand.name, categoryId: cat.id });
+                  }
+            }
+            return Array.from(brandsMap.values());
+      });
 
-      public loadReferenceData(): void {
-            if (this.categoriesSignal().length > 0 || this.manufacturersSignal().length > 0 || this.suppliersSignal().length > 0) {
-                  return;
+      // Available Brands based on selected Categories (directly extracted from matching categories in treeData)
+      public availableBrands = computed(() => {
+            const selectedCats = this.selectedCategories().map(String);
+            const brandsMap = new Map<string, any>();
+
+            for (const cat of this.treeData()) {
+                  // If no category selected or category matches selected categories
+                  if (selectedCats.length === 0 || selectedCats.includes(String(cat.id))) {
+                        for (const brand of cat.brands || []) {
+                              const brandKey = String(brand.id);
+                              if (!brandsMap.has(brandKey)) {
+                                    brandsMap.set(brandKey, {
+                                          id: brand.id,
+                                          name: brand.name,
+                                          code: brand.code
+                                    });
+                              }
+                        }
+                  }
+            }
+            return Array.from(brandsMap.values());
+      });
+
+      // Available Groups based on selected Categories & selected Brands
+      public availableGroups = computed(() => {
+            const selectedCats = this.selectedCategories().map(String);
+            const selectedBrs = this.selectedBrands().map(String);
+            const groupsMap = new Map<string, any>();
+
+            for (const cat of this.treeData()) {
+                  const catMatches = selectedCats.length === 0 || selectedCats.includes(String(cat.id));
+                  if (!catMatches) continue;
+
+                  // Direct groups under matching categories (included when no specific brand filter is active)
+                  if (selectedBrs.length === 0) {
+                        for (const group of cat.directGroups || []) {
+                              const groupKey = String(group.id);
+                              if (!groupsMap.has(groupKey)) {
+                                    groupsMap.set(groupKey, {
+                                          id: group.id,
+                                          name: group.name,
+                                          code: group.code,
+                                          categoryId: cat.id
+                                    });
+                              }
+                        }
+                  }
+
+                  // Groups under brands
+                  for (const brand of cat.brands || []) {
+                        const brandMatches = selectedBrs.length === 0 || selectedBrs.includes(String(brand.id));
+                        if (brandMatches) {
+                              for (const group of brand.groups || []) {
+                                    const groupKey = String(group.id);
+                                    if (!groupsMap.has(groupKey)) {
+                                          groupsMap.set(groupKey, {
+                                                id: group.id,
+                                                name: group.name,
+                                                code: group.code,
+                                                categoryId: cat.id,
+                                                brandId: brand.id
+                                          });
+                                    }
+                              }
+                        }
+                  }
+            }
+            return Array.from(groupsMap.values());
+      });
+
+      // Local flat products list extracted from the full tree
+      public allProductsFromTree = computed(() => {
+            const prods: ProductListItem[] = [];
+            const seenIds = new Set<number | string>();
+
+            for (const cat of this.treeData()) {
+                  // Direct groups products (no brand)
+                  for (const group of cat.directGroups || []) {
+                        for (const p of group.products || []) {
+                              if (!seenIds.has(p.id)) {
+                                    seenIds.add(p.id);
+                                    prods.push({
+                                          id: Number(p.id),
+                                          name: p.name,
+                                          code: p.sku,
+                                          category: cat.name,
+                                          manufacturer: '',
+                                          sellingPrice: p.sellingPrice,
+                                          buyingPrice: p.buyingPrice,
+                                          stock: p.stock,
+                                          status: p.status,
+                                          type: p.type,
+                                          // Keep raw associations for filtering
+                                          categoryId: cat.id,
+                                          brandId: null,
+                                          groupId: group.id
+                                    } as any);
+                              }
+                        }
+                  }
+                  // Brand groups products
+                  for (const brand of cat.brands || []) {
+                        for (const group of brand.groups || []) {
+                              for (const p of group.products || []) {
+                                    if (!seenIds.has(p.id)) {
+                                          seenIds.add(p.id);
+                                          prods.push({
+                                                id: Number(p.id),
+                                                name: p.name,
+                                                code: p.sku,
+                                                category: cat.name,
+                                                manufacturer: brand.name,
+                                                sellingPrice: p.sellingPrice,
+                                                buyingPrice: p.buyingPrice,
+                                                stock: p.stock,
+                                                status: p.status,
+                                                type: p.type,
+                                                // Keep raw associations for filtering
+                                                categoryId: cat.id,
+                                                brandId: brand.id,
+                                                groupId: group.id
+                                          } as any);
+                                    }
+                              }
+                        }
+                  }
+            }
+            return prods;
+      });
+
+      // Filtered list of products based on all search terms & active filters
+      public filteredProducts = computed(() => {
+            let list = this.allProductsFromTree();
+
+            // Search query filter (by name or barcode/code)
+            const query = this.searchQuery().trim().toLowerCase();
+            if (query) {
+                  list = list.filter(p =>
+                        p.name.toLowerCase().includes(query) ||
+                        p.code.toLowerCase().includes(query)
+                  );
             }
 
-            forkJoin({
-                  categories: this.api.getCategories().pipe(catchError(() => of([]))),
-                  manufacturers: this.api.getManufacturers().pipe(catchError(() => of([]))),
-                  suppliers: this.api.getSuppliers().pipe(catchError(() => of([])))
-            }).subscribe({
-                  next: ({ categories, manufacturers, suppliers }) => {
-                        this.categoriesSignal.set(categories);
-                        this.manufacturersSignal.set(manufacturers);
-                        this.suppliersSignal.set(suppliers);
+            // Categories filter
+            const selectedCats = this.selectedCategories().map(String);
+            if (selectedCats.length > 0) {
+                  list = list.filter(p => (p as any).categoryId != null && selectedCats.includes(String((p as any).categoryId)));
+            }
+
+            // Brands filter
+            const selectedBrs = this.selectedBrands().map(String);
+            if (selectedBrs.length > 0) {
+                  list = list.filter(p => (p as any).brandId != null && selectedBrs.includes(String((p as any).brandId)));
+            }
+
+            // Product Groups filter
+            const selectedGroups = this.selectedProductGroups().map(String);
+            if (selectedGroups.length > 0) {
+                  list = list.filter(p => (p as any).groupId != null && selectedGroups.includes(String((p as any).groupId)));
+            }
+
+            // Status filter
+            const status = this.selectedStatus();
+            if (status) {
+                  list = list.filter(p => p.status === status);
+            }
+
+            return list;
+      });
+
+      // Paginated page slice shown to the user
+      public products = computed(() => {
+            const list = this.filteredProducts();
+            const start = (this.currentPage() - 1) * this.pageSize();
+            const end = start + this.pageSize();
+            return list.slice(start, end);
+      });
+
+      // Pagination metadata computed from filtered list
+      public totalProducts = computed(() => this.filteredProducts().length);
+      public totalPages = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()));
+
+      // Load products tree data
+      public loadProducts(): void {
+            this.loadTreeData();
+      }
+
+      public loadTreeData(): void {
+            this.isLoading.set(true);
+            this._loading.next(true);
+            this._error.next(null);
+
+            this.api.getProductTree({ includeProducts: true }).subscribe({
+                  next: (res: any) => {
+                        this.treeDataSignal.set(res.tree || []);
+                        this.isLoading.set(false);
+                        this._loading.next(false);
+                        this.clearError();
                   },
-                  error: () => {
-                        this.categoriesSignal.set([]);
-                        this.manufacturersSignal.set([]);
-                        this.suppliersSignal.set([]);
+                  error: (err: any) => {
+                        console.error('Failed to load product tree data', err);
+                        this.isLoading.set(false);
+                        this._loading.next(false);
+                        this.handleError(err);
                   }
             });
+      }
+
+      // Setter functions for Multi-select filters implementing cascading rules
+      public setSelectedCategories(ids: (number | string)[]): void {
+            this.selectedCategories.set(ids);
+            this.currentPage.set(1);
+
+            // Cascade: filter out brand selections that are no longer available
+            const validBrandIds = this.availableBrands().map(b => String(b.id));
+            const updatedBrands = this.selectedBrands().filter(id => validBrandIds.includes(String(id)));
+            
+            if (updatedBrands.length !== this.selectedBrands().length) {
+                  this.selectedBrands.set(updatedBrands);
+            }
+
+            // Cascade: filter out group selections that are no longer available
+            const validGroupIds = this.availableGroups().map(g => String(g.id));
+            const updatedGroups = this.selectedProductGroups().filter(id => validGroupIds.includes(String(id)));
+
+            if (updatedGroups.length !== this.selectedProductGroups().length) {
+                  this.selectedProductGroups.set(updatedGroups);
+            }
+      }
+
+      public setSelectedBrands(ids: (number | string)[]): void {
+            this.selectedBrands.set(ids);
+            this.currentPage.set(1);
+
+            // Cascade: if user clears Brands, reset/clear the Product Group filter
+            if (ids.length === 0) {
+                  this.selectedProductGroups.set([]);
+            } else {
+                  const validGroupIds = this.availableGroups().map(g => String(g.id));
+                  const updatedGroups = this.selectedProductGroups().filter(id => validGroupIds.includes(String(id)));
+
+                  if (updatedGroups.length !== this.selectedProductGroups().length) {
+                        this.selectedProductGroups.set(updatedGroups);
+                  }
+            }
+      }
+
+      public setSelectedProductGroups(ids: (number | string)[]): void {
+            this.selectedProductGroups.set(ids);
+            this.currentPage.set(1);
       }
 
       public setSearchQuery(query: string): void {
             this.searchQuery.set(query);
             this.currentPage.set(1);
-            this.queueApiReload(true);
       }
 
-      public onFilterChange(): void {
+      public setSelectedStatus(status: string): void {
+            this.selectedStatus.set(status);
             this.currentPage.set(1);
-            this.queueApiReload();
-      }
-
-      public setSelectedCategory(value: string): void {
-            this.selectedCategory.set(value);
-            this.currentPage.set(1);
-            this.queueApiReload();
-      }
-
-      public setSelectedManufacturer(value: string): void {
-            this.selectedManufacturer.set(value);
-            this.currentPage.set(1);
-            this.queueApiReload();
-      }
-
-      public setSelectedSupplier(value: string): void {
-            this.selectedSupplier.set(value);
-            this.currentPage.set(1);
-            this.queueApiReload();
       }
 
       public clearFilters(): void {
             this.searchQuery.set('');
-            this.selectedCategory.set('');
-            this.selectedManufacturer.set('');
-            this.selectedSupplier.set('');
+            this.selectedCategories.set([]);
+            this.selectedBrands.set([]);
+            this.selectedProductGroups.set([]);
             this.selectedStatus.set('');
             this.currentPage.set(1);
-            this.queueApiReload();
       }
 
       public hasActiveFilters(): boolean {
             return !!(
                   this.searchQuery() ||
-                  this.selectedCategory() ||
-                  this.selectedManufacturer() ||
-                  this.selectedSupplier() ||
+                  this.selectedCategories().length > 0 ||
+                  this.selectedBrands().length > 0 ||
+                  this.selectedProductGroups().length > 0 ||
                   this.selectedStatus()
             );
-      }
-
-      public getSelectedCategoryName(): string {
-            const id = this.selectedCategory();
-            if (!id) return 'الكل';
-            return this.categoriesSignal().find(item => String(item.id) === id)?.name || 'الكل';
-      }
-
-      public getSelectedManufacturerName(): string {
-            const id = this.selectedManufacturer();
-            if (!id) return 'الكل';
-            return this.manufacturersSignal().find(item => String(item.id) === id)?.name || 'الكل';
-      }
-
-      public getSelectedSupplierName(): string {
-            const id = this.selectedSupplier();
-            if (!id) return 'الكل';
-            return this.suppliersSignal().find(item => String(item.id) === id)?.name || 'الكل';
       }
 
       public deleteProduct(productId: number): Observable<void> {
@@ -193,76 +370,23 @@ export class ProductStateService {
       public previousPage(): void {
             if (this.currentPage() > 1) {
                   this.currentPage.update(p => p - 1);
-                  this.queueApiReload(true);
             }
       }
 
       public nextPage(): void {
             if (this.currentPage() < this.totalPages()) {
                   this.currentPage.update(p => p + 1);
-                  this.queueApiReload(true);
             }
       }
 
       public goToPage(page: number): void {
             if (page > 0 && page <= this.totalPages()) {
                   this.currentPage.set(page);
-                  this.queueApiReload(true);
             }
       }
 
       public clearError(): void {
             this._error.next(null);
-      }
-
-      private fetchProductsFromApi(): void {
-            this.setLoading(true);
-
-            this.api.listProducts(this.buildFilterParams()).pipe(
-                  tap(response => {
-                        const items = (response.content ?? []).map(dto => this.mapDtoToListItem(dto));
-                        this.allProductsSignal.set(items);
-                        this.serverTotalElements.set(response.totalElements ?? 0);
-                        this.serverTotalPages.set(response.totalPages ?? 0);
-                        this.clearError();
-                  }),
-                  catchError(err => {
-                        this.handleError(err);
-                        return throwError(() => err);
-                  }),
-                  finalize(() => this.setLoading(false))
-            ).subscribe();
-      }
-
-      private buildFilterParams(): ProductFilterParams {
-            return {
-                  query: this.searchQuery() || undefined,
-                  categoryId: this.selectedCategory() ? Number(this.selectedCategory()) : undefined,
-                  manufacturerId: this.selectedManufacturer() ? Number(this.selectedManufacturer()) : undefined,
-                  supplierId: this.selectedSupplier() ? Number(this.selectedSupplier()) : undefined,
-                  status: this.selectedStatus() || undefined,
-                  page: this.currentPage() - 1,
-                  size: this.pageSize(),
-                  sort: 'createdAt,DESC'
-            };
-      }
-
-      private queueApiReload(immediate = false): void {
-            if (immediate) {
-                  this.fetchProductsFromApi();
-                  return;
-            }
-
-            this.apiReload$.next();
-      }
-
-      private mapDtoToListItem(dto: ProductListItemDto): ProductListItem {
-            return { ...dto };
-      }
-
-      private setLoading(loading: boolean): void {
-            this._loading.next(loading);
-            this.isLoading.set(loading);
       }
 
       private handleError(err: unknown): void {

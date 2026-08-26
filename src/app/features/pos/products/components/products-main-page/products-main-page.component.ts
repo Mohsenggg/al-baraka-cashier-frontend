@@ -36,18 +36,25 @@ export class ProductsMainPageComponent implements OnInit {
       isLoading = this.state.isLoading;
       localSearchTerm = signal(this.state.searchQuery());
       searchQuery = this.state.searchQuery;
-      selectedCategory = this.state.selectedCategory;
-      selectedManufacturer = this.state.selectedManufacturer;
-      selectedSupplier = this.state.selectedSupplier;
       selectedStatus = this.state.selectedStatus;
+      
+      // Cascading signals from state
+      selectedCategories = this.state.selectedCategories;
+      selectedBrands = this.state.selectedBrands;
+      selectedProductGroups = this.state.selectedProductGroups;
+
       categories = this.state.categories;
-      manufacturers = this.state.manufacturers;
-      suppliers = this.state.suppliers;
+      availableBrands = this.state.availableBrands;
+      availableGroups = this.state.availableGroups;
+
       currentPage = this.state.currentPage;
       pageSize = this.state.pageSize;
       totalPages = this.state.totalPages;
       totalProducts = this.state.totalProducts;
       products = this.state.products;
+
+      // Active dropdown state ('category' | 'brand' | 'group' | null)
+      activeDropdown = signal<string | null>(null);
 
       hoveredProductId = signal<number | null>(null);
       openMenuId = signal<number | null>(null);
@@ -77,20 +84,88 @@ export class ProductsMainPageComponent implements OnInit {
             this.state.setSearchQuery(this.localSearchTerm());
       }
 
-      onFilterChange(): void {
-            this.state.onFilterChange();
+      // Dropdown toggle handler
+      toggleDropdown(type: string, event: Event): void {
+            event.stopPropagation();
+            this.activeDropdown.set(this.activeDropdown() === type ? null : type);
       }
 
-      onCategoryChange(value: string): void {
-            this.state.setSelectedCategory(value);
+      // Checkbox state checkers
+      isCategorySelected(id: number | string): boolean {
+            return this.selectedCategories().some(cId => String(cId) === String(id));
       }
 
-      onManufacturerChange(value: string): void {
-            this.state.setSelectedManufacturer(value);
+      isBrandSelected(id: number | string): boolean {
+            return this.selectedBrands().some(bId => String(bId) === String(id));
       }
 
-      onSupplierChange(value: string): void {
-            this.state.setSelectedSupplier(value);
+      isProductGroupSelected(id: number | string): boolean {
+            return this.selectedProductGroups().some(gId => String(gId) === String(id));
+      }
+
+      // Checkbox togglers
+      toggleCategorySelection(id: number | string): void {
+            const current = [...this.selectedCategories()];
+            const idx = current.findIndex(cId => String(cId) === String(id));
+            if (idx > -1) {
+                  current.splice(idx, 1);
+            } else {
+                  current.push(id);
+            }
+            this.state.setSelectedCategories(current);
+      }
+
+      toggleBrandSelection(id: number | string): void {
+            const current = [...this.selectedBrands()];
+            const idx = current.findIndex(bId => String(bId) === String(id));
+            if (idx > -1) {
+                  current.splice(idx, 1);
+            } else {
+                  current.push(id);
+            }
+            this.state.setSelectedBrands(current);
+      }
+
+      toggleProductGroupSelection(id: number | string): void {
+            const current = [...this.selectedProductGroups()];
+            const idx = current.findIndex(gId => String(gId) === String(id));
+            if (idx > -1) {
+                  current.splice(idx, 1);
+            } else {
+                  current.push(id);
+            }
+            this.state.setSelectedProductGroups(current);
+      }
+
+      // Dropdown button labels in Arabic
+      getCategoriesLabel(): string {
+            const selected = this.selectedCategories();
+            if (selected.length === 0) return 'الأقسام (الكل)';
+            if (selected.length === 1) {
+                  const cat = this.categories().find(c => String(c.id) === String(selected[0]));
+                  return cat ? cat.name : 'قسم واحد محدد';
+            }
+            return `الأقسام (${selected.length})`;
+      }
+
+      getBrandsLabel(): string {
+            const selected = this.selectedBrands();
+            if (selected.length === 0) return 'الشركات (الكل)';
+            if (selected.length === 1) {
+                  const brand = this.availableBrands().find(b => String(b.id) === String(selected[0]));
+                  return brand ? brand.name : 'شركة واحدة محددة';
+            }
+            return `الشركات (${selected.length})`;
+      }
+
+      getProductGroupsLabel(): string {
+            const selected = this.selectedProductGroups();
+            if (selected.length === 0) return 'المجموعات (الكل)';
+            if (selected.length === 1) {
+                  const group = this.availableGroups().find(g => String(g.id) === String(selected[0]));
+                  return group ? group.name : 'مجموعة واحدة محددة';
+            }
+            return `المجموعات (${selected.length})`;
       }
 
       clearFilters(): void {
@@ -118,6 +193,7 @@ export class ProductsMainPageComponent implements OnInit {
       @HostListener('document:click')
       handleDocumentClick(): void {
             this.openMenuId.set(null);
+            this.activeDropdown.set(null);
       }
 
       onViewProduct(productId: number): void {

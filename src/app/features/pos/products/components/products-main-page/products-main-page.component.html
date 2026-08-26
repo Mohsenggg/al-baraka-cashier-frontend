@@ -28,45 +28,66 @@
                                           </button>
                                     </div>
 
-                                    <div class="filter-item">
-                                          <div class="filter-select-wrapper" [class.has-value]="selectedCategory()">
-                                                <select class="filter-select" [value]="selectedCategory()"
-                                                      (change)="onCategoryChange($any($event.target).value)">
-                                                      <option value="" disabled hidden>اختر القسم</option>
-                                                      <option value="">الكل</option>
-                                                      <option *ngFor="let category of categories()" [value]="category.id">
-                                                            {{ category.name }}
-                                                      </option>
-                                                </select>
+                                    <!-- Category Multi-select -->
+                                    <div class="filter-item custom-multiselect" [class.has-value]="selectedCategories().length > 0">
+                                          <div class="multiselect-trigger" (click)="toggleDropdown('category', $event)">
                                                 <span class="filter-select-icon material-icons-outlined">category</span>
+                                                <span class="selected-text">{{ getCategoriesLabel() }}</span>
+                                                <span class="material-icons-outlined arrow-icon">expand_more</span>
+                                          </div>
+                                          <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'category'" (click)="$event.stopPropagation()">
+                                                <div class="dropdown-options">
+                                                      <label class="option-label" *ngFor="let cat of categories()">
+                                                            <input type="checkbox" 
+                                                                   [checked]="isCategorySelected(cat.id)" 
+                                                                   (change)="toggleCategorySelection(cat.id)">
+                                                            <span>{{ cat.name }}</span>
+                                                      </label>
+                                                </div>
                                           </div>
                                     </div>
 
-                                    <div class="filter-item">
-                                          <div class="filter-select-wrapper" [class.has-value]="selectedManufacturer()">
-                                                <select class="filter-select" [value]="selectedManufacturer()"
-                                                      (change)="onManufacturerChange($any($event.target).value)">
-                                                      <option value="" disabled hidden>اختر الشركة</option>
-                                                      <option value="">الكل</option>
-                                                      <option *ngFor="let manufacturer of manufacturers()" [value]="manufacturer.id">
-                                                            {{ manufacturer.name }}
-                                                      </option>
-                                                </select>
+                                    <!-- Brand Multi-select -->
+                                    <div class="filter-item custom-multiselect" [class.has-value]="selectedBrands().length > 0">
+                                          <div class="multiselect-trigger" (click)="toggleDropdown('brand', $event)">
                                                 <span class="filter-select-icon material-icons-outlined">business</span>
+                                                <span class="selected-text">{{ getBrandsLabel() }}</span>
+                                                <span class="material-icons-outlined arrow-icon">expand_more</span>
+                                          </div>
+                                          <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'brand'" (click)="$event.stopPropagation()">
+                                                <div class="dropdown-options">
+                                                      <div class="no-options-msg" *ngIf="availableBrands().length === 0">
+                                                            لا توجد شركات متاحة
+                                                      </div>
+                                                      <label class="option-label" *ngFor="let brand of availableBrands()">
+                                                            <input type="checkbox" 
+                                                                   [checked]="isBrandSelected(brand.id)" 
+                                                                   (change)="toggleBrandSelection(brand.id)">
+                                                            <span>{{ brand.name }}</span>
+                                                      </label>
+                                                </div>
                                           </div>
                                     </div>
 
-                                    <div class="filter-item">
-                                          <div class="filter-select-wrapper" [class.has-value]="selectedSupplier()">
-                                                <select class="filter-select" [value]="selectedSupplier()"
-                                                      (change)="onSupplierChange($any($event.target).value)">
-                                                      <option value="" disabled hidden>اختر المورد</option>
-                                                      <option value="">الكل</option>
-                                                      <option *ngFor="let supplier of suppliers()" [value]="supplier.id">
-                                                            {{ supplier.name }}
-                                                      </option>
-                                                </select>
-                                                <span class="filter-select-icon material-icons-outlined">local_shipping</span>
+                                    <!-- Product Group Multi-select -->
+                                    <div class="filter-item custom-multiselect" [class.has-value]="selectedProductGroups().length > 0">
+                                          <div class="multiselect-trigger" (click)="toggleDropdown('group', $event)">
+                                                <span class="filter-select-icon material-icons-outlined">layers</span>
+                                                <span class="selected-text">{{ getProductGroupsLabel() }}</span>
+                                                <span class="material-icons-outlined arrow-icon">expand_more</span>
+                                          </div>
+                                          <div class="multiselect-dropdown" *ngIf="activeDropdown() === 'group'" (click)="$event.stopPropagation()">
+                                                <div class="dropdown-options">
+                                                      <div class="no-options-msg" *ngIf="availableGroups().length === 0">
+                                                            لا توجد مجموعات متاحة
+                                                      </div>
+                                                      <label class="option-label" *ngFor="let group of availableGroups()">
+                                                            <input type="checkbox" 
+                                                                   [checked]="isProductGroupSelected(group.id)" 
+                                                                   (change)="toggleProductGroupSelection(group.id)">
+                                                            <span>{{ group.name }}</span>
+                                                      </label>
+                                                </div>
                                           </div>
                                     </div>
 
