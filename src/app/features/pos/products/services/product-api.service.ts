@@ -77,7 +77,20 @@ export class ProductApiService {
             return this.http.post<ProductAttributeOption>(`${this.lookupUrl}/attributes`, { name });
       }
 
-      private buildHttpParams(params: ProductFilterParams): HttpParams {
+      public getProductTree(params: {
+            query?: string;
+            categoryId?: number;
+            brandId?: number;
+            stockStatus?: string;
+            status?: string;
+            includeProducts?: boolean;
+      } = {}): Observable<{ tree: any[]; statistics: any }> {
+            return this.http.get<{ tree: any[]; statistics: any }>(`${this.apiUrl}/tree`, {
+                  params: this.buildHttpParams(params)
+            });
+      }
+
+      private buildHttpParams(params: any): HttpParams {
             const normalized: Record<string, string | number> = { ...params };
 
             let httpParams = new HttpParams();

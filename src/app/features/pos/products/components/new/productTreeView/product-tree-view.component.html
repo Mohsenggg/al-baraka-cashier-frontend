@@ -154,10 +154,23 @@
             <!-- ============================= -->
             <div class="tree-viewport">
 
+                  <!-- Loading State -->
+                  <div class="tree-loading-state" *ngIf="isLoading()">
+                        <div class="spinner"></div>
+                        <p>جاري تحميل شجرة المنتجات...</p>
+                  </div>
+
+                  <!-- Error State -->
+                  <div class="tree-error-state" *ngIf="errorMessage() && !isLoading()">
+                        <span class="material-icons-outlined error-icon">error_outline</span>
+                        <p>{{ errorMessage() }}</p>
+                        <button type="button" class="btn-retry" (click)="loadTreeData()">إعادة المحاولة</button>
+                  </div>
+
                   <!-- Empty state when no matches found -->
-                  <div class="tree-empty-state" *ngIf="filteredTree().length === 0">
+                  <div class="tree-empty-state" *ngIf="!isLoading() && !errorMessage() && filteredTree().length === 0">
                         <div class="empty-icon-wrap">
-                              <span class="material-icons-outlined empty-icon">account_tree</span>
+                               <span class="material-icons-outlined empty-icon">account_tree</span>
                         </div>
                         <h3>لم يتم العثور على نتائج</h3>
                         <p>لا توجد أقسام أو منتجات مطابقة لكلمات البحث أو الفلاتر المحددة.</p>
@@ -168,7 +181,7 @@
                   </div>
 
                   <!-- Tree Root Container -->
-                  <div class="tree-root-container" *ngIf="filteredTree().length > 0">
+                  <div class="tree-root-container" *ngIf="!isLoading() && !errorMessage() && filteredTree().length > 0">
 
                         <!-- CATEGORY NODE (Level 1) -->
                         <div class="category-block" *ngFor="let category of filteredTree(); trackBy: trackByCategoryId"

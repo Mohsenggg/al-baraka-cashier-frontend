@@ -30,6 +30,7 @@ import {
       computeTreeStats,
       INITIAL_MOCK_TREE_DATA
 } from './models/product-tree.models';
+import { ProductApiService } from '../../../services/product-api.service';
 
 @Component({
       selector: 'app-product-tree-view',
@@ -41,12 +42,15 @@ import {
 })
 export class ProductTreeViewComponent implements OnInit {
       private router = inject(Router);
+      private productApiService = inject(ProductApiService);
 
       // Sidebar state
       sidebarVisible = signal(false);
 
       // Tree raw state
-      treeData = signal<CategoryNode[]>(INITIAL_MOCK_TREE_DATA);
+      treeData = signal<CategoryNode[]>([]);
+      isLoading = signal(false);
+      errorMessage = signal<string | null>(null);
 
       // Search & Filters
       searchQuery = signal<string>('');
@@ -65,7 +69,23 @@ export class ProductTreeViewComponent implements OnInit {
       readonly getStatusClass = getStatusClass;
 
       ngOnInit(): void {
-            // Initial data is already set to mock data
+            this.loadTreeData();
+      }
+
+      loadTreeData(): void {
+            this.isLoading.set(true);
+            this.errorMessage.set(null);
+            this.productApiService.getProductTree().subscribe({
+                  next: (res: any) => {
+                        this.treeData.set(res.tree || []);
+                        this.isLoading.set(false);
+                  },
+                  error: (err: any) => {
+                        console.error('Failed to load product tree data', err);
+                        this.errorMessage.set('فشل تحميل شجرة المنتجات. يرجى المحاولة مرة أخرى.');
+                        this.isLoading.set(false);
+                  }
+            });
       }
 
       // Sidebar toggle
