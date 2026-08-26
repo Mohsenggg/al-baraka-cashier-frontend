@@ -20,6 +20,7 @@ export interface ProductListItem {
       category?: string;
       manufacturer?: string;
       sellingPrice: number;
+      buyingPrice?: number;
       stock: number;
       status: ProductStatus;
       type: ProductType;
@@ -50,6 +51,7 @@ export interface ProductListItemDto {
       category?: string;
       manufacturer?: string;
       sellingPrice: number;
+      buyingPrice?: number;
       stock: number;
       status: ProductStatus;
       type: ProductType;

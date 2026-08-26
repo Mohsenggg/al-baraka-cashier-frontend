@@ -117,77 +117,92 @@
                   </div>
 
                   <!-- Products Table -->
-                  <table class="products-table" *ngIf="isLoading() || products().length > 0">
+                  <table class="leaf-products-table" *ngIf="isLoading() || products().length > 0">
                         <thead>
                               <tr>
-                                    <th class="col-product">
-                                          <div class="product-col-header">
-                                                <span class="col-title">المنتج</span>
-                                                <span class="col-subtitles">الاسم <span class="subtitle-sep">-</span> الرمز</span>
-                                          </div>
-                                    </th>
-                                    <th class="col-price">سعر البيع</th>
-                                    <th class="col-stock">المخزون</th>
-                                    <th class="col-type">نوع المنتج</th>
-                                    <th class="col-status">الحالة</th>
-                                    <th class="col-actions">الإجراءات</th>
+                                    <th class="col-tree-prod">المنتج والباركود</th>
+                                    <th class="col-tree-buying">سعر الشراء</th>
+                                    <th class="col-tree-selling">سعر البيع</th>
+                                    <th class="col-tree-profit">هامش الربح</th>
+                                    <th class="col-tree-stock">المخزون</th>
+                                    <th class="col-tree-actions">الإجراءات</th>
                               </tr>
                         </thead>
                         <tbody *ngIf="!isLoading()">
-                              <tr class="product-row" *ngFor="let product of products(); trackBy: trackByProductId"
-                                    (mouseenter)="onRowHover(product.id)" (mouseleave)="onRowLeave()">
+                              <tr class="leaf-product-row" *ngFor="let product of products(); trackBy: trackByProductId">
 
-                                    <!-- Product Column -->
-                                    <td class="col-product">
-                                          <p class="product-text">
-                                                <span class="product-name">{{ product.name }}</span>
-                                                <span class="product-desc-attrs">{{ product.code }}</span>
-                                          </p>
+                                    <!-- Product Name & SKU -->
+                                    <td class="col-tree-prod">
+                                          <div class="product-cell-content">
+                                                <span class="product-leaf-dot"></span>
+                                                <div class="prod-text-group">
+                                                      <span class="tree-prod-name" (click)="onViewProduct(product.id)">
+                                                            {{ product.name }}
+                                                      </span>
+                                                </div>
+                                          </div>
+                                    </td>
+
+                                    <!-- Buying Price Column -->
+                                    <td class="col-tree-buying">
+                                          <span class="price-val buying-price" *ngIf="product.buyingPrice; else noBuying">
+                                                {{ product.buyingPrice | number:'1.2-2' }}
+                                                <small class="curr">ج.م</small>
+                                          </span>
+                                          <ng-template #noBuying>
+                                                <span class="price-na">—</span>
+                                          </ng-template>
                                     </td>
 
                                     <!-- Selling Price Column -->
-                                    <td class="col-price">
-                                          <span class="price-amount">{{ product.sellingPrice | number:'1.2-2' }}</span>
+                                    <td class="col-tree-selling">
+                                          <span class="price-val selling-price">
+                                                {{ product.sellingPrice | number:'1.2-2' }}
+                                                <small class="curr">ج.م</small>
+                                          </span>
                                     </td>
 
-                                    <!-- Total Stock Column -->
-                                    <td class="col-stock">
+                                    <!-- Profit Column -->
+                                    <td class="col-tree-profit">
+                                          <ng-container *ngIf="product.buyingPrice; else noProfit">
+                                                <span class="profit-cell">
+                                                      <span class="profit-amount">
+                                                            {{ (product.sellingPrice - product.buyingPrice) | number:'1.2-2' }}
+                                                            <small class="curr">ج.م</small>
+                                                      </span>
+                                                      <span class="profit-pct">
+                                                            ({{ ((product.sellingPrice - product.buyingPrice) / product.buyingPrice * 100) | number:'1.1-1' }}%)
+                                                      </span>
+                                                </span>
+                                          </ng-container>
+                                          <ng-template #noProfit>
+                                                <span class="price-na">—</span>
+                                          </ng-template>
+                                    </td>
+
+                                    <!-- Stock Column -->
+                                    <td class="col-tree-stock">
                                           <div class="stock-indicator" [ngClass]="getStockClass(product)">
                                                 <span class="stock-dot"></span>
                                                 <span class="stock-text">{{ getStockLabel(product) }}</span>
                                           </div>
                                     </td>
 
-                                    <!-- Product Type Column -->
-                                    <td class="col-type">
-                                          <span class="type-badge" [ngClass]="'type-' + product.type">
-                                                {{ getTypeLabel(product.type) }}
-                                          </span>
-                                    </td>
-
-                                    <!-- Status Column -->
-                                    <td class="col-status">
-                                          <span class="status-badge" [ngClass]="getStatusClass(product.status)">
-                                                {{ getStatusLabel(product.status) }}
-                                          </span>
-                                    </td>
-
                                     <!-- Actions Column -->
-                                    <td class="col-actions">
-                                          <div class="action-menu-wrapper">
-                                                <button class="btn-action btn-menu" aria-haspopup="true"
-                                                      [attr.aria-expanded]="openMenuId() === product.id"
-                                                      (click)="toggleMenu(product.id, $event)">
-                                                      <span class="material-icons-outlined">more_vert</span>
+                                    <td class="col-tree-actions">
+                                          <div class="action-buttons-group">
+                                                <button type="button" class="btn-action btn-view"
+                                                      (click)="onViewProduct(product.id)" title="عرض التفاصيل">
+                                                      <span class="material-icons-outlined">visibility</span>
                                                 </button>
-
-                                                <div class="menu" *ngIf="openMenuId() === product.id"
-                                                      (click)="$event.stopPropagation()">
-                                                      <button class="menu-item"
-                                                            (click)="onEditProduct(product.id)">تعديل</button>
-                                                      <button class="menu-item danger"
-                                                            (click)="onDeleteProduct(product.id)">حـذف</button>
-                                                </div>
+                                                <button type="button" class="btn-action btn-edit"
+                                                      (click)="onEditProduct(product.id)" title="تعديل المنتج">
+                                                      <span class="material-icons-outlined">edit</span>
+                                                </button>
+                                                <button type="button" class="btn-action btn-delete"
+                                                      (click)="onDeleteProduct(product.id)" title="حذف المنتج">
+                                                      <span class="material-icons-outlined">delete_outline</span>
+                                                </button>
                                           </div>
                                     </td>
 
@@ -197,12 +212,12 @@
                         <!-- Loading Body -->
                         <tbody *ngIf="isLoading()" class="loading-tbody">
                               <tr class="skeleton-table-row" *ngFor="let i of [1,2,3,4,5,6,7,8]">
-                                    <td class="col-product"><div class="skeleton-cell" style="height: 32px; max-width: 80%;"></div></td>
-                                    <td class="col-price"><div class="skeleton-cell"></div></td>
-                                    <td class="col-stock"><div class="skeleton-cell"></div></td>
-                                    <td class="col-type"><div class="skeleton-cell"></div></td>
-                                    <td class="col-status"><div class="skeleton-cell"></div></td>
-                                    <td class="col-actions"><div class="skeleton-cell"></div></td>
+                                    <td class="col-tree-prod"><div class="skeleton-cell" style="height: 32px; max-width: 80%;"></div></td>
+                                    <td class="col-tree-buying"><div class="skeleton-cell"></div></td>
+                                    <td class="col-tree-selling"><div class="skeleton-cell"></div></td>
+                                    <td class="col-tree-profit"><div class="skeleton-cell"></div></td>
+                                    <td class="col-tree-stock"><div class="skeleton-cell"></div></td>
+                                    <td class="col-tree-actions"><div class="skeleton-cell"></div></td>
                               </tr>
                         </tbody>
                   </table>
