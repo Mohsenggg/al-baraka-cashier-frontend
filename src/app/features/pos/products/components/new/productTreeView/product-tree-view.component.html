@@ -67,7 +67,7 @@
                                           (change)="onCategoryFilterChange($any($event.target).value)">
                                           <option value="">جميع الأقسام</option>
                                           <option *ngFor="let cat of treeData()" [value]="cat.id">
-                                                {{ cat.name }} ({{ cat.code }})
+                                                {{ cat.name }}
                                           </option>
                                     </select>
                                     <span class="filter-select-icon material-icons-outlined">category</span>
@@ -439,10 +439,10 @@
                   <thead>
                         <tr>
                               <th class="col-tree-prod">المنتج والباركود</th>
-                              <th class="col-tree-stock">المخزون</th>
-                              <th class="col-tree-buying">سعر التكلفة</th>
+                              <th class="col-tree-buying">سعر الشراء</th>
                               <th class="col-tree-selling">سعر البيع</th>
                               <th class="col-tree-profit">هامش الربح</th>
+                              <th class="col-tree-stock">المخزون</th>
                               <th class="col-tree-actions">الإجراءات</th>
                         </tr>
                   </thead>
@@ -469,13 +469,7 @@
                                     </div>
                               </td>
 
-                              <!-- Stock Column -->
-                              <td class="col-tree-stock">
-                                    <div class="stock-indicator" [ngClass]="getStockClass(product)">
-                                          <span class="stock-dot"></span>
-                                          <span class="stock-text">{{ getStockLabel(product) }}</span>
-                                    </div>
-                              </td>
+
 
                               <!-- Buying Price Column -->
                               <td class="col-tree-buying">
@@ -501,17 +495,27 @@
                                     <ng-container *ngIf="product.buyingPrice; else noProfit">
                                           <span class="profit-cell">
                                                 <span class="profit-amount">
-                                                      {{ (product.sellingPrice - product.buyingPrice) | number:'1.2-2' }}
+                                                      {{ (product.sellingPrice - product.buyingPrice) | number:'1.2-2'
+                                                      }}
                                                       <small class="curr">ج.م</small>
                                                 </span>
                                                 <span class="profit-pct">
-                                                      ({{ ((product.sellingPrice - product.buyingPrice) / product.buyingPrice * 100) | number:'1.1-1' }}%)
+                                                      ({{ ((product.sellingPrice - product.buyingPrice) /
+                                                      product.buyingPrice * 100) | number:'1.1-1' }}%)
                                                 </span>
                                           </span>
                                     </ng-container>
                                     <ng-template #noProfit>
                                           <span class="price-na">—</span>
                                     </ng-template>
+                              </td>
+
+                              <!-- Stock Column -->
+                              <td class="col-tree-stock">
+                                    <div class="stock-indicator" [ngClass]="getStockClass(product)">
+                                          <span class="stock-dot"></span>
+                                          <span class="stock-text">{{ getStockLabel(product) }}</span>
+                                    </div>
                               </td>
 
                               <!-- Actions Column -->

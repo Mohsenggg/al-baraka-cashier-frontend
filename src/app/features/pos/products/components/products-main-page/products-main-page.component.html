@@ -78,10 +78,25 @@
                               </div>
                         </div>
 
-                        <button class="btn-add-product" routerLink="/pos/product/manage">
-                              <span class="material-icons-outlined">add_circle</span>
-                              <span>إضافة منتج</span>
-                        </button>
+                        <!-- Top actions & view mode switcher -->
+                        <div class="header-actions">
+                              <!-- View switcher tab buttons -->
+                              <div class="view-switch-group">
+                                    <button type="button" class="btn-view-mode active" title="عرض جدولي مسطح">
+                                          <span class="material-icons-outlined">table_rows</span>
+                                          <span>جدول</span>
+                                    </button>
+                                    <a routerLink="/pos/products/tree" class="btn-view-mode" title="عرض شجري هرمي">
+                                          <span class="material-icons-outlined">account_tree</span>
+                                          <span>شجرة</span>
+                                    </a>
+                              </div>
+
+                              <button class="btn-add-product" routerLink="/pos/product/manage">
+                                    <span class="material-icons-outlined">add_circle</span>
+                                    <span>إضافة منتج</span>
+                              </button>
+                        </div>
                   </div>
             </div>
 

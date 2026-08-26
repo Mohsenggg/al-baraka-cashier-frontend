@@ -130,6 +130,56 @@
       font-size: 1.2rem;
 }
 
+/* Header Actions */
+.header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+}
+
+/* View Switcher */
+.view-switch-group {
+      display: inline-flex;
+      align-items: center;
+      background-color: #f1f5f9;
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+}
+
+.btn-view-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      height: 32px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--pos-text-secondary, #64748b);
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+}
+
+.btn-view-mode:hover {
+      color: var(--pos-primary, #1e3a8a);
+      background-color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-view-mode.active {
+      background-color: #ffffff;
+      color: var(--pos-primary, #1e3a8a);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-view-mode .material-icons-outlined {
+      font-size: 1rem;
+}
+
 /* ============================= */
 /* TOOLBAR SECTION */
 /* ============================= */
