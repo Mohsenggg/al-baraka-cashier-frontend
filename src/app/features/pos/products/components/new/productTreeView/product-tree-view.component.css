@@ -897,11 +897,11 @@
 }
 
 /* Columns widths */
-.col-tree-prod { width: 34%; }
-.col-tree-price { width: 16%; }
-.col-tree-stock { width: 15%; }
-.col-tree-type { width: 12%; }
-.col-tree-status { width: 11%; }
+.col-tree-prod    { width: 30%; }
+.col-tree-stock   { width: 14%; }
+.col-tree-buying  { width: 13%; }
+.col-tree-selling { width: 13%; }
+.col-tree-profit  { width: 18%; }
 .col-tree-actions { width: 12%; text-align: center; }
 
 /* Product cell styling */
@@ -990,6 +990,58 @@
       font-size: 0.68rem;
       color: #64748b;
       font-weight: 500;
+}
+
+/* Inline price value cells */
+.price-val {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 3px;
+      font-weight: 700;
+      font-size: 0.85rem;
+}
+
+.buying-price {
+      color: #374151;
+}
+
+.selling-price {
+      color: var(--pos-primary, #1e3a8a);
+}
+
+.price-na {
+      color: #cbd5e1;
+      font-size: 0.8rem;
+}
+
+/* Profit cell */
+.profit-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+}
+
+.profit-amount {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 3px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #059669;
+}
+
+.profit-pct {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      background-color: #d1fae5;
+      color: #065f46;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid #a7f3d0;
 }
 
 .btn-price-breakdown {

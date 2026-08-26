@@ -439,10 +439,10 @@
                   <thead>
                         <tr>
                               <th class="col-tree-prod">المنتج والباركود</th>
-                              <th class="col-tree-price">سعر البيع</th>
                               <th class="col-tree-stock">المخزون</th>
-                              <th class="col-tree-type">النوع</th>
-                              <th class="col-tree-status">الحالة</th>
+                              <th class="col-tree-buying">سعر التكلفة</th>
+                              <th class="col-tree-selling">سعر البيع</th>
+                              <th class="col-tree-profit">هامش الربح</th>
                               <th class="col-tree-actions">الإجراءات</th>
                         </tr>
                   </thead>
@@ -469,43 +469,6 @@
                                     </div>
                               </td>
 
-                              <!-- Selling Price Column -->
-                              <td class="col-tree-price">
-                                    <div class="price-cell-wrap">
-                                          <span class="price-main">{{ product.sellingPrice | number:'1.2-2' }} <small
-                                                      class="curr">ج.م</small></span>
-                                          <button type="button" class="btn-price-breakdown" *ngIf="product.buyingPrice"
-                                                (click)="togglePricePopover(product.id, $event)"
-                                                title="عرض تفاصيل التسعير والتكلفة">
-                                                <span class="material-icons-outlined">info</span>
-                                          </button>
-
-                                          <!-- Price Breakdown Popover -->
-                                          <div class="price-popover"
-                                                *ngIf="activePricePopoverProductId() === product.id"
-                                                (click)="$event.stopPropagation()">
-                                                <div class="popover-title">تفاصيل أسعار المنتج</div>
-                                                <div class="popover-row">
-                                                      <span>سعر التكلفة (شراء):</span>
-                                                      <strong>{{ product.buyingPrice | number:'1.2-2' }} ج.م</strong>
-                                                </div>
-                                                <div class="popover-row">
-                                                      <span>سعر البيع (قطاعي):</span>
-                                                      <strong>{{ product.sellingPrice | number:'1.2-2' }} ج.م</strong>
-                                                </div>
-                                                <div class="popover-row profit-row" *ngIf="product.buyingPrice">
-                                                      <span>هامش الربح:</span>
-                                                      <strong class="profit-val">
-                                                            {{ (product.sellingPrice - product.buyingPrice) |
-                                                            number:'1.2-2' }} ج.م
-                                                            ({{ ((product.sellingPrice - product.buyingPrice) /
-                                                            product.buyingPrice * 100) | number:'1.1-1' }}%)
-                                                      </strong>
-                                                </div>
-                                          </div>
-                                    </div>
-                              </td>
-
                               <!-- Stock Column -->
                               <td class="col-tree-stock">
                                     <div class="stock-indicator" [ngClass]="getStockClass(product)">
@@ -514,18 +477,41 @@
                                     </div>
                               </td>
 
-                              <!-- Type Column -->
-                              <td class="col-tree-type">
-                                    <span class="type-badge" [ngClass]="'type-' + product.type">
-                                          {{ getTypeLabel(product.type) }}
+                              <!-- Buying Price Column -->
+                              <td class="col-tree-buying">
+                                    <span class="price-val buying-price" *ngIf="product.buyingPrice; else noBuying">
+                                          {{ product.buyingPrice | number:'1.2-2' }}
+                                          <small class="curr">ج.م</small>
+                                    </span>
+                                    <ng-template #noBuying>
+                                          <span class="price-na">—</span>
+                                    </ng-template>
+                              </td>
+
+                              <!-- Selling Price Column -->
+                              <td class="col-tree-selling">
+                                    <span class="price-val selling-price">
+                                          {{ product.sellingPrice | number:'1.2-2' }}
+                                          <small class="curr">ج.م</small>
                                     </span>
                               </td>
 
-                              <!-- Status Column -->
-                              <td class="col-tree-status">
-                                    <span class="status-badge" [ngClass]="getStatusClass(product.status)">
-                                          {{ getStatusLabel(product.status) }}
-                                    </span>
+                              <!-- Profit Column -->
+                              <td class="col-tree-profit">
+                                    <ng-container *ngIf="product.buyingPrice; else noProfit">
+                                          <span class="profit-cell">
+                                                <span class="profit-amount">
+                                                      {{ (product.sellingPrice - product.buyingPrice) | number:'1.2-2' }}
+                                                      <small class="curr">ج.م</small>
+                                                </span>
+                                                <span class="profit-pct">
+                                                      ({{ ((product.sellingPrice - product.buyingPrice) / product.buyingPrice * 100) | number:'1.1-1' }}%)
+                                                </span>
+                                          </span>
+                                    </ng-container>
+                                    <ng-template #noProfit>
+                                          <span class="price-na">—</span>
+                                    </ng-template>
                               </td>
 
                               <!-- Actions Column -->
