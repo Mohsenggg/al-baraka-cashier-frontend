@@ -121,7 +121,7 @@
             <!-- ============================= -->
             <!-- TABLE SECTION -->
             <!-- ============================= -->
-            <div class="table-wrapper">
+            <div #tableWrapper class="table-wrapper">
 
                   <!-- Empty State -->
                   <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
@@ -243,28 +243,36 @@
             </div>
 
             <!-- ============================= -->
-            <!-- PAGINATION SECTION -->
+            <!-- MODERN PAGINATION BAR         -->
             <!-- ============================= -->
-            <div class="pagination-section" *ngIf="!isLoading() && products().length > 0">
-                  <div class="pagination-controls">
-                        <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-                              <span class="material-icons-outlined">chevron_left</span>
-                              التالي
-                        </button>
-                        <div class="page-numbers">
-                              <button *ngFor="let page of getPageNumbers()" class="btn-page-number"
-                                    [class.active]="page === currentPage()" (click)="goToPage(page)">
-                                    {{ page }}
-                              </button>
-                        </div>
-                        <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="previousPage()">
-                              السابق
-                              <span class="material-icons-outlined">chevron_right</span>
-                        </button>
-                  </div>
+            <div class="pagination-section" *ngIf="!isLoading() && totalProducts() > 0">
                   <div class="results-summary">
-                        <span>عرض {{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(),
-                              totalProducts()) }} من {{ totalProducts() }} منتج</span>
+                        <span>عرض <strong>{{ (currentPage() - 1) * pageSize() + 1 }}–{{ Math.min(currentPage() * pageSize(), totalProducts()) }}</strong> من إجمالي <strong>{{ totalProducts() }}</strong> منتج</span>
+                  </div>
+
+                  <div class="pagination-controls">
+                        <!-- Next button (in RTL this moves to next page / left arrow) -->
+                        <button type="button" class="btn-pagination" [disabled]="currentPage() >= totalPages()" (click)="nextPage()" title="الصفحة التالية">
+                              <span class="material-icons-outlined">chevron_right</span>
+                              <span>التالي</span>
+                        </button>
+
+                        <!-- Page Numbers -->
+                        <div class="page-numbers">
+                              <ng-container *ngFor="let page of getPageNumbers()">
+                                    <button type="button" *ngIf="page !== -1" class="btn-page-number"
+                                          [class.active]="page === currentPage()" (click)="goToPage(page)">
+                                          {{ page }}
+                                    </button>
+                                    <span *ngIf="page === -1" class="page-ellipsis">...</span>
+                              </ng-container>
+                        </div>
+
+                        <!-- Prev button (in RTL this moves to previous page / right arrow) -->
+                        <button type="button" class="btn-pagination" [disabled]="currentPage() <= 1" (click)="previousPage()" title="الصفحة السابقة">
+                              <span>السابق</span>
+                              <span class="material-icons-outlined">chevron_left</span>
+                        </button>
                   </div>
             </div>
 

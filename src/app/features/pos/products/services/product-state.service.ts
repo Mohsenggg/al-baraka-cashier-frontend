@@ -17,7 +17,7 @@ export class ProductStateService {
 
       public isLoading = signal<boolean>(false);
       public currentPage = signal<number>(1);
-      public pageSize = signal<number>(20);
+      public pageSize = signal<number>(100);
 
       // Raw tree data loaded from API
       private treeDataSignal = signal<any[]>([]);
@@ -228,7 +228,7 @@ export class ProductStateService {
 
       // Pagination metadata computed from filtered list
       public totalProducts = computed(() => this.filteredProducts().length);
-      public totalPages = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()));
+      public totalPages = computed(() => Math.ceil(this.filteredProducts().length / this.pageSize()) || 1);
 
       // Load products tree data
       public loadProducts(): void {

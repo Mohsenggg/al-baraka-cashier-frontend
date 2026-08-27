@@ -4,7 +4,9 @@ import {
       OnInit,
       HostListener,
       inject,
-      ChangeDetectionStrategy
+      ChangeDetectionStrategy,
+      ViewChild,
+      ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -31,9 +33,12 @@ export class ProductsMainPageComponent implements OnInit {
       private state = inject(ProductStateService);
       private router = inject(Router);
 
+      @ViewChild('tableWrapper') tableWrapper?: ElementRef<HTMLElement>;
+
       sidebarVisible = signal(false);
 
       isLoading = this.state.isLoading;
+
       localSearchTerm = signal(this.state.searchQuery());
       searchQuery = this.state.searchQuery;
       selectedStatus = this.state.selectedStatus;
@@ -71,6 +76,12 @@ export class ProductsMainPageComponent implements OnInit {
             this.state.loadProducts();
       }
 
+      resetScroll(): void {
+            if (this.tableWrapper?.nativeElement) {
+                  this.tableWrapper.nativeElement.scrollTop = 0;
+            }
+      }
+
       onToggleSidebar(): void {
             this.sidebarVisible.update(v => !v);
       }
@@ -81,6 +92,7 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       executeSearch(): void {
+            this.resetScroll();
             this.state.setSearchQuery(this.localSearchTerm());
       }
 
@@ -105,6 +117,7 @@ export class ProductsMainPageComponent implements OnInit {
 
       // Checkbox togglers
       toggleCategorySelection(id: number | string): void {
+            this.resetScroll();
             const current = [...this.selectedCategories()];
             const idx = current.findIndex(cId => String(cId) === String(id));
             if (idx > -1) {
@@ -116,6 +129,7 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       toggleBrandSelection(id: number | string): void {
+            this.resetScroll();
             const current = [...this.selectedBrands()];
             const idx = current.findIndex(bId => String(bId) === String(id));
             if (idx > -1) {
@@ -127,6 +141,7 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       toggleProductGroupSelection(id: number | string): void {
+            this.resetScroll();
             const current = [...this.selectedProductGroups()];
             const idx = current.findIndex(gId => String(gId) === String(id));
             if (idx > -1) {
@@ -169,6 +184,7 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       clearFilters(): void {
+            this.resetScroll();
             this.localSearchTerm.set('');
             this.state.clearFilters();
       }
@@ -215,14 +231,17 @@ export class ProductsMainPageComponent implements OnInit {
       }
 
       previousPage(): void {
+            this.resetScroll();
             this.state.previousPage();
       }
 
       nextPage(): void {
+            this.resetScroll();
             this.state.nextPage();
       }
 
       goToPage(page: number): void {
+            this.resetScroll();
             this.state.goToPage(page);
       }
 
