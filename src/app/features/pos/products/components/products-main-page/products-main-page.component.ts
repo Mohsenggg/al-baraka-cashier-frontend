@@ -91,9 +91,21 @@ export class ProductsMainPageComponent implements OnInit {
             this.localSearchTerm.set(input.value);
       }
 
+      onSearchKeyDown(event: KeyboardEvent): void {
+            if (event.key === 'Enter') {
+                  this.executeSearch();
+            }
+      }
+
       executeSearch(): void {
             this.resetScroll();
             this.state.setSearchQuery(this.localSearchTerm());
+      }
+
+      clearSearch(): void {
+            this.localSearchTerm.set('');
+            this.resetScroll();
+            this.state.setSearchQuery('');
       }
 
       // Dropdown toggle handler

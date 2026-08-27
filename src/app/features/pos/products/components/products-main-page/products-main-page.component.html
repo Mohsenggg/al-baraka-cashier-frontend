@@ -13,18 +13,27 @@
                         <div class="header-start-group">
                               <h1 class="page-title">المنتجات</h1>
 
-                              <!-- Search Bar -->
-                              <div class="search-bar-wrapper filter-search">
-                                    <input type="text" class="search-input"
-                                          placeholder="بحث بالاسم، الباركود..."
-                                          [value]="localSearchTerm()" (input)="onSearchInput($event)"
-                                          (keyup.enter)="executeSearch()">
-                                    <button type="button" class="search-clear-btn" *ngIf="localSearchTerm()"
-                                          (click)="localSearchTerm.set(''); executeSearch()" aria-label="مسح">
+                              <!-- Search Field (cashier-receipt style) -->
+                              <div class="search-field-wrapper">
+                                    <input type="text" class="pos-input search-input"
+                                          placeholder="بحث بالاسم أو الباركود..."
+                                          [value]="localSearchTerm()"
+                                          (input)="onSearchInput($event)"
+                                          (keydown)="onSearchKeyDown($event)"
+                                          autocomplete="off"
+                                          dir="rtl">
+                                    <button type="button" class="search-icon-button"
+                                          (click)="executeSearch()"
+                                          [disabled]="!localSearchTerm()"
+                                          aria-label="بحث">
+                                          <span class="material-icons-outlined">search</span>
+                                    </button>
+                                    <button type="button" class="clear-icon-button"
+                                          *ngIf="searchQuery()"
+                                          (click)="clearSearch()"
+                                          aria-label="مسح">
                                           <span class="material-icons-outlined">close</span>
                                     </button>
-                                    <span class="search-icon-static material-icons-outlined"
-                                          *ngIf="!localSearchTerm()">search</span>
                               </div>
 
                               <!-- Category Multi-select -->

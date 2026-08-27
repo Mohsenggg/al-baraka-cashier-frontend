@@ -129,10 +129,13 @@ export class ProductStateService {
                         for (const p of group.products || []) {
                               if (!seenIds.has(p.id)) {
                                     seenIds.add(p.id);
+                                    const code = p.sku || p.barcode || p.code || '';
                                     prods.push({
                                           id: Number(p.id),
-                                          name: p.name,
-                                          code: p.sku,
+                                          name: p.name || '',
+                                          code: code,
+                                          barcode: code,
+                                          sku: code,
                                           category: cat.name,
                                           manufacturer: '',
                                           sellingPrice: p.sellingPrice,
@@ -154,10 +157,13 @@ export class ProductStateService {
                               for (const p of group.products || []) {
                                     if (!seenIds.has(p.id)) {
                                           seenIds.add(p.id);
+                                          const code = p.sku || p.barcode || p.code || '';
                                           prods.push({
                                                 id: Number(p.id),
-                                                name: p.name,
-                                                code: p.sku,
+                                                name: p.name || '',
+                                                code: code,
+                                                barcode: code,
+                                                sku: code,
                                                 category: cat.name,
                                                 manufacturer: brand.name,
                                                 sellingPrice: p.sellingPrice,
@@ -186,8 +192,10 @@ export class ProductStateService {
             const query = this.searchQuery().trim().toLowerCase();
             if (query) {
                   list = list.filter(p =>
-                        p.name.toLowerCase().includes(query) ||
-                        p.code.toLowerCase().includes(query)
+                        (p.name && p.name.toLowerCase().includes(query)) ||
+                        (p.code && p.code.toLowerCase().includes(query)) ||
+                        ((p as any).barcode && String((p as any).barcode).toLowerCase().includes(query)) ||
+                        ((p as any).sku && String((p as any).sku).toLowerCase().includes(query))
                   );
             }
 
